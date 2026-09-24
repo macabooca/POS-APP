@@ -133,6 +133,27 @@
             font-weight: bold;
         }
 
+        /* While the product-spec panel is open, the checkout bar isn't needed yet
+           (it reappears once the item is added to the cart) so the panel can sit
+           flush above the keyboard instead of floating with a gap. */
+        body.panel-open .fixed-checkout-bar {
+            display: none !important;
+        }
+        body.panel-open {
+            padding-bottom: 65px;
+        }
+
+        /* Docks popup dialogs (manager PIN, add/edit product, etc.) right above
+           the on-screen keyboard instead of floating centered with a gap. */
+        .modal-overlay.kb-active {
+            align-items: flex-end;
+        }
+        .modal-overlay.kb-active .modal-box {
+            max-height: var(--kb-visible-h, 85vh);
+            border-radius: 16px 16px 0 0;
+            margin-bottom: 0;
+        }
+
         .fixed-checkout-bar {
             position: fixed;
             bottom: 53px; left: 0; right: 0;
@@ -655,6 +676,7 @@
 
             setSellMode('retail');
             document.getElementById('selected-product-panel').style.display = 'block';
+            document.body.classList.add('panel-open');
         }
 
         function setSellMode(mode) {
@@ -775,6 +797,7 @@
             activeSelection = null;
             activeProductObj = null;
             document.getElementById('selected-product-panel').style.display = 'none';
+            document.body.classList.remove('panel-open');
         }
 
         function confirmAddToCart() {
@@ -1591,6 +1614,40 @@
             };
             reader.readAsText(file);
         }
+    </script>
+    <script>
+        // Docks the product-spec panel and any popup dialog (manager PIN, add/edit
+        // product, etc.) right above the on-screen keyboard instead of leaving a gap.
+        (function setupKeyboardDocking() {
+            if (!window.visualViewport) return;
+
+            function onViewportChange() {
+                const vv = window.visualViewport;
+                const keyboardOpen = (window.innerHeight - vv.height) > 100;
+                const visibleH = Math.round(vv.height);
+
+                // Popups: manager PIN, add/edit product, alerts, etc.
+                const overlay = document.getElementById('custom-modal');
+                if (overlay && overlay.style.display !== 'none') {
+                    if (keyboardOpen) {
+                        overlay.classList.add('kb-active');
+                        overlay.style.setProperty('--kb-visible-h', (visibleH - 20) + 'px');
+                    } else {
+                        overlay.classList.remove('kb-active');
+                        overlay.style.removeProperty('--kb-visible-h');
+                    }
+                }
+
+                // Product spec panel on the home/POS screen
+                const panel = document.getElementById('selected-product-panel');
+                if (panel && panel.style.display !== 'none' && keyboardOpen) {
+                    panel.scrollIntoView({ block: 'end', behavior: 'smooth' });
+                }
+            }
+
+            window.visualViewport.addEventListener('resize', onViewportChange);
+            window.visualViewport.addEventListener('scroll', onViewportChange);
+        })();
     </script>
     <script>
         // Register the service worker so the app is cached and works fully offline
