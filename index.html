@@ -1195,6 +1195,10 @@
             const overlay = document.getElementById('custom-modal');
             overlay.style.display = 'none';
             overlay.style.paddingBottom = '16px';
+            overlay.style.removeProperty('top');
+            overlay.style.removeProperty('height');
+            overlay.classList.remove('kb-active');
+            overlay.style.removeProperty('--kb-visible-h');
         }
 
         function closeModalOnOutsideClick(event) {
@@ -1618,35 +1622,58 @@
     <script>
         // Docks the product-spec panel and any popup dialog (manager PIN, add/edit
         // product, etc.) right above the on-screen keyboard instead of leaving a gap.
+        //
+        // Why the previous version was wrong: on Android Chrome, opening the keyboard
+        // does NOT shrink window.innerHeight / the page's normal scrollable area — it
+        // only shrinks window.visualViewport (the actually-visible portion). scrollIntoView()
+        // and plain CSS "align-items: flex-end" both measure against the *unshrunk* full
+        // page height, so they land elements above the real visible area, with a gap
+        // where the keyboard covers the rest of that unshrunk height. The fix below reads
+        // window.visualViewport directly and pins elements to its real edges.
         (function setupKeyboardDocking() {
             if (!window.visualViewport) return;
+            const vv = window.visualViewport;
 
-            function onViewportChange() {
-                const vv = window.visualViewport;
-                const keyboardOpen = (window.innerHeight - vv.height) > 100;
-                const visibleH = Math.round(vv.height);
-
-                // Popups: manager PIN, add/edit product, alerts, etc.
+            function positionOverlay(keyboardOpen) {
                 const overlay = document.getElementById('custom-modal');
-                if (overlay && overlay.style.display !== 'none') {
-                    if (keyboardOpen) {
-                        overlay.classList.add('kb-active');
-                        overlay.style.setProperty('--kb-visible-h', (visibleH - 20) + 'px');
-                    } else {
-                        overlay.classList.remove('kb-active');
-                        overlay.style.removeProperty('--kb-visible-h');
-                    }
-                }
+                if (!overlay || overlay.style.display === 'none') return;
 
-                // Product spec panel on the home/POS screen
-                const panel = document.getElementById('selected-product-panel');
-                if (panel && panel.style.display !== 'none' && keyboardOpen) {
-                    panel.scrollIntoView({ block: 'end', behavior: 'smooth' });
+                if (keyboardOpen) {
+                    // Pin the overlay to exactly the visible (non-keyboard) area,
+                    // in real pixels, regardless of what the layout viewport reports.
+                    overlay.style.top = vv.offsetTop + 'px';
+                    overlay.style.height = vv.height + 'px';
+                    overlay.classList.add('kb-active');
+                    overlay.style.setProperty('--kb-visible-h', Math.round(vv.height - 20) + 'px');
+                } else {
+                    overlay.style.removeProperty('top');
+                    overlay.style.removeProperty('height');
+                    overlay.classList.remove('kb-active');
+                    overlay.style.removeProperty('--kb-visible-h');
                 }
             }
 
-            window.visualViewport.addEventListener('resize', onViewportChange);
-            window.visualViewport.addEventListener('scroll', onViewportChange);
+            function positionPanel(keyboardOpen) {
+                const panel = document.getElementById('selected-product-panel');
+                if (!panel || panel.style.display === 'none' || !keyboardOpen) return;
+
+                const rect = panel.getBoundingClientRect();
+                const visibleBottom = vv.offsetTop + vv.height; // true visible area bottom edge, right above the keyboard
+                const margin = 10;
+                const delta = rect.bottom - (visibleBottom - margin);
+                if (Math.abs(delta) > 4) {
+                    window.scrollBy({ top: delta, behavior: 'smooth' });
+                }
+            }
+
+            function onViewportChange() {
+                const keyboardOpen = (window.innerHeight - vv.height) > 100;
+                positionOverlay(keyboardOpen);
+                positionPanel(keyboardOpen);
+            }
+
+            vv.addEventListener('resize', onViewportChange);
+            vv.addEventListener('scroll', onViewportChange);
         })();
     </script>
     <script>
