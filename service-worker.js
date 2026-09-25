@@ -1,5 +1,5 @@
 // bump this version string any time you re-upload index.html so phones fetch the new copy
-const CACHE_NAME = 'pos-app-cache-v3';
+const CACHE_NAME = 'pos-app-cache-v4';
 
 const APP_FILES = [
   './',
