@@ -133,11 +133,15 @@
             font-weight: bold;
         }
 
-        /* While the product-spec panel is open, neither the checkout bar nor the
-           bottom nav bar are needed yet, so both stay out of the way until the
-           item is actually added to the cart. */
+        /* While the product-spec panel is open, OR whenever the keyboard is open
+           anywhere else in the app (e.g. just typing in the search box), the
+           checkout bar and nav bar aren't needed and would otherwise visually
+           jump up to float above the keyboard — so they stay hidden until the
+           keyboard closes. */
         body.panel-open .fixed-checkout-bar,
-        body.panel-open .bottom-nav {
+        body.panel-open .bottom-nav,
+        body.kb-open .fixed-checkout-bar,
+        body.kb-open .bottom-nav {
             display: none !important;
         }
         body.panel-open {
