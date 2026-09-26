@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
     <title>نظام إدارة المبيعات والمخزون</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#008080">
@@ -142,6 +142,16 @@
             padding-bottom: 65px;
         }
 
+        /* Popups stay centered normally. While the keyboard is open (detected via
+           body.kb-open), they dock to sit just above it instead, closer to the thumb. */
+        body.kb-open .modal-overlay {
+            align-items: flex-end;
+        }
+        body.kb-open .modal-overlay .modal-box {
+            margin-bottom: 8px;
+            max-height: 92vh;
+        }
+
         .fixed-checkout-bar {
             position: fixed;
             bottom: 53px; left: 0; right: 0;
@@ -262,7 +272,7 @@
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 20px;
-            scroll-margin-bottom: 110px;
+            scroll-margin-bottom: 14px;
         }
 
         .mode-btn {
@@ -1602,6 +1612,51 @@
             };
             reader.readAsText(file);
         }
+    </script>
+    <script>
+        // Detects when the on-screen keyboard is open (relies on the
+        // interactive-widget=resizes-content viewport setting above, which makes
+        // Chrome actually shrink the page layout for the keyboard, instead of only
+        // shrinking a separate invisible measurement — that mismatch was the root
+        // cause of the earlier broken attempts at this).
+        (function setupKeyboardDetection() {
+            let restingHeight = window.innerHeight;
+
+            function onResize() {
+                const h = window.innerHeight;
+                // Self-calibrate upward: if we see a taller height than before
+                // (keyboard closed, address bar reappeared, etc.), that's our new
+                // "no keyboard" baseline. This avoids false positives from Chrome's
+                // address bar collapsing/expanding, which is a much smaller change
+                // than an actual keyboard (~250-300px) opening.
+                if (h > restingHeight) restingHeight = h;
+
+                const keyboardOpen = (restingHeight - h) > 150;
+                document.body.classList.toggle('kb-open', keyboardOpen);
+
+                if (keyboardOpen) {
+                    const panel = document.getElementById('selected-product-panel');
+                    if (panel && panel.style.display !== 'none') {
+                        // Guarantee enough scroll room exists below the panel to actually
+                        // reach the keyboard, regardless of how much content is on the page.
+                        document.body.style.paddingBottom = h + 'px';
+                        requestAnimationFrame(() => {
+                            // Force-dock flush to the keyboard (not just "scroll if not
+                            // visible" — the panel needs to end up at the same spot every
+                            // time, even if it already technically fits on screen).
+                            const margin = 12;
+                            const rect = panel.getBoundingClientRect();
+                            const delta = rect.bottom - (window.innerHeight - margin);
+                            window.scrollBy({ top: delta, behavior: 'smooth' });
+                        });
+                    }
+                } else {
+                    document.body.style.removeProperty('padding-bottom');
+                }
+            }
+
+            window.addEventListener('resize', onResize);
+        })();
     </script>
     <script>
         // Register the service worker so the app is cached and works fully offline
