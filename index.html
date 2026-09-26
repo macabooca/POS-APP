@@ -133,13 +133,15 @@
             font-weight: bold;
         }
 
-        /* While the product-spec panel is open, the checkout bar isn't needed yet
-           (it reappears once the item is added to the cart) so it stays out of the way. */
-        body.panel-open .fixed-checkout-bar {
+        /* While the product-spec panel is open, neither the checkout bar nor the
+           bottom nav bar are needed yet, so both stay out of the way until the
+           item is actually added to the cart. */
+        body.panel-open .fixed-checkout-bar,
+        body.panel-open .bottom-nav {
             display: none !important;
         }
         body.panel-open {
-            padding-bottom: 65px;
+            padding-bottom: 12px;
         }
 
         /* Popups stay centered normally. While the keyboard is open (detected via
