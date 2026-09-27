@@ -460,6 +460,11 @@
             <!-- FIXED FILE INPUT FOR BACKUP RESTORE (JSON ONLY) -->
             <input type="file" id="restore-file" accept=".json, application/json, text/plain" style="display:none" onchange="importBackup(event)">
             <button class="btn btn-teal" style="width: 100%;" onclick="requireManagerPass(() => document.getElementById('restore-file').click())">استعادة نسخة احتياطية (.json)</button>
+
+            <hr style="margin: 15px 0; border-color: #eee;">
+            <h3>المزامنة السحابية (بين الأجهزة)</h3>
+            <div id="cloud-sync-status" style="margin-bottom: 10px; font-size: 14px;"></div>
+            <button class="btn btn-teal" style="width: 100%;" onclick="requireManagerPass(() => openCloudSyncManager())">إعداد / إدارة المزامنة السحابية</button>
         </div>
     </div>
 
@@ -509,6 +514,7 @@
         function safeSave(key, value) {
             try {
                 localStorage.setItem(key, JSON.stringify(value));
+                scheduleCloudPush();
             } catch (e) {
                 console.error("Error saving key " + key, e);
             }
@@ -566,6 +572,9 @@
             renderSales();
             renderStockLogs();
             if (activeCashier === 'غير محدد') promptShiftLogin();
+
+            initCloudSyncIfConfigured();
+            renderCloudSyncStatus();
 
             setInterval(startBackupReminder, 30 * 60 * 1000);
         });
@@ -1023,6 +1032,12 @@
                     <button class="btn btn-orange" onclick="closeModal(); (${onConfirm})('download')">تحميل الآن</button>
                     <button class="btn btn-teal" onclick="closeModal()">موافق</button>
                 `;
+            } else if (modalMode === 'sync_setup') {
+                buttonsBox.innerHTML = `
+                    <button class="btn btn-orange" style="width:100%; margin-bottom:8px;" onclick="closeModal(); generateNewSyncCode()">هذا أول جهاز \u2014 إنشاء رمز جديد</button>
+                    <button class="btn btn-teal" style="width:100%; margin-bottom:8px;" onclick="closeModal(); promptEnterSyncCode()">لدي رمز بالفعل \u2014 ربط هذا الجهاز</button>
+                    <button class="btn btn-red" style="width:100%;" onclick="closeModal()">إلغاء</button>
+                `;
             } else {
                 buttonsBox.innerHTML = `
                     <button id="modal-confirm-btn" class="btn btn-orange">موافق</button>
@@ -1223,6 +1238,7 @@
                 if (newPin && newPin.trim() !== '') {
                     managerPin = newPin.trim();
                     localStorage.setItem(KEYS.MANAGER_PIN, managerPin);
+                    scheduleCloudPush();
                     showModal('نجاح', 'تم تحديث كلمة سر المدير بنجاح!', false, () => {});
                 }
             });
@@ -1604,6 +1620,7 @@
                         safeSave(KEYS.LOGS, stockLogs);
                         safeSave(KEYS.CASHIERS, cashiers);
                         localStorage.setItem(KEYS.MANAGER_PIN, managerPin);
+                        scheduleCloudPush();
 
                         renderInventory();
                         renderSales();
@@ -1617,6 +1634,150 @@
                 }
             };
             reader.readAsText(file);
+        }
+    </script>
+
+    <!-- Cloud Sync: Firebase (loaded from CDN; app still works fully offline if this fails to load) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script>
+        // ===== Cloud Sync (Firebase) =====
+        // Lets the same store's data (products, sales, stock logs, cashiers,
+        // manager PIN) sync across multiple devices, similar to how Google Keep
+        // syncs notes across devices via a shared account. Here, the "account" is
+        // a one-time-generated Sync Code instead of an email/password login.
+        //
+        // Deliberately NOT synced: activeCashier (who is logged in on THIS device
+        // right now is per-device session state, not shared store data).
+        //
+        // If the Firebase scripts above fail to load (e.g. no internet on first
+        // visit), every function here safely no-ops so the rest of the app keeps
+        // working fully offline exactly as before.
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCmydnG7YTV6Bhb6QNJ-xj8WR9r44d4dfo",
+            authDomain: "petstoreposapp.firebaseapp.com",
+            projectId: "petstoreposapp",
+            storageBucket: "petstoreposapp.firebasestorage.app",
+            messagingSenderId: "185311169061",
+            appId: "1:185311169061:web:d3c3030aa553eb76868dcc"
+        };
+
+        let cloudSyncCode = localStorage.getItem('pos_sync_code') || null;
+        let cloudDb = null;
+        let cloudDocRef = null;
+        let cloudSyncTimer = null;
+        let cloudApplyingRemote = false; // guard: true while writing incoming remote data locally, to avoid re-pushing it right back up
+        let cloudReady = false;
+
+        function firebaseAvailable() {
+            return typeof firebase !== 'undefined';
+        }
+
+        function initCloudSyncIfConfigured() {
+            if (cloudSyncCode) initCloudSync();
+        }
+
+        function initCloudSync() {
+            if (!cloudSyncCode || !firebaseAvailable()) return;
+            try {
+                if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+                firebase.auth().signInAnonymously().then(() => {
+                    cloudDb = firebase.firestore();
+                    cloudDocRef = cloudDb.collection('stores').doc(cloudSyncCode);
+                    cloudReady = true;
+                    cloudDocRef.onSnapshot((docSnap) => {
+                        if (cloudApplyingRemote) return;
+                        if (!docSnap.exists) return;
+                        const data = docSnap.data();
+                        cloudApplyingRemote = true;
+                        try {
+                            if (data.products) { products = data.products; localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(products)); }
+                            if (data.sales) { sales = data.sales; localStorage.setItem(KEYS.SALES, JSON.stringify(sales)); }
+                            if (data.stockLogs) { stockLogs = data.stockLogs; localStorage.setItem(KEYS.LOGS, JSON.stringify(stockLogs)); }
+                            if (data.cashiers) { cashiers = data.cashiers; localStorage.setItem(KEYS.CASHIERS, JSON.stringify(cashiers)); }
+                            if (data.managerPin) { managerPin = data.managerPin; localStorage.setItem(KEYS.MANAGER_PIN, managerPin); }
+                            renderInventory();
+                            renderSales();
+                            renderStockLogs();
+                        } finally {
+                            cloudApplyingRemote = false;
+                        }
+                    }, (err) => console.error('Cloud sync listen error', err));
+                    renderCloudSyncStatus();
+                }).catch(err => console.error('Cloud sign-in error', err));
+            } catch (err) {
+                console.error('Cloud sync init error', err);
+            }
+        }
+
+        function scheduleCloudPush() {
+            if (!cloudSyncCode || !firebaseAvailable() || cloudApplyingRemote) return;
+            clearTimeout(cloudSyncTimer);
+            cloudSyncTimer = setTimeout(() => {
+                if (!cloudDocRef) return;
+                cloudDocRef.set({
+                    products, sales, stockLogs, cashiers, managerPin,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true }).catch(err => console.error('Cloud push error', err));
+            }, 800);
+        }
+
+        function openCloudSyncManager() {
+            if (cloudSyncCode) {
+                showModal('المزامنة السحابية', `هذا الجهاز متصل برمز المزامنة:\n\n<div style="font-size:20px; font-weight:bold; color:var(--teal-primary); direction:ltr; text-align:center; margin:10px 0;">${cloudSyncCode}</div>\n\nلربط جهاز آخر، أدخل نفس هذا الرمز فيه من نفس هذه الصفحة.`, false, () => {}, false, 'sync_manage_connected');
+            } else {
+                promptCloudSetup();
+            }
+        }
+
+        function promptCloudSetup() {
+            showModal('المزامنة السحابية بين الأجهزة', 'هل هذا أول جهاز تُعِدّ عليه المزامنة، أم أن لديك رمزًا من جهاز آخر بالفعل؟', false, () => {}, true, 'sync_setup');
+        }
+
+        function generateNewSyncCode() {
+            const code = 'store-' + Math.random().toString(36).slice(2, 8) + Math.random().toString(36).slice(2, 6);
+            localStorage.setItem('pos_sync_code', code);
+            cloudSyncCode = code;
+            showModal('احتفظ بهذا الرمز!', `هذا رمز المزامنة الخاص بمتجرك. لا يمكن استرجاعه لاحقًا إذا فقدته، لذا يُرجى تصويره أو كتابته الآن:\n\n<div style="font-size:22px; font-weight:bold; color:var(--teal-primary); direction:ltr; text-align:center; margin:12px 0;">${code}</div>\n\nأدخل نفس هذا الرمز في أي جهاز آخر لمزامنة بياناته مع هذا المتجر.`, false, () => {
+                initCloudSync();
+                renderCloudSyncStatus();
+            });
+        }
+
+        function promptEnterSyncCode() {
+            showModal('أدخل رمز المزامنة', 'أدخل رمز المزامنة المستخدم في الجهاز الأول بالضبط:', 'text', (val) => {
+                const code = (val || '').trim();
+                if (!code) {
+                    showModal('خطأ', 'يرجى إدخال رمز صحيح.', false, () => promptEnterSyncCode());
+                    return;
+                }
+                localStorage.setItem('pos_sync_code', code);
+                cloudSyncCode = code;
+                initCloudSync();
+                renderCloudSyncStatus();
+            });
+        }
+
+        function disconnectCloudSync() {
+            showModal('فصل المزامنة', 'هل تريد فصل هذا الجهاز عن المزامنة السحابية؟ ستبقى بياناته المحلية كما هي.', false, () => {
+                localStorage.removeItem('pos_sync_code');
+                cloudSyncCode = null;
+                cloudDocRef = null;
+                cloudReady = false;
+                renderCloudSyncStatus();
+            });
+        }
+
+        function renderCloudSyncStatus() {
+            const el = document.getElementById('cloud-sync-status');
+            if (!el) return;
+            if (!cloudSyncCode) {
+                el.innerHTML = 'غير متصل بالمزامنة السحابية \u2014 البيانات محفوظة على هذا الجهاز فقط.';
+            } else {
+                el.innerHTML = `متصل \u2705 برمز: <span style="direction:ltr; display:inline-block; font-weight:bold;">${cloudSyncCode}</span> &nbsp; <a href="#" onclick="disconnectCloudSync(); return false;" style="color:var(--red-alert);">(فصل)</a>`;
+            }
         }
     </script>
     <script>
