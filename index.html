@@ -514,7 +514,6 @@
         function safeSave(key, value) {
             try {
                 localStorage.setItem(key, JSON.stringify(value));
-                scheduleCloudPush();
             } catch (e) {
                 console.error("Error saving key " + key, e);
             }
@@ -832,9 +831,11 @@
                     if (fullBags > 0) {
                         showModal('تنبيه: لا يوجد وزن مفتوح كافٍ', `الوزن المفتوح المتاح حالياً هو (${formatNum(openKg)} كجم)، ولديك (${fullBags}) شكارة كاملة بالمخزون.\nهل ترغب في فتح شكارة جديدة الآن وإكمال البيع؟`, false, () => {
                             const bagCap = prod.bagWeightKg || 15;
+                            const before = { qty: prod.qty || 0, bagsCount: prod.bagsCount || 0, openBagKg: prod.openBagKg || 0 };
                             prod.bagsCount -= 1;
                             prod.openBagKg = openKg + bagCap;
                             safeSave(KEYS.PRODUCTS, products);
+                            queueInventoryMutation(prod.id, before, prod, {});
                             renderInventory();
                             processAddToCartExecution(false);
                         });
@@ -950,8 +951,20 @@
 
             const now = new Date();
             const daysArr = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+            const inventoryBefore = new Map();
+            cart.forEach(item => {
+                const prod = products.find(p => String(p.id) === String(item.id));
+                if (prod && !inventoryBefore.has(String(prod.id))) {
+                    inventoryBefore.set(String(prod.id), {
+                        qty: Number(prod.qty || 0),
+                        bagsCount: Number(prod.bagsCount || 0),
+                        openBagKg: Number(prod.openBagKg || 0)
+                    });
+                }
+            });
+
             const saleRecord = {
-                id: Date.now(),
+                id: cloudUuid(),
                 timestamp: now.toISOString(),
                 dayName: daysArr[now.getDay()],
                 cashier: activeCashier,
@@ -959,7 +972,8 @@
                 globalDiscount: globalDiscount,
                 total: finalTotal,
                 profit: finalTotal - totalCost,
-                note: ''
+                note: '',
+                inventoryDeltas: []
             };
 
             cart.forEach(item => {
@@ -1003,9 +1017,21 @@
                 }
             });
 
+            inventoryBefore.forEach((before, productId) => {
+                const afterProd = products.find(p => String(p.id) === String(productId));
+                if (!afterProd) return;
+                const delta = {};
+                ['qty', 'bagsCount', 'openBagKg'].forEach(field => {
+                    const value = Number(afterProd[field] || 0) - Number(before[field] || 0);
+                    if (Math.abs(value) > 1e-12) delta[field] = value;
+                });
+                if (Object.keys(delta).length) saleRecord.inventoryDeltas.push({ productId, inventoryDelta: delta });
+            });
+
             sales.unshift(saleRecord);
             safeSave(KEYS.PRODUCTS, products);
             safeSave(KEYS.SALES, sales);
+            queueSaleForCloud(saleRecord);
 
             showModal('تم إتمام البيع بنجاح!', `المبلغ الإجمالي للفاتورة:\n<span style="font-size:22px; color:var(--teal-primary); font-weight:bold;">${formatNum(finalTotal)} د.ل</span>`, false, () => {}, false, 'auto_dismiss');
 
@@ -1277,6 +1303,7 @@
                 if (data && data.name && data.pin) {
                     cashiers.push({ id: Date.now(), name: data.name, pin: data.pin });
                     safeSave(KEYS.CASHIERS, cashiers);
+                    queueSettingsSync();
                     manageCashierAccounts();
                 } else {
                     showModal('خطأ', 'يرجى إدخال اسم الكاشير وكلمة السر بشكل صحيح!', false, () => manageCashierAccounts());
@@ -1295,6 +1322,7 @@
                     cashiers[index].name = data.name;
                     cashiers[index].pin = data.pin;
                     safeSave(KEYS.CASHIERS, cashiers);
+                    queueSettingsSync();
                     manageCashierAccounts();
                 }
             };
@@ -1310,6 +1338,7 @@
             showModal('تأكيد الحذف', `هل أنت تأكد من حذف حساب الكاشير "${target.name}"؟`, false, () => {
                 cashiers.splice(index, 1);
                 safeSave(KEYS.CASHIERS, cashiers);
+                queueSettingsSync();
                 manageCashierAccounts();
             });
         }
@@ -1372,6 +1401,7 @@
             const callback = (newNote) => {
                 sale.note = newNote || '';
                 safeSave(KEYS.SALES, sales);
+                queueSaleNoteUpdateForCloud(sale);
                 renderSales();
             };
             callback.initialValue = sale.note || '';
@@ -1389,8 +1419,9 @@
 
             let currentDay = '';
             let html = '';
+            const sortedSales = [...sales].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-            sales.forEach(s => {
+            sortedSales.forEach(s => {
                 const dateObj = new Date(s.timestamp);
                 const dateStr = dateObj.toLocaleDateString('ar-LY');
                 const timeStr = dateObj.toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' });
@@ -1430,7 +1461,7 @@
                         </div>
 
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-                            <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick="editSaleNote(${s.id})">✏️ تعديل / إضافة ملاحظة</button>
+                            <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick="editSaleNote(${JSON.stringify(s.id)})">✏️ تعديل / إضافة ملاحظة</button>
                             <span>الإجمالي: <strong style="color:var(--teal-primary); font-size:15px;">${formatNum(s.total)} د.ل</strong></span>
                         </div>
                     </div>
@@ -1492,9 +1523,11 @@
 
             const bagCapacity = prod.bagWeightKg || 15;
             showModal('تأكيد فتح شكارة', `هل أنت تأكد من رغبتك في فتح شكارة جديدة من "${prod.name}" (وزنها ${bagCapacity} كجم)؟`, false, () => {
+                const before = { qty: prod.qty || 0, bagsCount: prod.bagsCount || 0, openBagKg: prod.openBagKg || 0 };
                 prod.bagsCount -= 1;
                 prod.openBagKg = (prod.openBagKg || 0) + bagCapacity;
                 safeSave(KEYS.PRODUCTS, products);
+                queueInventoryMutation(prod.id, before, prod, {});
                 renderInventory();
                 showModal('نجاح', `تم فتح الشكارة بنجاح وإضافة ${bagCapacity} كجم إلى الوزن المتاح!`, false, () => {});
             });
@@ -1506,15 +1539,19 @@
 
             const callback = (data) => {
                 if (data && data.addedKg > 0) {
+                    const before = { qty: prod.qty || 0, bagsCount: prod.bagsCount || 0, openBagKg: prod.openBagKg || 0 };
                     prod.openBagKg = (prod.openBagKg || 0) + data.addedKg;
                     if (data.price) prod.kgPrice = data.price;
                     if (data.expiryDate) prod.expiryDate = data.expiryDate;
                     if (data.notes) prod.notes = data.notes;
 
-                    stockLogs.unshift({ timestamp: new Date().toISOString(), name: `${prod.name} (جزء مفتوح)`, qty: data.addedKg });
+                    const log = { id: cloudUuid(), timestamp: new Date().toISOString(), name: `${prod.name} (جزء مفتوح)`, qty: data.addedKg };
+                    stockLogs.unshift(log);
                     
                     safeSave(KEYS.PRODUCTS, products);
                     safeSave(KEYS.LOGS, stockLogs);
+                    queueInventoryMutation(prod.id, before, prod, { kgPrice: prod.kgPrice, expiryDate: prod.expiryDate, notes: prod.notes });
+                    queueStockLogForCloud(log);
                     renderInventory();
                     renderStockLogs();
                     showModal('نجاح', `تمت إضافة ${data.addedKg} كجم إلى الوزن المفتوح بنجاح!`, false, () => {});
@@ -1530,21 +1567,30 @@
             const callback = (data) => {
                 if (data && data.name) {
                     if (existing) {
+                        const before = { ...existing };
                         const oldTotalWeight = ((existing.bagsCount || 0) * (existing.bagWeightKg || 0)) + (existing.openBagKg || 0) + (existing.qty || 0);
                         const newTotalWeight = ((data.bagsCount || 0) * (data.bagWeightKg || 0)) + (data.openBagKg || 0) + (data.qty || 0);
                         const addedQty = newTotalWeight - oldTotalWeight;
-                        
-                        if (addedQty > 0) {
-                            stockLogs.unshift({ timestamp: new Date().toISOString(), name: data.name, qty: addedQty });
-                        }
                         Object.assign(existing, data);
+
+                        if (addedQty > 0) {
+                            const log = { id: cloudUuid(), timestamp: new Date().toISOString(), name: data.name, qty: addedQty };
+                            stockLogs.unshift(log);
+                            queueStockLogForCloud(log);
+                        }
+                        const metadata = { ...existing };
+                        delete metadata.qty; delete metadata.bagsCount; delete metadata.openBagKg; delete metadata.id;
+                        queueInventoryMutation(existing.id, before, existing, metadata);
                     } else {
-                        const newProd = { id: Date.now(), ...data };
+                        const newProd = { id: cloudUuid(), ...data };
                         products.push(newProd);
                         const initialQty = ((data.bagsCount || 0) * (data.bagWeightKg || 0)) + (data.openBagKg || 0) + (data.qty || 0);
                         if (initialQty > 0) {
-                            stockLogs.unshift({ timestamp: new Date().toISOString(), name: data.name, qty: initialQty });
+                            const log = { id: cloudUuid(), timestamp: new Date().toISOString(), name: data.name, qty: initialQty };
+                            stockLogs.unshift(log);
+                            queueStockLogForCloud(log);
                         }
+                        queueInventoryMutation(newProd.id, {}, newProd, {}, { createProduct: { ...newProd } });
                     }
                     safeSave(KEYS.PRODUCTS, products);
                     safeSave(KEYS.LOGS, stockLogs);
@@ -1571,8 +1617,10 @@
             const prod = products.find(p => p.id === id);
             if (!prod) return;
             showModal('تأكيد الحذف', `هل أنت تأكد من رغبتك في حذف المنتج "${prod.name}" نهائياً؟`, false, () => {
+                const before = products.find(p => String(p.id) === String(id));
                 products = products.filter(p => p.id !== id);
                 safeSave(KEYS.PRODUCTS, products);
+                if (before) queueInventoryMutation(id, before, before, {}, { deleteProduct: true });
                 renderInventory();
             });
         }
@@ -1620,7 +1668,7 @@
                         safeSave(KEYS.LOGS, stockLogs);
                         safeSave(KEYS.CASHIERS, cashiers);
                         localStorage.setItem(KEYS.MANAGER_PIN, managerPin);
-                        scheduleCloudPush();
+                        queueFullRestoreForCloud();
 
                         renderInventory();
                         renderSales();
@@ -1643,17 +1691,16 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script>
         // ===== Cloud Sync (Firebase) =====
-        // Lets the same store's data (products, sales, stock logs, cashiers,
-        // manager PIN) sync across multiple devices, similar to how Google Keep
-        // syncs notes across devices via a shared account. Here, the "account" is
-        // a one-time-generated Sync Code instead of an email/password login.
-        //
-        // Deliberately NOT synced: activeCashier (who is logged in on THIS device
-        // right now is per-device session state, not shared store data).
-        //
-        // If the Firebase scripts above fail to load (e.g. no internet on first
-        // visit), every function here safely no-ops so the rest of the app keeps
-        // working fully offline exactly as before.
+        // v2 sync architecture:
+        // - Local-first: localStorage remains the immediate source for the UI.
+        // - Offline changes are kept in a durable outbox.
+        // - Sales are stored as individual Firestore documents (never as one array).
+        // - Inventory changes are stored as idempotent operations and applied with
+        //   Firestore transactions, so offline sales/restocks from multiple devices
+        //   are combined instead of replacing one another.
+        // - Cashiers/manager settings are synchronized separately from inventory.
+        // - The old stores/{code} document is migrated automatically the first time
+        //   a store connects to this version. It is never deleted.
 
         const firebaseConfig = {
             apiKey: "AIzaSyCmydnG7YTV6Bhb6QNJ-xj8WR9r44d4dfo",
@@ -1664,64 +1711,469 @@
             appId: "1:185311169061:web:d3c3030aa553eb76868dcc"
         };
 
+        const CLOUD_OUTBOX_KEY = 'pos_cloud_outbox_v2';
+        const CLOUD_SCHEMA_VERSION = 2;
         let cloudSyncCode = localStorage.getItem('pos_sync_code') || null;
         let cloudDb = null;
-        let cloudDocRef = null;
-        let cloudSyncTimer = null;
-        let cloudApplyingRemote = false; // guard: true while writing incoming remote data locally, to avoid re-pushing it right back up
+        let cloudDocRef = null;          // legacy stores/{code} document; kept for migration/reference
+        let cloudStateRef = null;        // stores/{code}/state/main
+        let cloudSalesCol = null;        // stores/{code}/sales
+        let cloudLogsCol = null;         // stores/{code}/stockLogs
+        let cloudInventoryOpsCol = null; // stores/{code}/inventoryOps
+        let cloudOutbox = safeLoad(CLOUD_OUTBOX_KEY, []);
         let cloudReady = false;
+        let cloudSyncBusy = false;
+        let cloudListenersAttached = false;
+        let cloudBootstrapping = false;
+        let cloudApplyingRemote = false;
 
         function firebaseAvailable() {
             return typeof firebase !== 'undefined';
         }
 
-        function initCloudSyncIfConfigured() {
-            if (cloudSyncCode) initCloudSync();
+        function cloudUuid() {
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+            return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2) + '-' + Math.random().toString(36).slice(2);
         }
 
-        function initCloudSync() {
-            if (!cloudSyncCode || !firebaseAvailable()) return;
-            try {
-                if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-                firebase.auth().signInAnonymously().then(() => {
-                    cloudDb = firebase.firestore();
-                    cloudDocRef = cloudDb.collection('stores').doc(cloudSyncCode);
-                    cloudReady = true;
-                    cloudDocRef.onSnapshot((docSnap) => {
-                        if (cloudApplyingRemote) return;
-                        if (!docSnap.exists) return;
-                        const data = docSnap.data();
-                        cloudApplyingRemote = true;
-                        try {
-                            if (data.products) { products = data.products; localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(products)); }
-                            if (data.sales) { sales = data.sales; localStorage.setItem(KEYS.SALES, JSON.stringify(sales)); }
-                            if (data.stockLogs) { stockLogs = data.stockLogs; localStorage.setItem(KEYS.LOGS, JSON.stringify(stockLogs)); }
-                            if (data.cashiers) { cashiers = data.cashiers; localStorage.setItem(KEYS.CASHIERS, JSON.stringify(cashiers)); }
-                            if (data.managerPin) { managerPin = data.managerPin; localStorage.setItem(KEYS.MANAGER_PIN, managerPin); }
-                            renderInventory();
-                            renderSales();
-                            renderStockLogs();
-                        } finally {
-                            cloudApplyingRemote = false;
-                        }
-                    }, (err) => console.error('Cloud sync listen error', err));
-                    renderCloudSyncStatus();
-                }).catch(err => console.error('Cloud sign-in error', err));
-            } catch (err) {
-                console.error('Cloud sync init error', err);
+        function persistCloudOutbox() {
+            localStorage.setItem(CLOUD_OUTBOX_KEY, JSON.stringify(cloudOutbox));
+        }
+
+        function queueCloudOperation(operation) {
+            if (!operation || !operation.id) return;
+            if (!cloudOutbox.some(op => op.id === operation.id)) {
+                cloudOutbox.push(operation);
+                persistCloudOutbox();
             }
+            if (cloudReady) processCloudOutbox();
+        }
+
+        function queueSaleForCloud(sale) {
+            queueCloudOperation({ id: 'sale:' + sale.id, type: 'sale', payload: sale, createdAt: Date.now() });
+        }
+
+        function queueSaleNoteUpdateForCloud(sale) {
+            queueCloudOperation({ id: 'sale-note:' + sale.id + ':' + Date.now(), type: 'saleUpdate', payload: { id: String(sale.id), note: sale.note || '' }, createdAt: Date.now() });
+        }
+
+        function queueInventoryMutation(productId, beforeProduct, afterProduct, metadataPatch, options = {}) {
+            const before = beforeProduct || {};
+            const after = afterProduct || {};
+            const stockFields = ['qty', 'bagsCount', 'openBagKg'];
+            const inventoryDelta = {};
+            stockFields.forEach(field => {
+                const oldVal = Number(before[field] || 0);
+                const newVal = Number(after[field] || 0);
+                const delta = newVal - oldVal;
+                if (Math.abs(delta) > 1e-12) inventoryDelta[field] = delta;
+            });
+
+            const payload = {
+                productId,
+                inventoryDelta,
+                metadata: metadataPatch || {},
+                createProduct: options.createProduct || null,
+                deleteProduct: !!options.deleteProduct
+            };
+            queueCloudOperation({ id: 'product-op:' + cloudUuid(), type: 'productMutation', payload, createdAt: Date.now() });
+        }
+
+        function queueStockLogForCloud(log) {
+            if (!log) return;
+            if (!log.id) log.id = cloudUuid();
+            queueCloudOperation({ id: 'stock-log:' + log.id, type: 'stockLog', payload: log, createdAt: Date.now() });
+        }
+
+        function queueSettingsSync() {
+            queueCloudOperation({
+                id: 'settings:' + cloudUuid(),
+                type: 'settings',
+                payload: { cashiers, managerPin },
+                createdAt: Date.now()
+            });
         }
 
         function scheduleCloudPush() {
-            if (!cloudSyncCode || !firebaseAvailable() || cloudApplyingRemote) return;
-            clearTimeout(cloudSyncTimer);
-            cloudSyncTimer = setTimeout(() => {
-                if (!cloudDocRef) return;
-                cloudDocRef.set({
-                    products, sales, stockLogs, cashiers, managerPin,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true }).catch(err => console.error('Cloud push error', err));
-            }, 800);
+            // Kept for existing callers (manager PIN changes, etc.). It now syncs
+            // only store settings instead of uploading the entire database.
+            queueSettingsSync();
+        }
+
+        function queueFullRestoreForCloud() {
+            queueCloudOperation({
+                id: 'restore:' + cloudUuid(),
+                type: 'fullRestore',
+                payload: {
+                    products,
+                    sales,
+                    stockLogs,
+                    cashiers,
+                    managerPin
+                },
+                createdAt: Date.now()
+            });
+        }
+
+        function applyInventoryDeltaToProduct(product, delta) {
+            if (!product || !delta) return;
+            ['qty', 'bagsCount', 'openBagKg'].forEach(field => {
+                if (delta[field] !== undefined) {
+                    product[field] = Number(product[field] || 0) + Number(delta[field] || 0);
+                    if (Math.abs(product[field]) < 1e-10) product[field] = 0;
+                }
+            });
+        }
+
+        function applyInventoryDeltas(productsArray, deltas) {
+            (deltas || []).forEach(d => {
+                const product = productsArray.find(p => String(p.id) === String(d.productId));
+                if (product) applyInventoryDeltaToProduct(product, d.inventoryDelta || d.delta || {});
+            });
+        }
+
+        function saleInventoryDeltasFromRecord(sale) {
+            if (sale && Array.isArray(sale.inventoryDeltas)) return sale.inventoryDeltas;
+            return [];
+        }
+
+        async function processCloudOperation(op) {
+            if (!cloudDb || !cloudStateRef) return false;
+
+            if (op.type === 'sale') {
+                const sale = op.payload;
+                const saleRef = cloudSalesCol.doc(String(sale.id));
+                await cloudDb.runTransaction(async transaction => {
+                    const [stateSnap, saleSnap] = await Promise.all([
+                        transaction.get(cloudStateRef),
+                        transaction.get(saleRef)
+                    ]);
+                    if (saleSnap.exists) return;
+                    const state = stateSnap.exists ? (stateSnap.data() || {}) : {};
+                    const remoteProducts = Array.isArray(state.products) ? state.products : [];
+                    applyInventoryDeltas(remoteProducts, saleInventoryDeltasFromRecord(sale));
+                    transaction.set(cloudStateRef, {
+                        products: remoteProducts,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        schemaVersion: CLOUD_SCHEMA_VERSION
+                    }, { merge: true });
+                    transaction.set(saleRef, sale);
+                });
+                return true;
+            }
+
+            if (op.type === 'saleUpdate') {
+                const p = op.payload || {};
+                await cloudSalesCol.doc(String(p.id)).set({ note: p.note || '', noteUpdatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                return true;
+            }
+
+            if (op.type === 'productMutation') {
+                const p = op.payload || {};
+                const productRef = cloudStateRef;
+                const opRef = cloudInventoryOpsCol.doc(String(op.id));
+                await cloudDb.runTransaction(async transaction => {
+                    const [opSnap, stateSnap] = await Promise.all([
+                        transaction.get(opRef),
+                        transaction.get(productRef)
+                    ]);
+                    if (opSnap.exists) return;
+                    const state = stateSnap.exists ? (stateSnap.data() || {}) : {};
+                    let remoteProducts = Array.isArray(state.products) ? state.products.map(x => ({ ...x })) : [];
+                    const idx = remoteProducts.findIndex(x => String(x.id) === String(p.productId));
+
+                    if (p.deleteProduct) {
+                        if (idx >= 0) remoteProducts.splice(idx, 1);
+                    } else if (p.createProduct) {
+                        if (idx < 0) remoteProducts.push({ ...p.createProduct });
+                        else {
+                            Object.assign(remoteProducts[idx], p.metadata || {});
+                            applyInventoryDeltaToProduct(remoteProducts[idx], p.inventoryDelta || {});
+                        }
+                    } else {
+                        if (idx >= 0) {
+                            Object.assign(remoteProducts[idx], p.metadata || {});
+                            applyInventoryDeltaToProduct(remoteProducts[idx], p.inventoryDelta || {});
+                        }
+                    }
+
+                    transaction.set(productRef, {
+                        products: remoteProducts,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        schemaVersion: CLOUD_SCHEMA_VERSION
+                    }, { merge: true });
+                    transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'productMutation' });
+                });
+                return true;
+            }
+
+            if (op.type === 'stockLog') {
+                const log = op.payload;
+                await cloudLogsCol.doc(String(log.id)).set(log, { merge: true });
+                return true;
+            }
+
+            if (op.type === 'settings') {
+                await cloudStateRef.set({
+                    cashiers: op.payload.cashiers || [],
+                    managerPin: op.payload.managerPin || managerPin,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    schemaVersion: CLOUD_SCHEMA_VERSION
+                }, { merge: true });
+                return true;
+            }
+
+            if (op.type === 'fullRestore') {
+                // Backup restore is an explicit user action. It intentionally replaces
+                // the cloud store with the restored dataset, unlike normal sync.
+                const data = op.payload || {};
+                const batch = cloudDb.batch();
+                batch.set(cloudStateRef, {
+                    products: data.products || [],
+                    cashiers: data.cashiers || [],
+                    managerPin: data.managerPin || '1234',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    schemaVersion: CLOUD_SCHEMA_VERSION,
+                    restoredAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                const existingSales = await cloudSalesCol.get();
+                existingSales.forEach(doc => batch.delete(doc.ref));
+                (data.sales || []).forEach(sale => batch.set(cloudSalesCol.doc(String(sale.id)), sale));
+                const existingLogs = await cloudLogsCol.get();
+                existingLogs.forEach(doc => batch.delete(doc.ref));
+                (data.stockLogs || []).forEach(log => batch.set(cloudLogsCol.doc(String(log.id || cloudUuid())), { ...log, id: log.id || cloudUuid() }));
+                await batch.commit();
+                return true;
+            }
+
+            return true;
+        }
+
+        async function processCloudOutbox() {
+            if (!cloudReady || cloudSyncBusy || !cloudOutbox.length) return;
+            cloudSyncBusy = true;
+            try {
+                while (cloudOutbox.length) {
+                    const op = cloudOutbox[0];
+                    try {
+                        const completed = await processCloudOperation(op);
+                        if (!completed) break;
+                        cloudOutbox.shift();
+                        persistCloudOutbox();
+                    } catch (err) {
+                        console.error('Cloud operation failed; keeping it in outbox:', err);
+                        break;
+                    }
+                }
+            } finally {
+                cloudSyncBusy = false;
+            }
+        }
+
+        function mergeSalesFromCloud(remoteSales) {
+            const byId = new Map(sales.map(s => [String(s.id), s]));
+            (remoteSales || []).forEach(remote => {
+                const existing = byId.get(String(remote.id));
+                if (!existing) byId.set(String(remote.id), remote);
+                else byId.set(String(remote.id), { ...existing, ...remote });
+            });
+            sales = Array.from(byId.values()).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            localStorage.setItem(KEYS.SALES, JSON.stringify(sales));
+        }
+
+        function mergeLogsFromCloud(remoteLogs) {
+            const byId = new Map();
+            stockLogs.forEach(log => byId.set(String(log.id || (log.timestamp + '|' + log.name + '|' + log.qty)), log));
+            (remoteLogs || []).forEach(remote => {
+                const id = remote.id || (remote.timestamp + '|' + remote.name + '|' + remote.qty);
+                byId.set(String(id), { ...remote, id });
+            });
+            stockLogs = Array.from(byId.values()).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            localStorage.setItem(KEYS.LOGS, JSON.stringify(stockLogs));
+        }
+
+        async function migrateLegacyCloudIfNeeded() {
+            if (!cloudDb || !cloudStateRef || !cloudDocRef) return;
+            const [stateSnap, legacySnap] = await Promise.all([cloudStateRef.get(), cloudDocRef.get()]);
+            if (stateSnap.exists) return;
+
+            const legacy = legacySnap.exists ? (legacySnap.data() || {}) : {};
+            // During the one-time migration, preserve local records that may have
+            // been created after the old whole-document sync last succeeded.
+            const productMap = new Map();
+            (Array.isArray(legacy.products) ? legacy.products : []).forEach(p => productMap.set(String(p.id), p));
+            products.forEach(p => productMap.set(String(p.id), p));
+            const initialProducts = Array.from(productMap.values());
+
+            const cashierMap = new Map();
+            (Array.isArray(legacy.cashiers) ? legacy.cashiers : []).forEach(c => cashierMap.set(String(c.id), c));
+            cashiers.forEach(c => cashierMap.set(String(c.id), c));
+            const initialCashiers = Array.from(cashierMap.values());
+
+            const salesMap = new Map();
+            (Array.isArray(legacy.sales) ? legacy.sales : []).forEach(s => salesMap.set(String(s.id), s));
+            sales.forEach(s => salesMap.set(String(s.id), s));
+            const initialSales = Array.from(salesMap.values());
+
+            const logMap = new Map();
+            (Array.isArray(legacy.stockLogs) ? legacy.stockLogs : []).forEach(l => logMap.set(String(l.id || (l.timestamp + '|' + l.name + '|' + l.qty)), l));
+            stockLogs.forEach(l => logMap.set(String(l.id || (l.timestamp + '|' + l.name + '|' + l.qty)), l));
+            const initialLogs = Array.from(logMap.values());
+            const initialManagerPin = managerPin || legacy.managerPin || '1234';
+
+            await cloudDb.runTransaction(async transaction => {
+                const check = await transaction.get(cloudStateRef);
+                if (!check.exists) {
+                    transaction.set(cloudStateRef, {
+                        products: initialProducts,
+                        cashiers: initialCashiers,
+                        managerPin: initialManagerPin,
+                        schemaVersion: CLOUD_SCHEMA_VERSION,
+                        migratedFromLegacy: legacySnap.exists,
+                        migratedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+            });
+
+            // Seed individual records only when they do not already exist.
+            const salesSnap = await cloudSalesCol.get();
+            const existingSaleIds = new Set(salesSnap.docs.map(d => String(d.id)));
+            let batch = cloudDb.batch();
+            let count = 0;
+            for (const sale of initialSales) {
+                const id = String(sale.id);
+                if (existingSaleIds.has(id)) continue;
+                batch.set(cloudSalesCol.doc(id), sale);
+                count++;
+                if (count === 400) { await batch.commit(); batch = cloudDb.batch(); count = 0; }
+            }
+            if (count) await batch.commit();
+
+            const logsSnap = await cloudLogsCol.get();
+            const existingLogIds = new Set(logsSnap.docs.map(d => String(d.id)));
+            batch = cloudDb.batch();
+            count = 0;
+            for (const rawLog of initialLogs) {
+                const log = { ...rawLog, id: rawLog.id || cloudUuid() };
+                if (existingLogIds.has(String(log.id))) continue;
+                batch.set(cloudLogsCol.doc(String(log.id)), log);
+                count++;
+                if (count === 400) { await batch.commit(); batch = cloudDb.batch(); count = 0; }
+            }
+            if (count) await batch.commit();
+        }
+
+        async function pullCloudStateAndRecords() {
+            if (!cloudStateRef) return;
+            cloudApplyingRemote = true;
+            try {
+                const [stateSnap, salesSnap, logsSnap] = await Promise.all([
+                    cloudStateRef.get(),
+                    cloudSalesCol.get(),
+                    cloudLogsCol.get()
+                ]);
+
+                if (stateSnap.exists) {
+                    const data = stateSnap.data() || {};
+                    if (Array.isArray(data.products)) {
+                        products = data.products;
+                        localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(products));
+                    }
+                    if (Array.isArray(data.cashiers)) {
+                        cashiers = data.cashiers;
+                        localStorage.setItem(KEYS.CASHIERS, JSON.stringify(cashiers));
+                    }
+                    if (data.managerPin) {
+                        managerPin = data.managerPin;
+                        localStorage.setItem(KEYS.MANAGER_PIN, managerPin);
+                    }
+                }
+
+                mergeSalesFromCloud(salesSnap.docs.map(d => d.data()));
+                mergeLogsFromCloud(logsSnap.docs.map(d => d.data()));
+                renderInventory();
+                renderSales();
+                renderStockLogs();
+            } finally {
+                cloudApplyingRemote = false;
+            }
+        }
+
+        function attachCloudListeners() {
+            if (cloudListenersAttached) return;
+            cloudListenersAttached = true;
+
+            cloudStateRef.onSnapshot((docSnap) => {
+                if (cloudBootstrapping || !docSnap.exists) return;
+                const data = docSnap.data() || {};
+                cloudApplyingRemote = true;
+                try {
+                    if (Array.isArray(data.products)) {
+                        products = data.products;
+                        localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(products));
+                    }
+                    if (Array.isArray(data.cashiers)) {
+                        cashiers = data.cashiers;
+                        localStorage.setItem(KEYS.CASHIERS, JSON.stringify(cashiers));
+                    }
+                    if (data.managerPin) {
+                        managerPin = data.managerPin;
+                        localStorage.setItem(KEYS.MANAGER_PIN, managerPin);
+                    }
+                    renderInventory();
+                } finally {
+                    cloudApplyingRemote = false;
+                }
+            }, err => console.error('Cloud state listen error', err));
+
+            cloudSalesCol.onSnapshot(snapshot => {
+                if (cloudBootstrapping) return;
+                mergeSalesFromCloud(snapshot.docs.map(d => d.data()));
+                renderSales();
+            }, err => console.error('Cloud sales listen error', err));
+
+            cloudLogsCol.onSnapshot(snapshot => {
+                if (cloudBootstrapping) return;
+                mergeLogsFromCloud(snapshot.docs.map(d => d.data()));
+                renderStockLogs();
+            }, err => console.error('Cloud logs listen error', err));
+        }
+
+        async function initCloudSync() {
+            if (!cloudSyncCode || !firebaseAvailable()) return;
+            try {
+                if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+                await firebase.auth().signInAnonymously();
+                cloudDb = firebase.firestore();
+                cloudDocRef = cloudDb.collection('stores').doc(cloudSyncCode);
+                cloudStateRef = cloudDocRef.collection('state').doc('main');
+                cloudSalesCol = cloudDocRef.collection('sales');
+                cloudLogsCol = cloudDocRef.collection('stockLogs');
+                cloudInventoryOpsCol = cloudDocRef.collection('inventoryOps');
+                cloudBootstrapping = true;
+
+                await migrateLegacyCloudIfNeeded();
+                cloudReady = true;
+
+                // Critical order: upload all local offline changes first, then pull/merge.
+                await processCloudOutbox();
+                await pullCloudStateAndRecords();
+                attachCloudListeners();
+
+                cloudBootstrapping = false;
+                await processCloudOutbox();
+                renderCloudSyncStatus();
+            } catch (err) {
+                cloudBootstrapping = false;
+                cloudReady = false;
+                console.error('Cloud sync init error', err);
+                renderCloudSyncStatus();
+            }
+        }
+
+        function initCloudSyncIfConfigured() {
+            if (cloudSyncCode) initCloudSync();
         }
 
         function openCloudSyncManager() {
@@ -1764,8 +2216,14 @@
             showModal('فصل المزامنة', 'هل تريد فصل هذا الجهاز عن المزامنة السحابية؟ ستبقى بياناته المحلية كما هي.', false, () => {
                 localStorage.removeItem('pos_sync_code');
                 cloudSyncCode = null;
+                cloudDb = null;
                 cloudDocRef = null;
+                cloudStateRef = null;
+                cloudSalesCol = null;
+                cloudLogsCol = null;
+                cloudInventoryOpsCol = null;
                 cloudReady = false;
+                cloudListenersAttached = false;
                 renderCloudSyncStatus();
             });
         }
@@ -1774,9 +2232,11 @@
             const el = document.getElementById('cloud-sync-status');
             if (!el) return;
             if (!cloudSyncCode) {
-                el.innerHTML = 'غير متصل بالمزامنة السحابية \u2014 البيانات محفوظة على هذا الجهاز فقط.';
+                el.innerHTML = 'غير متصل بالمزامنة السحابية — البيانات محفوظة على هذا الجهاز فقط.';
             } else {
-                el.innerHTML = `متصل \u2705 برمز: <span style="direction:ltr; display:inline-block; font-weight:bold;">${cloudSyncCode}</span> &nbsp; <a href="#" onclick="disconnectCloudSync(); return false;" style="color:var(--red-alert);">(فصل)</a>`;
+                const pending = cloudOutbox.length;
+                const pendingText = pending ? ` — ${pending} عملية تنتظر المزامنة` : '';
+                el.innerHTML = `متصل ${cloudReady ? '✅' : '⏳'} برمز: <span style="direction:ltr; display:inline-block; font-weight:bold;">${cloudSyncCode}</span>${pendingText} &nbsp; <a href="#" onclick="disconnectCloudSync(); return false;" style="color:var(--red-alert);">(فصل)</a>`;
             }
         }
     </script>
