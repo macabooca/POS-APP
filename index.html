@@ -429,12 +429,13 @@
                 <h3>المخزون</h3>
                 <button class="btn btn-teal btn-add-new-product" onclick="requireManagerPass(() => showProductFormModal())">+ إضافة منتج جديد</button>
             </div>
+            <input id="inventory-search" type="search" placeholder="ابحث عن منتج في المخزون..." oninput="renderInventory()" style="margin-bottom:10px;">
             <div id="inventory-list"></div>
         </div>
         
         <div class="card">
-            <h3>سجل توريد المخزون</h3>
-            <div id="inventory-log-list"></div>
+            <button class="btn btn-teal" style="width:100%; text-align:right;" onclick="toggleStockLogs()">سجل توريد المخزون <span id="stock-log-toggle">▾</span></button>
+            <div id="inventory-log-list" style="display:none; margin-top:10px;"></div>
         </div>
     </div>
 
@@ -597,6 +598,10 @@
         function formatNum(num) {
             if (isNaN(num) || num === null || num === undefined) return '0';
             return (Math.round((num + Number.EPSILON) * 100) / 100).toString();
+        }
+
+        function normalizeProductName(name) {
+            return String(name || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase();
         }
 
         function getMostSoldProducts() {
@@ -1099,9 +1104,15 @@
                     <label class="form-label">تاريخ انتهاء الصلاحية</label>
                     <input type="date" id="pb-expiry" value="${p.expiryDate || ''}">
 
-                    <label class="form-label">ملاحظات إضافية</label>
+                    <label class="form-label">ملاحظة التوريد</label>
                     <input type="text" id="pb-notes" placeholder="" value="${p.notes || ''}">
                 `;
+            } else if (inputType === 'sale_edit_form') {
+                const sale = onConfirm.saleData;
+                inputContainer.innerHTML = sale.items.map((item, index) => `
+                    <label class="form-label">${item.name} — الكمية الأصلية: ${formatNum(item.qty)}</label>
+                    <input type="number" id="sale-item-${index}" min="0" step="${item.unitType === 'weight' ? '0.01' : '1'}" value="${item.qty}">
+                `).join('');
             } else if (inputType === 'product_form') {
                 const p = onConfirm.existingData || {};
                 const pType = p.unitType || 'unit';
@@ -1155,6 +1166,9 @@
 
                     <label class="form-label">ملاحظات إضافية</label>
                     <input type="text" id="p-notes" placeholder="" value="${p.notes || ''}">
+
+                    <label class="form-label">ملاحظة التوريد الحالي</label>
+                    <input type="text" id="p-supply-note" placeholder="مثال: توريد من المورد">
                 `;
             } else {
                 inputContainer.innerHTML = '';
@@ -1184,7 +1198,8 @@
                             bagWeightKg: parseFloat(document.getElementById('p-bag-weight')?.value) || 0,
                             openBagKg: parseFloat(document.getElementById('p-open-bag-kg')?.value) || 0,
                             expiryDate: document.getElementById('p-expiry').value || '',
-                            notes: document.getElementById('p-notes').value || ''
+                            notes: document.getElementById('p-notes').value || '',
+                            supplyNote: document.getElementById('p-supply-note').value.trim() || ''
                         };
                     } else if (inputType === 'cashier_form') {
                         val = {
@@ -1198,6 +1213,8 @@
                             expiryDate: document.getElementById('pb-expiry').value || '',
                             notes: document.getElementById('pb-notes').value || ''
                         };
+                    } else if (inputType === 'sale_edit_form') {
+                        val = onConfirm.saleData.items.map((item, index) => Math.max(0, parseFloat(document.getElementById(`sale-item-${index}`).value) || 0));
                     } else if (inputType) {
                         val = document.getElementById('modal-field').value;
                     } else {
@@ -1383,7 +1400,7 @@
 
         function renderStatsAndShow(tab, element) {
             const todayStr = new Date().toLocaleDateString('ar-LY');
-            const todaySales = sales.filter(s => new Date(s.timestamp).toLocaleDateString('ar-LY') === todayStr);
+            const todaySales = sales.filter(s => !s.returnedAt && new Date(s.timestamp).toLocaleDateString('ar-LY') === todayStr);
             const totalRev = todaySales.reduce((acc, s) => acc + s.total, 0);
             const totalProfit = todaySales.reduce((acc, s) => acc + s.profit, 0);
 
@@ -1407,6 +1424,106 @@
             callback.initialValue = sale.note || '';
 
             showModal('تعديل ملاحظة الفاتورة', 'أدخل الملاحظة الجديدة للفاتورة:', 'text', callback);
+        }
+
+        function returnSale(saleId) {
+            const sale = sales.find(s => String(s.id) === String(saleId));
+            if (!sale || sale.returnedAt) return;
+            showModal('إرجاع البيع', 'سيتم إرجاع جميع منتجات هذه الفاتورة إلى المخزون. هل تريد المتابعة؟', false, () => {
+                const adjustment = (sale.inventoryDeltas || []).map(entry => ({
+                    productId: entry.productId,
+                    inventoryDelta: Object.fromEntries(Object.entries(entry.inventoryDelta || {}).map(([field, value]) => [field, -Number(value || 0)]))
+                }));
+                applyInventoryDeltas(products, adjustment);
+                sale.returnedAt = new Date().toISOString();
+                sale.returnedBy = activeCashier;
+                safeSave(KEYS.PRODUCTS, products);
+                safeSave(KEYS.SALES, sales);
+                queueCloudOperation({ id: 'sale-return:' + sale.id, type: 'saleReturn', payload: { id: sale.id, adjustment, returnedAt: sale.returnedAt, returnedBy: sale.returnedBy }, createdAt: Date.now() });
+                renderInventory();
+                renderSales();
+                showModal('تم الإرجاع', 'تمت إعادة منتجات الفاتورة إلى المخزون بنجاح.', false, () => {});
+            });
+        }
+
+        function applySaleItemsToInventory(items, targetProducts) {
+            items.forEach(item => {
+                const prod = targetProducts.find(p => String(p.id) === String(item.id));
+                if (!prod) return;
+                if (item.sellMode === 'fullbag') prod.bagsCount = Number(prod.bagsCount || 0) - Number(item.qty || 0);
+                else if (item.sellMode === 'halfbag') {
+                    if (Number(prod.bagsCount || 0) > 0) { prod.bagsCount -= 1; prod.openBagKg = Number(prod.openBagKg || 0) + Number(item.halfKg || 0); }
+                    else prod.openBagKg = Number(prod.openBagKg || 0) - Number(item.halfKg || 0);
+                } else if (prod.unitType === 'weight') {
+                    let remaining = Number(item.qty || 0);
+                    const open = Number(prod.openBagKg || 0);
+                    if (open >= remaining) prod.openBagKg = open - remaining;
+                    else {
+                        remaining -= open; prod.openBagKg = 0;
+                        const capacity = Number(prod.bagWeightKg || 1);
+                        while (remaining > 0 && Number(prod.bagsCount || 0) > 0) {
+                            prod.bagsCount -= 1;
+                            if (remaining <= capacity) { prod.openBagKg = capacity - remaining; remaining = 0; }
+                            else remaining -= capacity;
+                        }
+                        if (remaining > 0) prod.openBagKg = -remaining;
+                    }
+                } else prod.qty = Number(prod.qty || 0) - Number(item.qty || 0);
+            });
+        }
+
+        function calculateEditedSaleDeltas(sale, editedItems) {
+            const restored = products.map(p => ({ ...p }));
+            const inverse = (sale.inventoryDeltas || []).map(entry => ({ productId: entry.productId, inventoryDelta: Object.fromEntries(Object.entries(entry.inventoryDelta || {}).map(([field, value]) => [field, -Number(value || 0)])) }));
+            applyInventoryDeltas(restored, inverse);
+            const beforeNewSale = restored.map(p => ({ ...p }));
+            applySaleItemsToInventory(editedItems, restored);
+            const newDeltas = [];
+            restored.forEach(after => {
+                const before = beforeNewSale.find(p => String(p.id) === String(after.id));
+                if (!before) return;
+                const inventoryDelta = {};
+                ['qty', 'bagsCount', 'openBagKg'].forEach(field => {
+                    const difference = Number(after[field] || 0) - Number(before[field] || 0);
+                    if (Math.abs(difference) > 1e-12) inventoryDelta[field] = difference;
+                });
+                if (Object.keys(inventoryDelta).length) newDeltas.push({ productId: after.id, inventoryDelta });
+            });
+            const combined = new Map();
+            [...newDeltas, ...(sale.inventoryDeltas || []).map(entry => ({ productId: entry.productId, inventoryDelta: Object.fromEntries(Object.entries(entry.inventoryDelta || {}).map(([field, value]) => [field, -Number(value || 0)])) }))].forEach(entry => {
+                const delta = combined.get(String(entry.productId)) || {};
+                Object.entries(entry.inventoryDelta || {}).forEach(([field, value]) => { delta[field] = Number(delta[field] || 0) + Number(value || 0); });
+                combined.set(String(entry.productId), delta);
+            });
+            return { newDeltas, adjustment: Array.from(combined.entries()).map(([productId, inventoryDelta]) => ({ productId, inventoryDelta })).filter(entry => Object.values(entry.inventoryDelta).some(value => Math.abs(value) > 1e-12)) };
+        }
+
+        function editSale(saleId) {
+            const sale = sales.find(s => String(s.id) === String(saleId));
+            if (!sale || sale.returnedAt) return;
+            const callback = quantities => {
+                const editedItems = sale.items.map((item, index) => {
+                    const qty = quantities[index];
+                    const total = item.isFree ? 0 : Math.max(0, (qty * Number(item.price || 0)) - Number(item.discount || 0));
+                    return { ...item, qty, total };
+                });
+                const calculation = calculateEditedSaleDeltas(sale, editedItems);
+                const total = Math.max(0, editedItems.reduce((sum, item) => sum + Number(item.total || 0), 0) - Number(sale.globalDiscount || 0));
+                const profit = total - editedItems.reduce((sum, item) => sum + (Number(item.qty || 0) * Number(item.cost || 0)), 0);
+                showModal('تأكيد تعديل البيع', 'سيتم تحديث الفاتورة وتعديل المخزون تلقائياً حسب فرق الكميات. هل تريد المتابعة؟', false, () => {
+                    applyInventoryDeltas(products, calculation.adjustment);
+                    const amendedAt = new Date().toISOString();
+                    const changes = editedItems.map((item, index) => ({ name: item.name, fromQty: Number(sale.items[index].qty || 0), toQty: Number(item.qty || 0) })).filter(change => change.fromQty !== change.toQty);
+                    const amendment = { at: amendedAt, by: activeCashier, changes };
+                    Object.assign(sale, { items: editedItems, total, profit, inventoryDeltas: calculation.newDeltas, amendedAt, amendedBy: activeCashier, amendmentHistory: [...(sale.amendmentHistory || []), amendment] });
+                    safeSave(KEYS.PRODUCTS, products); safeSave(KEYS.SALES, sales);
+                    queueCloudOperation({ id: 'sale-amend:' + sale.id + ':' + Date.now(), type: 'saleAmendment', payload: { id: sale.id, items: sale.items, total: sale.total, profit: sale.profit, inventoryDeltas: sale.inventoryDeltas, adjustment: calculation.adjustment, amendedAt: sale.amendedAt, amendedBy: sale.amendedBy, amendment }, createdAt: Date.now() });
+                    renderInventory(); renderSales();
+                    showModal('تم التعديل', 'تم تحديث البيع والمخزون بنجاح.', false, () => {});
+                });
+            };
+            callback.saleData = sale;
+            showModal('تعديل البيع', 'عدّل الكمية لكل منتج. ضع الكمية 0 لإرجاع هذا المنتج بالكامل.', 'sale_edit_form', callback);
         }
 
         /* UPDATED SALES LIST RENDERER WITH LINE-ITEM PRICES INCLUDED */
@@ -1433,6 +1550,7 @@
                 }
 
                 const hasGlobalDiscount = s.globalDiscount && s.globalDiscount > 0;
+                const latestAmendment = (s.amendmentHistory || []).slice(-1)[0];
 
                 html += `
                     <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
@@ -1459,9 +1577,14 @@
                         <div style="font-size:13px; color:#ff8c00; margin-top:2px;">
                             ملاحظة الفاتورة: ${s.note ? `<strong>${s.note}</strong>` : '<span style="color:#aaa;">لا توجد ملاحظة</span>'}
                         </div>
+                        ${latestAmendment ? `<div style="font-size:12px; color:#1565c0; margin-top:4px;">✏️ تم تعديل البيع ${new Date(latestAmendment.at).toLocaleString('ar-LY')} بواسطة ${latestAmendment.by || 'غير محدد'}: ${latestAmendment.changes.map(c => `${c.name} (${formatNum(c.fromQty)} ← ${formatNum(c.toQty)})`).join('، ') || 'تم تحديث الفاتورة'}</div>` : ''}
+                        ${s.returnedAt ? `<div style="font-size:12px; color:#d32f2f; font-weight:bold; margin-top:4px;">↩ تم إرجاع هذه الفاتورة بالكامل ${new Date(s.returnedAt).toLocaleString('ar-LY')} بواسطة ${s.returnedBy || 'غير محدد'} — المنتجات أعلاه أُعيدت إلى المخزون.</div>` : ''}
 
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-                            <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick="editSaleNote(${JSON.stringify(s.id)})">✏️ تعديل / إضافة ملاحظة</button>
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:4px; flex-wrap:wrap; margin-top:6px;">
+                            <div>
+                                <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick="editSaleNote(${JSON.stringify(s.id)})">✏️ ملاحظة</button>
+                                ${s.returnedAt ? '<span style="font-size:11px; color:#d32f2f;">تم الإرجاع</span>' : `<button class="btn btn-green" style="padding:2px 8px; font-size:11px;" onclick='requireManagerPass(() => editSale(${JSON.stringify(s.id)}))'>تعديل البيع</button><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='requireManagerPass(() => returnSale(${JSON.stringify(s.id)}))'>إرجاع البيع</button>`}
+                            </div>
                             <span>الإجمالي: <strong style="color:var(--teal-primary); font-size:15px;">${formatNum(s.total)} د.ل</strong></span>
                         </div>
                     </div>
@@ -1477,7 +1600,13 @@
                 container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد منتجات بالمخزون</p>';
                 return;
             }
-            container.innerHTML = products.map(p => {
+            const query = (document.getElementById('inventory-search')?.value || '').trim().toLocaleLowerCase();
+            const visibleProducts = query ? products.filter(p => String(p.name || '').toLocaleLowerCase().includes(query)) : products;
+            if (visibleProducts.length === 0) {
+                container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد منتجات مطابقة</p>';
+                return;
+            }
+            container.innerHTML = visibleProducts.map(p => {
                 const isWeight = p.unitType === 'weight';
                 
                 let stockDisplayText = '';
@@ -1500,12 +1629,12 @@
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end;">
-                            <button class="btn btn-green" style="padding:4px 8px; font-size:12px;" onclick="requireManagerPass(() => editProduct(${p.id}))">تعديل</button>
+                            <button class="btn btn-green" style="padding:4px 8px; font-size:12px;" onclick='requireManagerPass(() => editProduct(${JSON.stringify(String(p.id))}))'>تعديل</button>
                             ${isWeight ? `
-                                <button class="btn btn-green" style="padding:4px 8px; font-size:12px;" onclick="openBagProduct(${p.id})">فتح شكارة</button>
-                                <button class="btn btn-green" style="padding:4px 8px; font-size:12px;" onclick="requireManagerPass(() => addPartialBagProduct(${p.id}))">إضافة جزء</button>
+                                <button class="btn btn-green" style="padding:4px 8px; font-size:12px;" onclick='openBagProduct(${JSON.stringify(String(p.id))})'>فتح شكارة</button>
+                                <button class="btn btn-green" style="padding:4px 8px; font-size:12px;" onclick='requireManagerPass(() => addPartialBagProduct(${JSON.stringify(String(p.id))}))'>إضافة جزء</button>
                             ` : ''}
-                            <button class="btn btn-red" style="padding:4px 8px; font-size:12px;" onclick="requireManagerPass(() => deleteProduct(${p.id}))">حذف</button>
+                            <button class="btn btn-red" style="padding:4px 8px; font-size:12px;" onclick='requireManagerPass(() => deleteProduct(${JSON.stringify(String(p.id))}))'>حذف</button>
                         </div>
                     </div>
                 `;
@@ -1513,7 +1642,7 @@
         }
 
         function openBagProduct(id) {
-            const prod = products.find(p => p.id === id);
+            const prod = products.find(p => String(p.id) === String(id));
             if (!prod) return;
 
             if ((prod.bagsCount || 0) <= 0) {
@@ -1534,7 +1663,7 @@
         }
 
         function addPartialBagProduct(id) {
-            const prod = products.find(p => p.id === id);
+            const prod = products.find(p => String(p.id) === String(id));
             if (!prod) return;
 
             const callback = (data) => {
@@ -1545,7 +1674,7 @@
                     if (data.expiryDate) prod.expiryDate = data.expiryDate;
                     if (data.notes) prod.notes = data.notes;
 
-                    const log = { id: cloudUuid(), timestamp: new Date().toISOString(), name: `${prod.name} (جزء مفتوح)`, qty: data.addedKg };
+                    const log = { id: cloudUuid(), timestamp: new Date().toISOString(), name: `${prod.name} (جزء مفتوح)`, qty: data.addedKg, note: data.notes || '' };
                     stockLogs.unshift(log);
                     
                     safeSave(KEYS.PRODUCTS, products);
@@ -1563,9 +1692,15 @@
 
         /* UPDATED PRODUCT FORM MODAL WITH BULK ENTRY PROMPT (NO RE-PASSWORD) */
         function showProductFormModal(productId) {
-            const existing = productId ? products.find(p => p.id === productId) : null;
+            const existing = productId ? products.find(p => String(p.id) === String(productId)) : null;
             const callback = (data) => {
                 if (data && data.name) {
+                    data.name = data.name.trim().replace(/\s+/g, ' ');
+                    const duplicate = products.find(p => String(p.id) !== String(existing?.id) && normalizeProductName(p.name) === normalizeProductName(data.name));
+                    if (duplicate) {
+                        showModal('اسم مكرر', `يوجد منتج مسجل بالفعل باسم "${duplicate.name}". استخدم اسمًا مختلفًا.`, false, () => showProductFormModal(existing?.id));
+                        return;
+                    }
                     if (existing) {
                         const before = { ...existing };
                         const oldTotalWeight = ((existing.bagsCount || 0) * (existing.bagWeightKg || 0)) + (existing.openBagKg || 0) + (existing.qty || 0);
@@ -1574,19 +1709,20 @@
                         Object.assign(existing, data);
 
                         if (addedQty > 0) {
-                            const log = { id: cloudUuid(), timestamp: new Date().toISOString(), name: data.name, qty: addedQty };
+                            const log = { id: cloudUuid(), timestamp: new Date().toISOString(), name: data.name, qty: addedQty, note: data.supplyNote || '' };
                             stockLogs.unshift(log);
                             queueStockLogForCloud(log);
                         }
                         const metadata = { ...existing };
-                        delete metadata.qty; delete metadata.bagsCount; delete metadata.openBagKg; delete metadata.id;
+                        delete metadata.qty; delete metadata.bagsCount; delete metadata.openBagKg; delete metadata.id; delete metadata.supplyNote;
                         queueInventoryMutation(existing.id, before, existing, metadata);
                     } else {
                         const newProd = { id: cloudUuid(), ...data };
+                        delete newProd.supplyNote;
                         products.push(newProd);
                         const initialQty = ((data.bagsCount || 0) * (data.bagWeightKg || 0)) + (data.openBagKg || 0) + (data.qty || 0);
                         if (initialQty > 0) {
-                            const log = { id: cloudUuid(), timestamp: new Date().toISOString(), name: data.name, qty: initialQty };
+                            const log = { id: cloudUuid(), timestamp: new Date().toISOString(), name: data.name, qty: initialQty, note: data.supplyNote || '' };
                             stockLogs.unshift(log);
                             queueStockLogForCloud(log);
                         }
@@ -1614,11 +1750,11 @@
         function editProduct(id) { showProductFormModal(id); }
 
         function deleteProduct(id) {
-            const prod = products.find(p => p.id === id);
+            const prod = products.find(p => String(p.id) === String(id));
             if (!prod) return;
             showModal('تأكيد الحذف', `هل أنت تأكد من رغبتك في حذف المنتج "${prod.name}" نهائياً؟`, false, () => {
                 const before = products.find(p => String(p.id) === String(id));
-                products = products.filter(p => p.id !== id);
+                products = products.filter(p => String(p.id) !== String(id));
                 safeSave(KEYS.PRODUCTS, products);
                 if (before) queueInventoryMutation(id, before, before, {}, { deleteProduct: true });
                 renderInventory();
@@ -1631,12 +1767,23 @@
                 container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد سجلات توريد</p>';
                 return;
             }
-            container.innerHTML = stockLogs.map(l => `
+            const sortedLogs = [...stockLogs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            container.innerHTML = sortedLogs.map(l => {
+                const when = new Date(l.timestamp);
+                return `
                 <div class="item-row" style="font-size:13px;">
-                    <span>${new Date(l.timestamp).toLocaleDateString('ar-LY')} - <strong>${l.name}</strong></span>
+                    <span><strong>${l.name}</strong><br><small>${when.toLocaleDateString('ar-LY', { weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric' })} — ${when.toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' })}${l.note ? `<br>ملاحظة: ${l.note}` : ''}</small></span>
                     <span>+${formatNum(l.qty)}</span>
                 </div>
-            `).join('');
+            `;
+            }).join('');
+        }
+
+        function toggleStockLogs() {
+            const list = document.getElementById('inventory-log-list');
+            const opening = list.style.display === 'none';
+            list.style.display = opening ? 'block' : 'none';
+            document.getElementById('stock-log-toggle').innerText = opening ? '▴' : '▾';
         }
 
         function exportBackup() {
@@ -1858,6 +2005,41 @@
                         schemaVersion: CLOUD_SCHEMA_VERSION
                     }, { merge: true });
                     transaction.set(saleRef, sale);
+                });
+                return true;
+            }
+
+            if (op.type === 'saleReturn') {
+                const p = op.payload || {};
+                const opRef = cloudInventoryOpsCol.doc(String(op.id));
+                const saleRef = cloudSalesCol.doc(String(p.id));
+                await cloudDb.runTransaction(async transaction => {
+                    const [opSnap, stateSnap, saleSnap] = await Promise.all([transaction.get(opRef), transaction.get(cloudStateRef), transaction.get(saleRef)]);
+                    if (opSnap.exists || !saleSnap.exists || saleSnap.data().returnedAt) return;
+                    const state = stateSnap.exists ? (stateSnap.data() || {}) : {};
+                    const remoteProducts = Array.isArray(state.products) ? state.products.map(x => ({ ...x })) : [];
+                    applyInventoryDeltas(remoteProducts, p.adjustment || []);
+                    transaction.set(cloudStateRef, { products: remoteProducts, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), schemaVersion: CLOUD_SCHEMA_VERSION }, { merge: true });
+                    transaction.set(saleRef, { returnedAt: p.returnedAt, returnedBy: p.returnedBy || '' }, { merge: true });
+                    transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'saleReturn' });
+                });
+                return true;
+            }
+
+            if (op.type === 'saleAmendment') {
+                const p = op.payload || {};
+                const opRef = cloudInventoryOpsCol.doc(String(op.id));
+                const saleRef = cloudSalesCol.doc(String(p.id));
+                await cloudDb.runTransaction(async transaction => {
+                    const [opSnap, stateSnap, saleSnap] = await Promise.all([transaction.get(opRef), transaction.get(cloudStateRef), transaction.get(saleRef)]);
+                    if (opSnap.exists || !saleSnap.exists || saleSnap.data().returnedAt) return;
+                    const state = stateSnap.exists ? (stateSnap.data() || {}) : {};
+                    const remoteProducts = Array.isArray(state.products) ? state.products.map(x => ({ ...x })) : [];
+                    applyInventoryDeltas(remoteProducts, p.adjustment || []);
+                    transaction.set(cloudStateRef, { products: remoteProducts, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), schemaVersion: CLOUD_SCHEMA_VERSION }, { merge: true });
+                    const priorHistory = saleSnap.data().amendmentHistory || [];
+                    transaction.set(saleRef, { items: p.items || [], total: Number(p.total || 0), profit: Number(p.profit || 0), inventoryDeltas: p.inventoryDeltas || [], amendedAt: p.amendedAt, amendedBy: p.amendedBy || '', amendmentHistory: p.amendment ? [...priorHistory, p.amendment] : priorHistory }, { merge: true });
+                    transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'saleAmendment' });
                 });
                 return true;
             }
