@@ -105,10 +105,10 @@
             font-size: 14px;
         }
 
-        /* ONLY ENLARGED POS SEARCH INPUT BOX SIZE */
+        /* SURGICALLY ENLARGED POS SEARCH INPUT BOX */
         #pos-search {
-            padding: 14px 16px;
-            font-size: 18px;
+            padding: 18px 20px;
+            font-size: 22px;
         }
 
         .bottom-nav {
@@ -1697,13 +1697,16 @@
             showModal('إضافة جزء / شكارة مفتوحة', '', 'partial_bag_form', callback);
         }
 
-        /* UPDATED PRODUCT FORM MODAL WITH BULK ENTRY PROMPT (NO RE-PASSWORD) */
+        /* SURGICALLY FIXED PRODUCT FORM MODAL WITH ID-BASED DUPLICATE CHECK */
         function showProductFormModal(productId) {
             const existing = productId ? products.find(p => String(p.id) === String(productId)) : null;
             const callback = (data) => {
                 if (data && data.name) {
                     data.name = data.name.trim().replace(/\s+/g, ' ');
-                    const duplicate = products.find(p => p !== existing && normalizeProductName(p.name) === normalizeProductName(data.name));
+                    const duplicate = products.find(p => 
+                        String(p.id) !== String(existing?.id) && 
+                        normalizeProductName(p.name) === normalizeProductName(data.name)
+                    );
                     if (duplicate) {
                         showModal('اسم مكرر', `يوجد منتج مسجل بالفعل باسم "${duplicate.name}". استخدم اسمًا مختلفًا.`, false, () => showProductFormModal(existing?.id));
                         return;
