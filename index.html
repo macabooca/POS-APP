@@ -968,6 +968,7 @@
                 }
             });
 
+            const invoiceNote = cart.map(item => String(item.note || '').trim()).filter(Boolean).join(' | ');
             const saleRecord = {
                 id: cloudUuid(),
                 timestamp: now.toISOString(),
@@ -977,7 +978,7 @@
                 globalDiscount: globalDiscount,
                 total: finalTotal,
                 profit: finalTotal - totalCost,
-                note: '',
+                note: invoiceNote,
                 inventoryDeltas: []
             };
 
@@ -1412,7 +1413,7 @@
         }
 
         function editSaleNote(saleId) {
-            const sale = sales.find(s => s.id === saleId);
+            const sale = sales.find(s => String(s.id) === String(saleId));
             if (!sale) return;
 
             const callback = (newNote) => {
@@ -1582,8 +1583,8 @@
 
                         <div style="display:flex; justify-content:space-between; align-items:center; gap:4px; flex-wrap:wrap; margin-top:6px;">
                             <div>
-                                <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick="editSaleNote(${JSON.stringify(s.id)})">✏️ ملاحظة</button>
-                                ${s.returnedAt ? '<span style="font-size:11px; color:#d32f2f;">تم الإرجاع</span>' : `<button class="btn btn-green" style="padding:2px 8px; font-size:11px;" onclick='requireManagerPass(() => editSale(${JSON.stringify(s.id)}))'>تعديل البيع</button><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='requireManagerPass(() => returnSale(${JSON.stringify(s.id)}))'>إرجاع البيع</button>`}
+                                <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick='editSaleNote(${JSON.stringify(s.id)})'>✏️ ملاحظة</button>
+                                ${s.returnedAt ? '<span style="font-size:11px; color:#d32f2f;">تم الإرجاع</span>' : `<button class="btn btn-green" style="padding:2px 8px; font-size:11px;" onclick='editSale(${JSON.stringify(s.id)})'>تعديل البيع</button><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='returnSale(${JSON.stringify(s.id)})'>إرجاع البيع</button>`}
                             </div>
                             <span>الإجمالي: <strong style="color:var(--teal-primary); font-size:15px;">${formatNum(s.total)} د.ل</strong></span>
                         </div>
@@ -1696,7 +1697,7 @@
             const callback = (data) => {
                 if (data && data.name) {
                     data.name = data.name.trim().replace(/\s+/g, ' ');
-                    const duplicate = products.find(p => String(p.id) !== String(existing?.id) && normalizeProductName(p.name) === normalizeProductName(data.name));
+                    const duplicate = products.find(p => p !== existing && normalizeProductName(p.name) === normalizeProductName(data.name));
                     if (duplicate) {
                         showModal('اسم مكرر', `يوجد منتج مسجل بالفعل باسم "${duplicate.name}". استخدم اسمًا مختلفًا.`, false, () => showProductFormModal(existing?.id));
                         return;
