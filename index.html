@@ -105,7 +105,7 @@
             font-size: 14px;
         }
 
-        /* SURGICALLY ENLARGED POS SEARCH INPUT BOX */
+        /* ENLARGED POS SEARCH INPUT BOX */
         #pos-search {
             padding: 18px 20px;
             font-size: 22px;
@@ -139,11 +139,6 @@
             font-weight: bold;
         }
 
-        /* While the product-spec panel is open, OR whenever the keyboard is open
-           anywhere else in the app (e.g. just typing in the search box), the
-           checkout bar and nav bar aren't needed and would otherwise visually
-           jump up to float above the keyboard — so they stay hidden until the
-           keyboard closes. */
         body.panel-open .fixed-checkout-bar,
         body.panel-open .bottom-nav,
         body.kb-open .fixed-checkout-bar,
@@ -154,8 +149,6 @@
             padding-bottom: 12px;
         }
 
-        /* Popups stay centered normally. While the keyboard is open (detected via
-           body.kb-open), they dock to sit just above it instead, closer to the thumb. */
         body.kb-open .modal-overlay {
             align-items: flex-end;
         }
@@ -464,7 +457,6 @@
             <h3>النسخ الاحتياطي والاطلاع</h3>
             <button class="btn btn-teal" style="width: 100%; margin-bottom: 8px;" onclick="exportBackup()">تحميل نسخة احتياطية (.json)</button>
             
-            <!-- FIXED FILE INPUT FOR BACKUP RESTORE (JSON ONLY) -->
             <input type="file" id="restore-file" accept=".json, application/json, text/plain" style="display:none" onchange="importBackup(event)">
             <button class="btn btn-teal" style="width: 100%;" onclick="requireManagerPass(() => document.getElementById('restore-file').click())">استعادة نسخة احتياطية (.json)</button>
 
@@ -542,7 +534,6 @@
         let currentSellMode = 'retail';
         let autoDismissTimer = null;
 
-        /* MODAL AND KEYBOARD ADJUSTMENT LOGIC */
         function adjustModalForKeyboard() {
             const overlay = document.getElementById('custom-modal');
             if (!overlay || overlay.style.display !== 'flex') return;
@@ -557,7 +548,6 @@
             }
         }
 
-        /* ANCHORS POS PRODUCT SELECTION BOX RIGHT ABOVE KEYBOARD WITHOUT SCROLLING OVER */
         function handlePosInputFocus(inputEl) {
             setTimeout(() => {
                 const panel = document.getElementById('selected-product-panel');
@@ -1533,7 +1523,6 @@
             showModal('تعديل البيع', 'عدّل الكمية لكل منتج. ضع الكمية 0 لإرجاع هذا المنتج بالكامل.', 'sale_edit_form', callback);
         }
 
-        /* UPDATED SALES LIST RENDERER WITH LINE-ITEM PRICES INCLUDED */
         function renderSales() {
             const container = document.getElementById('sales-list');
             if (sales.length === 0) {
@@ -1697,16 +1686,26 @@
             showModal('إضافة جزء / شكارة مفتوحة', '', 'partial_bag_form', callback);
         }
 
-        /* SURGICALLY FIXED PRODUCT FORM MODAL WITH ID-BASED DUPLICATE CHECK */
+        /* SAFE DUPLICATE CHECK IN PRODUCT FORM MODAL */
         function showProductFormModal(productId) {
             const existing = productId ? products.find(p => String(p.id) === String(productId)) : null;
             const callback = (data) => {
                 if (data && data.name) {
                     data.name = data.name.trim().replace(/\s+/g, ' ');
+
+                    const isEditingSameProduct = (p) => {
+                        if (!existing) return false;
+                        if (p === existing) return true;
+                        if (p.id && existing.id && String(p.id) === String(existing.id)) return true;
+                        if (existing.name && normalizeProductName(p.name) === normalizeProductName(existing.name)) return true;
+                        return false;
+                    };
+
                     const duplicate = products.find(p => 
-                        String(p.id) !== String(existing?.id) && 
+                        !isEditingSameProduct(p) && 
                         normalizeProductName(p.name) === normalizeProductName(data.name)
                     );
+
                     if (duplicate) {
                         showModal('اسم مكرر', `يوجد منتج مسجل بالفعل باسم "${duplicate.name}". استخدم اسمًا مختلفًا.`, false, () => showProductFormModal(existing?.id));
                         return;
@@ -1743,7 +1742,6 @@
                     renderInventory();
                     renderStockLogs();
 
-                    // PROMPT USER TO ADD ANOTHER PRODUCT WITHOUT RE-ENTER PASSWORD
                     if (!existing) {
                         setTimeout(() => {
                             showModal('إضافة منتج آخر؟', 'تم حفظ المنتج بنجاح. هل ترغب في إضافة منتج جديد آخر الآن؟', false, () => {
@@ -1805,7 +1803,6 @@
             a.click();
         }
 
-        /* FIXED RESTORE BACKUP FUNCTION: PARSES FULL JSON FILE INTO APP INSTANTLY */
         function importBackup(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1842,23 +1839,11 @@
         }
     </script>
 
-    <!-- Cloud Sync: Firebase (loaded from CDN; app still works fully offline if this fails to load) -->
+    <!-- Cloud Sync: Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script>
-        // ===== Cloud Sync (Firebase) =====
-        // v2 sync architecture:
-        // - Local-first: localStorage remains the immediate source for the UI.
-        // - Offline changes are kept in a durable outbox.
-        // - Sales are stored as individual Firestore documents (never as one array).
-        // - Inventory changes are stored as idempotent operations and applied with
-        //   Firestore transactions, so offline sales/restocks from multiple devices
-        //   are combined instead of replacing one another.
-        // - Cashiers/manager settings are synchronized separately from inventory.
-        // - The old stores/{code} document is migrated automatically the first time
-        //   a store connects to this version. It is never deleted.
-
         const firebaseConfig = {
             apiKey: "AIzaSyCmydnG7YTV6Bhb6QNJ-xj8WR9r44d4dfo",
             authDomain: "petstoreposapp.firebaseapp.com",
@@ -1872,11 +1857,11 @@
         const CLOUD_SCHEMA_VERSION = 2;
         let cloudSyncCode = localStorage.getItem('pos_sync_code') || null;
         let cloudDb = null;
-        let cloudDocRef = null;          // legacy stores/{code} document; kept for migration/reference
-        let cloudStateRef = null;        // stores/{code}/state/main
-        let cloudSalesCol = null;        // stores/{code}/sales
-        let cloudLogsCol = null;         // stores/{code}/stockLogs
-        let cloudInventoryOpsCol = null; // stores/{code}/inventoryOps
+        let cloudDocRef = null;
+        let cloudStateRef = null;
+        let cloudSalesCol = null;
+        let cloudLogsCol = null;
+        let cloudInventoryOpsCol = null;
         let cloudOutbox = safeLoad(CLOUD_OUTBOX_KEY, []);
         let cloudReady = false;
         let cloudSyncBusy = false;
@@ -1952,8 +1937,6 @@
         }
 
         function scheduleCloudPush() {
-            // Kept for existing callers (manager PIN changes, etc.). It now syncs
-            // only store settings instead of uploading the entire database.
             queueSettingsSync();
         }
 
@@ -2116,8 +2099,6 @@
             }
 
             if (op.type === 'fullRestore') {
-                // Backup restore is an explicit user action. It intentionally replaces
-                // the cloud store with the restored dataset, unlike normal sync.
                 const data = op.payload || {};
                 const batch = cloudDb.batch();
                 batch.set(cloudStateRef, {
@@ -2190,8 +2171,6 @@
             if (stateSnap.exists) return;
 
             const legacy = legacySnap.exists ? (legacySnap.data() || {}) : {};
-            // During the one-time migration, preserve local records that may have
-            // been created after the old whole-document sync last succeeded.
             const productMap = new Map();
             (Array.isArray(legacy.products) ? legacy.products : []).forEach(p => productMap.set(String(p.id), p));
             products.forEach(p => productMap.set(String(p.id), p));
@@ -2228,7 +2207,6 @@
                 }
             });
 
-            // Seed individual records only when they do not already exist.
             const salesSnap = await cloudSalesCol.get();
             const existingSaleIds = new Set(salesSnap.docs.map(d => String(d.id)));
             let batch = cloudDb.batch();
@@ -2348,7 +2326,6 @@
                 await migrateLegacyCloudIfNeeded();
                 cloudReady = true;
 
-                // Critical order: upload all local offline changes first, then pull/merge.
                 await processCloudOutbox();
                 await pullCloudStateAndRecords();
                 attachCloudListeners();
@@ -2433,21 +2410,11 @@
         }
     </script>
     <script>
-        // Detects when the on-screen keyboard is open (relies on the
-        // interactive-widget=resizes-content viewport setting above, which makes
-        // Chrome actually shrink the page layout for the keyboard, instead of only
-        // shrinking a separate invisible measurement — that mismatch was the root
-        // cause of the earlier broken attempts at this).
         (function setupKeyboardDetection() {
             let restingHeight = window.innerHeight;
 
             function onResize() {
                 const h = window.innerHeight;
-                // Self-calibrate upward: if we see a taller height than before
-                // (keyboard closed, address bar reappeared, etc.), that's our new
-                // "no keyboard" baseline. This avoids false positives from Chrome's
-                // address bar collapsing/expanding, which is a much smaller change
-                // than an actual keyboard (~250-300px) opening.
                 if (h > restingHeight) restingHeight = h;
 
                 const keyboardOpen = (restingHeight - h) > 150;
@@ -2456,13 +2423,8 @@
                 if (keyboardOpen) {
                     const panel = document.getElementById('selected-product-panel');
                     if (panel && panel.style.display !== 'none') {
-                        // Guarantee enough scroll room exists below the panel to actually
-                        // reach the keyboard, regardless of how much content is on the page.
                         document.body.style.paddingBottom = h + 'px';
                         requestAnimationFrame(() => {
-                            // Force-dock flush to the keyboard (not just "scroll if not
-                            // visible" — the panel needs to end up at the same spot every
-                            // time, even if it already technically fits on screen).
                             const margin = 12;
                             const rect = panel.getBoundingClientRect();
                             const delta = rect.bottom - (window.innerHeight - margin);
@@ -2478,7 +2440,6 @@
         })();
     </script>
     <script>
-        // Register the service worker so the app is cached and works fully offline
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('service-worker.js').catch(err => {
