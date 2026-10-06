@@ -534,10 +534,6 @@
         let currentSellMode = 'retail';
         let autoDismissTimer = null;
 
-        function cloudUuid() {
-            return 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-        }
-
         function adjustModalForKeyboard() {
             const overlay = document.getElementById('custom-modal');
             if (!overlay || overlay.style.display !== 'flex') return;
@@ -649,7 +645,7 @@
             container.innerHTML = `
                 <div style="font-size:11px; color:#888; padding:4px 8px; background:#f9f9f9;">${label}</div>
                 ${itemsList.map(p => `
-                    <div class="item-row" style="padding: 8px 10px; cursor:pointer;" onclick="selectProductForPreCart(${p.id})">
+                    <div class="item-row" style="padding: 8px 10px; cursor:pointer;" onclick="selectProductForPreCart(${JSON.stringify(String(p.id))})">
                         <div>
                             <strong>${p.name}</strong> 
                             <span style="font-size:12px; color:#666;">
@@ -663,7 +659,7 @@
         }
 
         function selectProductForPreCart(productId) {
-            const prod = products.find(p => p.id === productId);
+            const prod = products.find(p => String(p.id) === String(productId));
             if (!prod) return;
 
             activeProductObj = prod;
@@ -1524,335 +1520,931 @@
                 });
             };
             callback.saleData = sale;
-            showModal('تعديل كميات الفاتورة', '', 'sale_edit_form', callback);
+            showModal('تعديل البيع', 'عدّل الكمية لكل منتج. ضع الكمية 0 لإرجاع هذا المنتج بالكامل.', 'sale_edit_form', callback);
         }
 
         function renderSales() {
             const container = document.getElementById('sales-list');
-            if (!container) return;
             if (sales.length === 0) {
-                container.innerHTML = '<p style="color:#888; text-align:center; padding:10px;">لا يوجد سجل مبيعات حتى الآن</p>';
+                container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد مبيعات سابقة</p>';
                 return;
             }
 
-            const grouped = {};
-            sales.forEach(sale => {
-                const dateStr = new Date(sale.timestamp).toLocaleDateString('ar-LY');
-                const key = `${sale.dayName || ''} - ${dateStr}`;
-                if (!grouped[key]) grouped[key] = [];
-                grouped[key].push(sale);
-            });
+            let currentDay = '';
+            let html = '';
+            const sortedSales = [...sales].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-            container.innerHTML = Object.keys(grouped).map(dateKey => `
-                <div class="day-group-header">${dateKey}</div>
-                ${grouped[dateKey].map(sale => `
-                    <div style="background-color:#fff; border:1px solid #ddd; border-radius:8px; padding:10px; margin-bottom:8px; ${sale.returnedAt ? 'opacity:0.6; background-color:#fff5f5;' : ''}">
-                        <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:6px;">
-                            <span>فاتورة #${String(sale.id).slice(-6)} - الكاشير: ${sale.cashier || 'غير محدد'}</span>
-                            <span style="color:var(--teal-primary);">${formatNum(sale.total)} د.ل</span>
+            sortedSales.forEach(s => {
+                const dateObj = new Date(s.timestamp);
+                const dateStr = dateObj.toLocaleDateString('ar-LY');
+                const timeStr = dateObj.toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' });
+                const dayHeader = `${s.dayName} - ${dateStr}`;
+
+                if (dayHeader !== currentDay) {
+                    currentDay = dayHeader;
+                    html += `<div class="day-group-header">${currentDay}</div>`;
+                }
+
+                const hasGlobalDiscount = s.globalDiscount && s.globalDiscount > 0;
+                const latestAmendment = (s.amendmentHistory || []).slice(-1)[0];
+
+                html += `
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
+                        <div style="display:flex; justify-content:space-between; color:#666; font-size:12px;">
+                            <span>الوقت: ${timeStr}</span>
+                            <span>الكاشير: ${s.cashier}</span>
                         </div>
-                        <div style="font-size:12px; color:#666; margin-bottom:6px;">
-                            الوقت: ${new Date(sale.timestamp).toLocaleTimeString('ar-LY')}
-                            ${sale.returnedAt ? ` <strong style="color:red;">(تم الإرجاع بواسطة ${sale.returnedBy || ''})</strong>` : ''}
-                        </div>
-                        <div style="font-size:13px; border-top:1px dashed #eee; padding-top:6px;">
-                            ${sale.items.map(item => `
-                                <div>• ${item.name} × ${formatNum(item.qty)} ${item.unitType === 'weight' ? 'كجم' : 'قطعة'} = ${item.isFree ? 'مجاني' : `${formatNum(item.total)} د.ل`}</div>
+                        <div style="margin: 4px 0;">
+                            ${s.items.map(i => `
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+                                    <div>
+                                        • ${i.name} × ${formatNum(i.qty)} ${i.unitType === 'weight' ? 'كجم' : (i.unitType === 'unit' ? 'قطعة' : 'شكارة')} 
+                                        ${i.isNegativeSale ? '<span style="color:#d32f2f; font-weight:bold;">[مبيعات بالسالب]</span>' : ''} 
+                                        ${i.isFree ? '<span style="color:#2e7d32;">[مجاني]</span>' : ''} 
+                                        ${i.discount > 0 ? `<span style="color:#d32f2f;">[خصم: ${formatNum(i.discount)} د.ل]</span>` : ''} 
+                                        ${i.note ? `<span style="color:#ff8c00;">[${i.note}]</span>` : ''}
+                                    </div>
+                                    <strong style="color:var(--teal-primary); font-size:13px; margin-left:6px;">${i.isFree ? '0 د.ل' : `${formatNum(i.total)} د.ل`}</strong>
+                                </div>
                             `).join('')}
                         </div>
-                        ${sale.note ? `<div style="font-size:12px; color:#ff8c00; margin-top:4px;">ملاحظة: ${sale.note}</div>` : ''}
+                        ${hasGlobalDiscount ? `<div style="font-size:12px; color:#d32f2f;">[خصم على الفاتورة: ${formatNum(s.globalDiscount)} د.ل]</div>` : ''}
                         
-                        <div style="display:flex; gap:6px; margin-top:8px;">
-                            <button class="btn btn-teal" style="padding:4px 8px; font-size:12px;" onclick="editSaleNote('${sale.id}')">تعديل الملاحظة</button>
-                            ${!sale.returnedAt ? `
-                                <button class="btn btn-orange" style="padding:4px 8px; font-size:12px;" onclick="requireManagerPass(() => editSale('${sale.id}'))">تعديل الفاتورة</button>
-                                <button class="btn btn-red" style="padding:4px 8px; font-size:12px;" onclick="requireManagerPass(() => returnSale('${sale.id}'))">إرجاع الفاتورة</button>
-                            ` : ''}
+                        <div style="font-size:13px; color:#ff8c00; margin-top:2px;">
+                            ملاحظة الفاتورة: ${s.note ? `<strong>${s.note}</strong>` : '<span style="color:#aaa;">لا توجد ملاحظة</span>'}
+                        </div>
+                        ${latestAmendment ? `<div style="font-size:12px; color:#1565c0; margin-top:4px;">✏️ تم تعديل البيع ${new Date(latestAmendment.at).toLocaleString('ar-LY')} بواسطة ${latestAmendment.by || 'غير محدد'}: ${latestAmendment.changes.map(c => `${c.name} (${formatNum(c.fromQty)} ← ${formatNum(c.toQty)})`).join('، ') || 'تم تحديث الفاتورة'}</div>` : ''}
+                        ${s.returnedAt ? `<div style="font-size:12px; color:#d32f2f; font-weight:bold; margin-top:4px;">↩ تم إرجاع هذه الفاتورة بالكامل ${new Date(s.returnedAt).toLocaleString('ar-LY')} بواسطة ${s.returnedBy || 'غير محدد'} — المنتجات أعلاه أُعيدت إلى المخزون.</div>` : ''}
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:4px; flex-wrap:wrap; margin-top:6px;">
+                            <div>
+                                <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick='editSaleNote(${JSON.stringify(s.id)})'>✏️ ملاحظة</button>
+                                ${s.returnedAt ? '<span style="font-size:11px; color:#d32f2f;">تم الإرجاع</span>' : `<button class="btn btn-green" style="padding:2px 8px; font-size:11px;" onclick='editSale(${JSON.stringify(s.id)})'>تعديل البيع</button><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='returnSale(${JSON.stringify(s.id)})'>إرجاع البيع</button>`}
+                            </div>
+                            <span>الإجمالي: <strong style="color:var(--teal-primary); font-size:15px;">${formatNum(s.total)} د.ل</strong></span>
                         </div>
                     </div>
-                `).join('')}
-            `).join('');
-        }
-
-        function showProductFormModal(existingProd = null) {
-            const isEdit = !!existingProd;
-            const callback = (data) => {
-                if (!data.name) {
-                    showModal('خطأ', 'يرجى إدخال اسم المنتج على الأقل.', false, () => {});
-                    return;
-                }
-
-                const now = new Date().toISOString();
-                let prodObj = isEdit ? products.find(p => p.id === existingProd.id) : { id: Date.now(), createdAt: now };
-
-                const beforeState = { qty: prodObj.qty || 0, bagsCount: prodObj.bagsCount || 0, openBagKg: prodObj.openBagKg || 0 };
-
-                prodObj.name = data.name;
-                prodObj.unitType = data.unitType;
-                prodObj.cost = data.cost;
-                prodObj.expiryDate = data.expiryDate;
-                prodObj.notes = data.notes;
-                prodObj.updatedAt = now;
-
-                if (data.unitType === 'unit') {
-                    prodObj.price = data.price;
-                    prodObj.wholesaleUnitPrice = data.wholesaleUnitPrice;
-                    prodObj.qty = data.qty;
-                } else {
-                    prodObj.kgPrice = data.price;
-                    prodObj.fullBagPrice = data.fullBagPrice;
-                    prodObj.halfBagPrice = data.halfBagPrice;
-                    prodObj.bagsCount = data.bagsCount;
-                    prodObj.bagWeightKg = data.bagWeightKg;
-                    prodObj.openBagKg = data.openBagKg;
-                }
-
-                if (!isEdit) {
-                    products.push(prodObj);
-                }
-
-                safeSave(KEYS.PRODUCTS, products);
-
-                const logEntry = {
-                    id: Date.now(),
-                    timestamp: now,
-                    productName: prodObj.name,
-                    type: isEdit ? 'تعديل بيانات / توريد' : 'منتج جديد',
-                    note: data.supplyNote || (isEdit ? 'تحديث من المخزون' : 'إضافة أولية'),
-                    qtyAdded: data.unitType === 'unit' ? data.qty : (data.bagsCount * data.bagWeightKg + data.openBagKg)
-                };
-                stockLogs.unshift(logEntry);
-                safeSave(KEYS.LOGS, stockLogs);
-
-                queueInventoryMutation(prodObj.id, beforeState, prodObj, { supplyNote: data.supplyNote });
-
-                renderInventory();
-                renderStockLogs();
-            };
-
-            callback.existingData = existingProd;
-            showModal(isEdit ? 'تعديل منتج' : 'إضافة منتج جديد', '', 'product_form', callback);
-        }
-
-        function addPartialBag(productId) {
-            const prod = products.find(p => p.id === productId);
-            if (!prod) return;
-
-            const callback = (data) => {
-                if (!data.addedKg || data.addedKg <= 0) return;
-
-                const beforeState = { qty: prod.qty || 0, bagsCount: prod.bagsCount || 0, openBagKg: prod.openBagKg || 0 };
-
-                prod.openBagKg = (prod.openBagKg || 0) + data.addedKg;
-                if (data.price > 0) prod.kgPrice = data.price;
-                if (data.expiryDate) prod.expiryDate = data.expiryDate;
-                if (data.notes) prod.notes = data.notes;
-                prod.updatedAt = new Date().toISOString();
-
-                safeSave(KEYS.PRODUCTS, products);
-
-                const logEntry = {
-                    id: Date.now(),
-                    timestamp: prod.updatedAt,
-                    productName: prod.name,
-                    type: 'إضافة وزن جزئي',
-                    note: data.notes || 'تعبئة وزن مفتوح',
-                    qtyAdded: data.addedKg
-                };
-                stockLogs.unshift(logEntry);
-                safeSave(KEYS.LOGS, stockLogs);
-
-                queueInventoryMutation(prod.id, beforeState, prod, { partialNote: data.notes });
-
-                renderInventory();
-                renderStockLogs();
-            };
-
-            callback.existingData = prod;
-            showModal(`إضافة وزن مفتوح / جزء من شكارة لـ (${prod.name})`, '', 'partial_bag_form', callback);
-        }
-
-        function deleteProduct(productId) {
-            showModal('تأكيد الحذف', 'هل أنت تأكد من حذف هذا المنتج نهائياً من المخزون؟', false, () => {
-                products = products.filter(p => p.id !== productId);
-                safeSave(KEYS.PRODUCTS, products);
-                queueProductDeletion(productId);
-                renderInventory();
+                `;
             });
+
+            container.innerHTML = html;
         }
 
         function renderInventory() {
             const container = document.getElementById('inventory-list');
-            if (!container) return;
+            if (products.length === 0) {
+                container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد منتجات بالمخزون</p>';
+                return;
+            }
+            const query = (document.getElementById('inventory-search')?.value || '').trim().toLocaleLowerCase();
+            const visibleProducts = query ? products.filter(p => String(p.name || '').toLocaleLowerCase().includes(query)) : products;
+            if (visibleProducts.length === 0) {
+                container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد منتجات مطابقة</p>';
+                return;
+            }
+            container.innerHTML = visibleProducts.map(p => {
+                const isWeight = p.unitType === 'weight';
+                
+                let stockDisplayText = '';
+                if (isWeight) {
+                    const bags = p.bagsCount || 0;
+                    const openKg = p.openBagKg || 0;
+                    stockDisplayText = `الشكائر: ${bags} شكارة | المفتوح: ${formatNum(openKg)} كجم`;
+                } else {
+                    stockDisplayText = `الكمية: ${formatNum(p.qty)}`;
+                }
 
-            const query = (document.getElementById('inventory-search')?.value || '').toLowerCase().trim();
-            const filtered = products.filter(p => p.name.toLowerCase().includes(query));
+                return `
+                    <div class="item-row">
+                        <div>
+                            <strong>${p.name}</strong> (${isWeight ? 'بالوزن' : 'بالقطعة'})
+                            <div style="font-size:12px; color:#666;">
+                                ${isWeight ? `الكيلو: ${formatNum(p.kgPrice)} د.ل | الشكارة: ${formatNum(p.fullBagPrice)} د.ل` : `السعر: ${formatNum(p.price)} د.ل | الجملة: ${formatNum(p.wholesaleUnitPrice)} د.ل`}
+                                <br><span style="color:var(--teal-primary); font-weight:bold;">${stockDisplayText}</span>
+                                ${p.expiryDate ? `<br><span style="color:#d32f2f;">انتهاء: ${p.expiryDate}</span>` : ''}
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end;">
+                            <button class="btn btn-green" style="padding:4px 8px; font-size:12px;" onclick='requireManagerPass(() => editProduct(${JSON.stringify(String(p.id))}))'>تعديل</button>
+                            ${isWeight ? `
+                                <button class="btn btn-green" style="padding:4px 8px; font-size:12px;" onclick='openBagProduct(${JSON.stringify(String(p.id))})'>فتح شكارة</button>
+                                <button class="btn btn-green" style="padding:4px 8px; font-size:12px;" onclick='requireManagerPass(() => addPartialBagProduct(${JSON.stringify(String(p.id))}))'>إضافة جزء</button>
+                            ` : ''}
+                            <button class="btn btn-red" style="padding:4px 8px; font-size:12px;" onclick='requireManagerPass(() => deleteProduct(${JSON.stringify(String(p.id))}))'>حذف</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
 
-            if (filtered.length === 0) {
-                container.innerHTML = '<p style="color:#888; text-align:center; padding:10px;">لا توجد منتجات بالمخزون</p>';
+        function openBagProduct(id) {
+            const prod = products.find(p => String(p.id) === String(id));
+            if (!prod) return;
+
+            if ((prod.bagsCount || 0) <= 0) {
+                showModal('تنبيه', `لا توجد شكائر كاملة متوفرة لفتحها في منتج "${prod.name}".`, false, () => {});
                 return;
             }
 
-            container.innerHTML = filtered.map(prod => `
-                <div class="item-row" style="flex-direction:column; align-items:flex-start; gap:6px;">
-                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <strong style="font-size:16px;">${prod.name}</strong>
-                        <div>
-                            <button class="btn btn-teal" style="padding:4px 8px; font-size:12px;" onclick="requireManagerPass(() => showProductFormModal(products.find(p => p.id === ${prod.id})))">تعديل</button>
-                            <button class="btn btn-red" style="padding:4px 8px; font-size:12px;" onclick="requireManagerPass(() => deleteProduct(${prod.id}))">حذف</button>
-                        </div>
-                    </div>
-
-                    <div style="font-size:13px; color:#444; width:100%;">
-                        ${prod.unitType === 'unit' ? `
-                            <div>النوع: <strong>بالقطعة</strong> | المتوفر: <strong style="color:var(--teal-primary);">${formatNum(prod.qty)} قطعة</strong></div>
-                            <div>السعر: ${formatNum(prod.price)} د.ل | سعر الجملة: ${formatNum(prod.wholesaleUnitPrice)} د.ل \vert{} التكلفة: ${formatNum(prod.cost)} د.ل</div>
-                        ` : `
-                            <div>النوع: <strong>بالوزن</strong></div>
-                            <div>الشكائر الكاملة: <strong>${formatNum(prod.bagsCount)} شكارة</strong> (وزن الشكارة: ${formatNum(prod.bagWeightKg)} كجم)</div>
-                            <div>الوزن المفتوح المتاح: <strong style="color:var(--teal-primary);">${formatNum(prod.openBagKg)} كجم</strong></div>
-                            <div>سعر الكيلو: ${formatNum(prod.kgPrice)} د.ل | سعر الشكارة الكاملة: ${formatNum(prod.fullBagPrice)} د.ل \vert{} نصف الشكارة: ${formatNum(prod.halfBagPrice)} د.ل</div>
-                        `}
-                        ${prod.expiryDate ? `<div style="color:#d32f2f;">تاريخ الانتهاء: ${prod.expiryDate}</div>` : ''}
-                        ${prod.notes ? `<div style="color:#666;">ملاحظات: ${prod.notes}</div>` : ''}
-                    </div>
-
-                    ${prod.unitType === 'weight' ? `
-                        <button class="btn btn-orange" style="padding:4px 8px; font-size:12px; margin-top:4px;" onclick="requireManagerPass(() => addPartialBag(${prod.id}))">+ إضافة وزن مفتوح / جزء من شكارة</button>
-                    ` : ''}
-                </div>
-            `).join('');
+            const bagCapacity = prod.bagWeightKg || 15;
+            showModal('تأكيد فتح شكارة', `هل أنت تأكد من رغبتك في فتح شكارة جديدة من "${prod.name}" (وزنها ${bagCapacity} كجم)؟`, false, () => {
+                const before = { qty: prod.qty || 0, bagsCount: prod.bagsCount || 0, openBagKg: prod.openBagKg || 0 };
+                prod.bagsCount -= 1;
+                prod.openBagKg = (prod.openBagKg || 0) + bagCapacity;
+                safeSave(KEYS.PRODUCTS, products);
+                queueInventoryMutation(prod.id, before, prod, {});
+                renderInventory();
+                showModal('نجاح', `تم فتح الشكارة بنجاح وإضافة ${bagCapacity} كجم إلى الوزن المتاح!`, false, () => {});
+            });
         }
 
-        function toggleStockLogs() {
-            const list = document.getElementById('inventory-log-list');
-            const toggleIcon = document.getElementById('stock-log-toggle');
-            if (list.style.display === 'none') {
-                list.style.display = 'block';
-                toggleIcon.innerText = '▴';
-            } else {
-                list.style.display = 'none';
-                toggleIcon.innerText = '▾';
-            }
+        function addPartialBagProduct(id) {
+            const prod = products.find(p => String(p.id) === String(id));
+            if (!prod) return;
+
+            const callback = (data) => {
+                if (data && data.addedKg > 0) {
+                    const before = { qty: prod.qty || 0, bagsCount: prod.bagsCount || 0, openBagKg: prod.openBagKg || 0 };
+                    prod.openBagKg = (prod.openBagKg || 0) + data.addedKg;
+                    if (data.price) prod.kgPrice = data.price;
+                    if (data.expiryDate) prod.expiryDate = data.expiryDate;
+                    if (data.notes) prod.notes = data.notes;
+
+                    const log = { id: cloudUuid(), timestamp: new Date().toISOString(), name: `${prod.name} (جزء مفتوح)`, qty: data.addedKg, note: data.notes || '' };
+                    stockLogs.unshift(log);
+                    
+                    safeSave(KEYS.PRODUCTS, products);
+                    safeSave(KEYS.LOGS, stockLogs);
+                    queueInventoryMutation(prod.id, before, prod, { kgPrice: prod.kgPrice, expiryDate: prod.expiryDate, notes: prod.notes });
+                    queueStockLogForCloud(log);
+                    renderInventory();
+                    renderStockLogs();
+                    showModal('نجاح', `تمت إضافة ${data.addedKg} كجم إلى الوزن المفتوح بنجاح!`, false, () => {});
+                }
+            };
+            callback.existingData = prod;
+            showModal('إضافة جزء / شكارة مفتوحة', '', 'partial_bag_form', callback);
+        }
+
+        /* SAFE DUPLICATE CHECK IN PRODUCT FORM MODAL */
+        function showProductFormModal(productId) {
+            const existing = productId ? products.find(p => String(p.id) === String(productId)) : null;
+            const callback = (data) => {
+                if (data && data.name) {
+                    data.name = data.name.trim().replace(/\s+/g, ' ');
+
+                    const isEditingSameProduct = (p) => {
+                        if (!existing) return false;
+                        if (p === existing) return true;
+                        if (p.id && existing.id && String(p.id) === String(existing.id)) return true;
+                        if (existing.name && normalizeProductName(p.name) === normalizeProductName(existing.name)) return true;
+                        return false;
+                    };
+
+                    const duplicate = products.find(p => 
+                        !isEditingSameProduct(p) && 
+                        normalizeProductName(p.name) === normalizeProductName(data.name)
+                    );
+
+                    if (duplicate) {
+                        showModal('اسم مكرر', `يوجد منتج مسجل بالفعل باسم "${duplicate.name}". استخدم اسمًا مختلفًا.`, false, () => showProductFormModal(existing?.id));
+                        return;
+                    }
+                    if (existing) {
+                        const before = { ...existing };
+                        const oldTotalWeight = ((existing.bagsCount || 0) * (existing.bagWeightKg || 0)) + (existing.openBagKg || 0) + (existing.qty || 0);
+                        const newTotalWeight = ((data.bagsCount || 0) * (data.bagWeightKg || 0)) + (data.openBagKg || 0) + (data.qty || 0);
+                        const addedQty = newTotalWeight - oldTotalWeight;
+                        Object.assign(existing, data);
+
+                        if (addedQty > 0) {
+                            const log = { id: cloudUuid(), timestamp: new Date().toISOString(), name: data.name, qty: addedQty, note: data.supplyNote || '' };
+                            stockLogs.unshift(log);
+                            queueStockLogForCloud(log);
+                        }
+                        const metadata = { ...existing };
+                        delete metadata.qty; delete metadata.bagsCount; delete metadata.openBagKg; delete metadata.id; delete metadata.supplyNote;
+                        queueInventoryMutation(existing.id, before, existing, metadata);
+                    } else {
+                        const newProd = { id: cloudUuid(), ...data };
+                        delete newProd.supplyNote;
+                        products.push(newProd);
+                        const initialQty = ((data.bagsCount || 0) * (data.bagWeightKg || 0)) + (data.openBagKg || 0) + (data.qty || 0);
+                        if (initialQty > 0) {
+                            const log = { id: cloudUuid(), timestamp: new Date().toISOString(), name: data.name, qty: initialQty, note: data.supplyNote || '' };
+                            stockLogs.unshift(log);
+                            queueStockLogForCloud(log);
+                        }
+                        queueInventoryMutation(newProd.id, {}, newProd, {}, { createProduct: { ...newProd } });
+                    }
+                    safeSave(KEYS.PRODUCTS, products);
+                    safeSave(KEYS.LOGS, stockLogs);
+                    renderInventory();
+                    renderStockLogs();
+
+                    if (!existing) {
+                        setTimeout(() => {
+                            showModal('إضافة منتج آخر؟', 'تم حفظ المنتج بنجاح. هل ترغب في إضافة منتج جديد آخر الآن؟', false, () => {
+                                showProductFormModal();
+                            });
+                        }, 200);
+                    }
+                }
+            };
+            callback.existingData = existing;
+            showModal(existing ? 'تعديل بيانات المنتج' : 'إضافة منتج جديد', '', 'product_form', callback);
+        }
+
+        function editProduct(id) { showProductFormModal(id); }
+
+        function deleteProduct(id) {
+            const prod = products.find(p => String(p.id) === String(id));
+            if (!prod) return;
+            showModal('تأكيد الحذف', `هل أنت تأكد من رغبتك في حذف المنتج "${prod.name}" نهائياً؟`, false, () => {
+                const before = products.find(p => String(p.id) === String(id));
+                products = products.filter(p => String(p.id) !== String(id));
+                safeSave(KEYS.PRODUCTS, products);
+                if (before) queueInventoryMutation(id, before, before, {}, { deleteProduct: true });
+                renderInventory();
+            });
         }
 
         function renderStockLogs() {
             const container = document.getElementById('inventory-log-list');
-            if (!container) return;
-
             if (stockLogs.length === 0) {
-                container.innerHTML = '<p style="color:#888; text-align:center;">لا يوجد سجل توريد حتى الآن</p>';
+                container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد سجلات توريد</p>';
                 return;
             }
-
-            container.innerHTML = stockLogs.slice(0, 30).map(log => `
-                <div style="font-size:12px; border-bottom:1px solid #eee; padding:6px 0;">
-                    <div><strong>${log.productName}</strong> - <span style="color:var(--teal-primary);">${log.type}</span></div>
-                    <div>الكمية / الوزن: ${formatNum(log.qtyAdded)} | التاريخ: ${new Date(log.timestamp).toLocaleString('ar-LY')}</div>
-                    ${log.note ? `<div style="color:#777;">ملاحظة: ${log.note}</div>` : ''}
+            const sortedLogs = [...stockLogs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            container.innerHTML = sortedLogs.map(l => {
+                const when = new Date(l.timestamp);
+                return `
+                <div class="item-row" style="font-size:13px;">
+                    <span><strong>${l.name}</strong><br><small>${when.toLocaleDateString('ar-LY', { weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric' })} — ${when.toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' })}${l.note ? `<br>ملاحظة: ${l.note}` : ''}</small></span>
+                    <span>+${formatNum(l.qty)}</span>
                 </div>
-            `).join('');
+            `;
+            }).join('');
+        }
+
+        function toggleStockLogs() {
+            const list = document.getElementById('inventory-log-list');
+            const opening = list.style.display === 'none';
+            list.style.display = opening ? 'block' : 'none';
+            document.getElementById('stock-log-toggle').innerText = opening ? '▴' : '▾';
         }
 
         function exportBackup() {
-            const backupData = {
-                version: '1.0',
-                exportDate: new Date().toISOString(),
-                products: products,
-                sales: sales,
-                stockLogs: stockLogs,
-                cashiers: cashiers,
-                managerPin: managerPin
-            };
-
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `pos_backup_${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
+            const data = { products, sales, stockLogs, cashiers, managerPin };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `POS_Backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
         }
 
         function importBackup(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = (e) => {
                 try {
                     const imported = JSON.parse(e.target.result);
-                    if (imported.products && imported.sales) {
-                        products = imported.products;
-                        sales = imported.sales;
+                    if (imported && (imported.products || imported.sales)) {
+                        products = imported.products || [];
+                        sales = imported.sales || [];
                         stockLogs = imported.stockLogs || [];
                         cashiers = imported.cashiers || cashiers;
-                        if (imported.managerPin) managerPin = imported.managerPin;
+                        managerPin = imported.managerPin || managerPin;
 
                         safeSave(KEYS.PRODUCTS, products);
                         safeSave(KEYS.SALES, sales);
                         safeSave(KEYS.LOGS, stockLogs);
                         safeSave(KEYS.CASHIERS, cashiers);
                         localStorage.setItem(KEYS.MANAGER_PIN, managerPin);
+                        queueFullRestoreForCloud();
 
                         renderInventory();
                         renderSales();
                         renderStockLogs();
-                        showModal('نجاح', 'تمت استعادة النسخة الاحتياطية بنجاح!', false, () => {});
+                        showModal('نجاح الاستعادة', 'تمت استعادة كافة بيانات المخزون والمبيعات والحسابات بنجاح ويمكنك العمل الآن مباشرة!', false, () => {});
                     } else {
-                        showModal('خطأ', 'ملف النسخة الاحتياطية غير صالح.', false, () => {});
+                        showModal('خطأ', 'ملف النسخة الاحتياطية لا يحتوي على بنية البيانات الصحيحة!', false, () => {});
                     }
                 } catch (err) {
-                    showModal('خطأ', 'حدث خطأ أثناء قراءة الملف.', false, () => {});
+                    showModal('خطأ', 'تعذر قراءة الملف! يرجى اختيار ملف نسخة احتياطية بصيغة .json صالحة.', false, () => {});
                 }
             };
             reader.readAsText(file);
         }
+    </script>
 
-        /* CLOUD SYNC STUB IMPLEMENTATION */
-        let cloudSyncConfig = safeLoad('pos_cloud_config', null);
+    <!-- Cloud Sync: Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCmydnG7YTV6Bhb6QNJ-xj8WR9r44d4dfo",
+            authDomain: "petstoreposapp.firebaseapp.com",
+            projectId: "petstoreposapp",
+            storageBucket: "petstoreposapp.firebasestorage.app",
+            messagingSenderId: "185311169061",
+            appId: "1:185311169061:web:d3c3030aa553eb76868dcc"
+        };
 
-        function initCloudSyncIfConfigured() {}
-        function renderCloudSyncStatus() {
-            const statusEl = document.getElementById('cloud-sync-status');
-            if (statusEl) {
-                statusEl.innerText = cloudSyncConfig ? 'المزامنة السحابية مفعّلة' : 'المزامنة السحابية غير مفعّلة';
+        const CLOUD_OUTBOX_KEY = 'pos_cloud_outbox_v2';
+        const CLOUD_SCHEMA_VERSION = 2;
+        let cloudSyncCode = localStorage.getItem('pos_sync_code') || null;
+        let cloudDb = null;
+        let cloudDocRef = null;
+        let cloudStateRef = null;
+        let cloudSalesCol = null;
+        let cloudLogsCol = null;
+        let cloudInventoryOpsCol = null;
+        let cloudOutbox = safeLoad(CLOUD_OUTBOX_KEY, []);
+        let cloudReady = false;
+        let cloudSyncBusy = false;
+        let cloudListenersAttached = false;
+        let cloudBootstrapping = false;
+        let cloudApplyingRemote = false;
+
+        function firebaseAvailable() {
+            return typeof firebase !== 'undefined';
+        }
+
+        function cloudUuid() {
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+            return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2) + '-' + Math.random().toString(36).slice(2);
+        }
+
+        function persistCloudOutbox() {
+            localStorage.setItem(CLOUD_OUTBOX_KEY, JSON.stringify(cloudOutbox));
+        }
+
+        function queueCloudOperation(operation) {
+            if (!operation || !operation.id) return;
+            if (!cloudOutbox.some(op => op.id === operation.id)) {
+                cloudOutbox.push(operation);
+                persistCloudOutbox();
             }
+            if (cloudReady) processCloudOutbox();
         }
-        function openCloudSyncManager() {
-            showModal('المزامنة السحابية', 'اختر خيار المزامنة السحابية المناسب:', false, () => {}, false, 'sync_setup');
+
+        function queueSaleForCloud(sale) {
+            queueCloudOperation({ id: 'sale:' + sale.id, type: 'sale', payload: sale, createdAt: Date.now() });
         }
-        function generateNewSyncCode() {
-            cloudSyncConfig = { code: 'SYNC-' + Math.floor(100000 + Math.random() * 900000) };
-            safeSave('pos_cloud_config', cloudSyncConfig);
-            renderCloudSyncStatus();
-            showModal('تم إنشاء الرمز', `رمز المزامنة الخاص بك هو:\n<strong>${cloudSyncConfig.code}</strong>`, false, () => {});
+
+        function queueSaleNoteUpdateForCloud(sale) {
+            queueCloudOperation({ id: 'sale-note:' + sale.id + ':' + Date.now(), type: 'saleUpdate', payload: { id: String(sale.id), note: sale.note || '' }, createdAt: Date.now() });
         }
-        function promptEnterSyncCode() {
-            showModal('ربط الجهاز', 'أدخل رمز المزامنة الخاص بالجهاز الأول:', 'text', (code) => {
-                if (code) {
-                    cloudSyncConfig = { code: code.trim() };
-                    safeSave('pos_cloud_config', cloudSyncConfig);
-                    renderCloudSyncStatus();
-                    showModal('تم الربط', 'تم ربط الجهاز بنجاح!', false, () => {});
+
+        function queueInventoryMutation(productId, beforeProduct, afterProduct, metadataPatch, options = {}) {
+            const before = beforeProduct || {};
+            const after = afterProduct || {};
+            const stockFields = ['qty', 'bagsCount', 'openBagKg'];
+            const inventoryDelta = {};
+            stockFields.forEach(field => {
+                const oldVal = Number(before[field] || 0);
+                const newVal = Number(after[field] || 0);
+                const delta = newVal - oldVal;
+                if (Math.abs(delta) > 1e-12) inventoryDelta[field] = delta;
+            });
+
+            const payload = {
+                productId,
+                inventoryDelta,
+                metadata: metadataPatch || {},
+                createProduct: options.createProduct || null,
+                deleteProduct: !!options.deleteProduct
+            };
+            queueCloudOperation({ id: 'product-op:' + cloudUuid(), type: 'productMutation', payload, createdAt: Date.now() });
+        }
+
+        function queueStockLogForCloud(log) {
+            if (!log) return;
+            if (!log.id) log.id = cloudUuid();
+            queueCloudOperation({ id: 'stock-log:' + log.id, type: 'stockLog', payload: log, createdAt: Date.now() });
+        }
+
+        function queueSettingsSync() {
+            queueCloudOperation({
+                id: 'settings:' + cloudUuid(),
+                type: 'settings',
+                payload: { cashiers, managerPin },
+                createdAt: Date.now()
+            });
+        }
+
+        function scheduleCloudPush() {
+            queueSettingsSync();
+        }
+
+        function queueFullRestoreForCloud() {
+            queueCloudOperation({
+                id: 'restore:' + cloudUuid(),
+                type: 'fullRestore',
+                payload: {
+                    products,
+                    sales,
+                    stockLogs,
+                    cashiers,
+                    managerPin
+                },
+                createdAt: Date.now()
+            });
+        }
+
+        function applyInventoryDeltaToProduct(product, delta) {
+            if (!product || !delta) return;
+            ['qty', 'bagsCount', 'openBagKg'].forEach(field => {
+                if (delta[field] !== undefined) {
+                    product[field] = Number(product[field] || 0) + Number(delta[field] || 0);
+                    if (Math.abs(product[field]) < 1e-10) product[field] = 0;
                 }
             });
         }
-        function queueSaleForCloud(sale) {}
-        function queueSaleNoteUpdateForCloud(sale) {}
-        function queueCloudOperation(op) {}
-        function queueInventoryMutation(id, before, after, meta) {}
-        function queueProductDeletion(id) {}
-        function queueSettingsSync() {}
-        function scheduleCloudPush() {}
-        function applyInventoryDeltas(targetProducts, deltas) {
-            deltas.forEach(entry => {
-                const prod = targetProducts.find(p => String(p.id) === String(entry.productId));
-                if (prod && entry.inventoryDelta) {
-                    Object.entries(entry.inventoryDelta).forEach(([field, deltaVal]) => {
-                        prod[field] = Number(prod[field] || 0) + Number(deltaVal || 0);
+
+        function applyInventoryDeltas(productsArray, deltas) {
+            (deltas || []).forEach(d => {
+                const product = productsArray.find(p => String(p.id) === String(d.productId));
+                if (product) applyInventoryDeltaToProduct(product, d.inventoryDelta || d.delta || {});
+            });
+        }
+
+        function saleInventoryDeltasFromRecord(sale) {
+            if (sale && Array.isArray(sale.inventoryDeltas)) return sale.inventoryDeltas;
+            return [];
+        }
+
+        async function processCloudOperation(op) {
+            if (!cloudDb || !cloudStateRef) return false;
+
+            if (op.type === 'sale') {
+                const sale = op.payload;
+                const saleRef = cloudSalesCol.doc(String(sale.id));
+                await cloudDb.runTransaction(async transaction => {
+                    const [stateSnap, saleSnap] = await Promise.all([
+                        transaction.get(cloudStateRef),
+                        transaction.get(saleRef)
+                    ]);
+                    if (saleSnap.exists) return;
+                    const state = stateSnap.exists ? (stateSnap.data() || {}) : {};
+                    const remoteProducts = Array.isArray(state.products) ? state.products : [];
+                    applyInventoryDeltas(remoteProducts, saleInventoryDeltasFromRecord(sale));
+                    transaction.set(cloudStateRef, {
+                        products: remoteProducts,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        schemaVersion: CLOUD_SCHEMA_VERSION
+                    }, { merge: true });
+                    transaction.set(saleRef, sale);
+                });
+                return true;
+            }
+
+            if (op.type === 'saleReturn') {
+                const p = op.payload || {};
+                const opRef = cloudInventoryOpsCol.doc(String(op.id));
+                const saleRef = cloudSalesCol.doc(String(p.id));
+                await cloudDb.runTransaction(async transaction => {
+                    const [opSnap, stateSnap, saleSnap] = await Promise.all([transaction.get(opRef), transaction.get(cloudStateRef), transaction.get(saleRef)]);
+                    if (opSnap.exists || !saleSnap.exists || saleSnap.data().returnedAt) return;
+                    const state = stateSnap.exists ? (stateSnap.data() || {}) : {};
+                    const remoteProducts = Array.isArray(state.products) ? state.products.map(x => ({ ...x })) : [];
+                    applyInventoryDeltas(remoteProducts, p.adjustment || []);
+                    transaction.set(cloudStateRef, { products: remoteProducts, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), schemaVersion: CLOUD_SCHEMA_VERSION }, { merge: true });
+                    transaction.set(saleRef, { returnedAt: p.returnedAt, returnedBy: p.returnedBy || '' }, { merge: true });
+                    transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'saleReturn' });
+                });
+                return true;
+            }
+
+            if (op.type === 'saleAmendment') {
+                const p = op.payload || {};
+                const opRef = cloudInventoryOpsCol.doc(String(op.id));
+                const saleRef = cloudSalesCol.doc(String(p.id));
+                await cloudDb.runTransaction(async transaction => {
+                    const [opSnap, stateSnap, saleSnap] = await Promise.all([transaction.get(opRef), transaction.get(cloudStateRef), transaction.get(saleRef)]);
+                    if (opSnap.exists || !saleSnap.exists || saleSnap.data().returnedAt) return;
+                    const state = stateSnap.exists ? (stateSnap.data() || {}) : {};
+                    const remoteProducts = Array.isArray(state.products) ? state.products.map(x => ({ ...x })) : [];
+                    applyInventoryDeltas(remoteProducts, p.adjustment || []);
+                    transaction.set(cloudStateRef, { products: remoteProducts, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), schemaVersion: CLOUD_SCHEMA_VERSION }, { merge: true });
+                    const priorHistory = saleSnap.data().amendmentHistory || [];
+                    transaction.set(saleRef, { items: p.items || [], total: Number(p.total || 0), profit: Number(p.profit || 0), inventoryDeltas: p.inventoryDeltas || [], amendedAt: p.amendedAt, amendedBy: p.amendedBy || '', amendmentHistory: p.amendment ? [...priorHistory, p.amendment] : priorHistory }, { merge: true });
+                    transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'saleAmendment' });
+                });
+                return true;
+            }
+
+            if (op.type === 'saleUpdate') {
+                const p = op.payload || {};
+                await cloudSalesCol.doc(String(p.id)).set({ note: p.note || '', noteUpdatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                return true;
+            }
+
+            if (op.type === 'productMutation') {
+                const p = op.payload || {};
+                const productRef = cloudStateRef;
+                const opRef = cloudInventoryOpsCol.doc(String(op.id));
+                await cloudDb.runTransaction(async transaction => {
+                    const [opSnap, stateSnap] = await Promise.all([
+                        transaction.get(opRef),
+                        transaction.get(productRef)
+                    ]);
+                    if (opSnap.exists) return;
+                    const state = stateSnap.exists ? (stateSnap.data() || {}) : {};
+                    let remoteProducts = Array.isArray(state.products) ? state.products.map(x => ({ ...x })) : [];
+                    const idx = remoteProducts.findIndex(x => String(x.id) === String(p.productId));
+
+                    if (p.deleteProduct) {
+                        if (idx >= 0) remoteProducts.splice(idx, 1);
+                    } else if (p.createProduct) {
+                        if (idx < 0) remoteProducts.push({ ...p.createProduct });
+                        else {
+                            Object.assign(remoteProducts[idx], p.metadata || {});
+                            applyInventoryDeltaToProduct(remoteProducts[idx], p.inventoryDelta || {});
+                        }
+                    } else {
+                        if (idx >= 0) {
+                            Object.assign(remoteProducts[idx], p.metadata || {});
+                            applyInventoryDeltaToProduct(remoteProducts[idx], p.inventoryDelta || {});
+                        }
+                    }
+
+                    transaction.set(productRef, {
+                        products: remoteProducts,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        schemaVersion: CLOUD_SCHEMA_VERSION
+                    }, { merge: true });
+                    transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'productMutation' });
+                });
+                return true;
+            }
+
+            if (op.type === 'stockLog') {
+                const log = op.payload;
+                await cloudLogsCol.doc(String(log.id)).set(log, { merge: true });
+                return true;
+            }
+
+            if (op.type === 'settings') {
+                await cloudStateRef.set({
+                    cashiers: op.payload.cashiers || [],
+                    managerPin: op.payload.managerPin || managerPin,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    schemaVersion: CLOUD_SCHEMA_VERSION
+                }, { merge: true });
+                return true;
+            }
+
+            if (op.type === 'fullRestore') {
+                const data = op.payload || {};
+                const batch = cloudDb.batch();
+                batch.set(cloudStateRef, {
+                    products: data.products || [],
+                    cashiers: data.cashiers || [],
+                    managerPin: data.managerPin || '1234',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    schemaVersion: CLOUD_SCHEMA_VERSION,
+                    restoredAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                const existingSales = await cloudSalesCol.get();
+                existingSales.forEach(doc => batch.delete(doc.ref));
+                (data.sales || []).forEach(sale => batch.set(cloudSalesCol.doc(String(sale.id)), sale));
+                const existingLogs = await cloudLogsCol.get();
+                existingLogs.forEach(doc => batch.delete(doc.ref));
+                (data.stockLogs || []).forEach(log => batch.set(cloudLogsCol.doc(String(log.id || cloudUuid())), { ...log, id: log.id || cloudUuid() }));
+                await batch.commit();
+                return true;
+            }
+
+            return true;
+        }
+
+        async function processCloudOutbox() {
+            if (!cloudReady || cloudSyncBusy || !cloudOutbox.length) return;
+            cloudSyncBusy = true;
+            try {
+                while (cloudOutbox.length) {
+                    const op = cloudOutbox[0];
+                    try {
+                        const completed = await processCloudOperation(op);
+                        if (!completed) break;
+                        cloudOutbox.shift();
+                        persistCloudOutbox();
+                    } catch (err) {
+                        console.error('Cloud operation failed; keeping it in outbox:', err);
+                        break;
+                    }
+                }
+            } finally {
+                cloudSyncBusy = false;
+            }
+        }
+
+        function mergeSalesFromCloud(remoteSales) {
+            const byId = new Map(sales.map(s => [String(s.id), s]));
+            (remoteSales || []).forEach(remote => {
+                const existing = byId.get(String(remote.id));
+                if (!existing) byId.set(String(remote.id), remote);
+                else byId.set(String(remote.id), { ...existing, ...remote });
+            });
+            sales = Array.from(byId.values()).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            localStorage.setItem(KEYS.SALES, JSON.stringify(sales));
+        }
+
+        function mergeLogsFromCloud(remoteLogs) {
+            const byId = new Map();
+            stockLogs.forEach(log => byId.set(String(log.id || (log.timestamp + '|' + log.name + '|' + log.qty)), log));
+            (remoteLogs || []).forEach(remote => {
+                const id = remote.id || (remote.timestamp + '|' + remote.name + '|' + remote.qty);
+                byId.set(String(id), { ...remote, id });
+            });
+            stockLogs = Array.from(byId.values()).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            localStorage.setItem(KEYS.LOGS, JSON.stringify(stockLogs));
+        }
+
+        async function migrateLegacyCloudIfNeeded() {
+            if (!cloudDb || !cloudStateRef || !cloudDocRef) return;
+            const [stateSnap, legacySnap] = await Promise.all([cloudStateRef.get(), cloudDocRef.get()]);
+            if (stateSnap.exists) return;
+
+            const legacy = legacySnap.exists ? (legacySnap.data() || {}) : {};
+            const productMap = new Map();
+            (Array.isArray(legacy.products) ? legacy.products : []).forEach(p => productMap.set(String(p.id), p));
+            products.forEach(p => productMap.set(String(p.id), p));
+            const initialProducts = Array.from(productMap.values());
+
+            const cashierMap = new Map();
+            (Array.isArray(legacy.cashiers) ? legacy.cashiers : []).forEach(c => cashierMap.set(String(c.id), c));
+            cashiers.forEach(c => cashierMap.set(String(c.id), c));
+            const initialCashiers = Array.from(cashierMap.values());
+
+            const salesMap = new Map();
+            (Array.isArray(legacy.sales) ? legacy.sales : []).forEach(s => salesMap.set(String(s.id), s));
+            sales.forEach(s => salesMap.set(String(s.id), s));
+            const initialSales = Array.from(salesMap.values());
+
+            const logMap = new Map();
+            (Array.isArray(legacy.stockLogs) ? legacy.stockLogs : []).forEach(l => logMap.set(String(l.id || (l.timestamp + '|' + l.name + '|' + l.qty)), l));
+            stockLogs.forEach(l => logMap.set(String(l.id || (l.timestamp + '|' + l.name + '|' + l.qty)), l));
+            const initialLogs = Array.from(logMap.values());
+            const initialManagerPin = managerPin || legacy.managerPin || '1234';
+
+            await cloudDb.runTransaction(async transaction => {
+                const check = await transaction.get(cloudStateRef);
+                if (!check.exists) {
+                    transaction.set(cloudStateRef, {
+                        products: initialProducts,
+                        cashiers: initialCashiers,
+                        managerPin: initialManagerPin,
+                        schemaVersion: CLOUD_SCHEMA_VERSION,
+                        migratedFromLegacy: legacySnap.exists,
+                        migratedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 }
+            });
+
+            const salesSnap = await cloudSalesCol.get();
+            const existingSaleIds = new Set(salesSnap.docs.map(d => String(d.id)));
+            let batch = cloudDb.batch();
+            let count = 0;
+            for (const sale of initialSales) {
+                const id = String(sale.id);
+                if (existingSaleIds.has(id)) continue;
+                batch.set(cloudSalesCol.doc(id), sale);
+                count++;
+                if (count === 400) { await batch.commit(); batch = cloudDb.batch(); count = 0; }
+            }
+            if (count) await batch.commit();
+
+            const logsSnap = await cloudLogsCol.get();
+            const existingLogIds = new Set(logsSnap.docs.map(d => String(d.id)));
+            batch = cloudDb.batch();
+            count = 0;
+            for (const rawLog of initialLogs) {
+                const log = { ...rawLog, id: rawLog.id || cloudUuid() };
+                if (existingLogIds.has(String(log.id))) continue;
+                batch.set(cloudLogsCol.doc(String(log.id)), log);
+                count++;
+                if (count === 400) { await batch.commit(); batch = cloudDb.batch(); count = 0; }
+            }
+            if (count) await batch.commit();
+        }
+
+        async function pullCloudStateAndRecords() {
+            if (!cloudStateRef) return;
+            cloudApplyingRemote = true;
+            try {
+                const [stateSnap, salesSnap, logsSnap] = await Promise.all([
+                    cloudStateRef.get(),
+                    cloudSalesCol.get(),
+                    cloudLogsCol.get()
+                ]);
+
+                if (stateSnap.exists) {
+                    const data = stateSnap.data() || {};
+                    if (Array.isArray(data.products)) {
+                        products = data.products;
+                        localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(products));
+                    }
+                    if (Array.isArray(data.cashiers)) {
+                        cashiers = data.cashiers;
+                        localStorage.setItem(KEYS.CASHIERS, JSON.stringify(cashiers));
+                    }
+                    if (data.managerPin) {
+                        managerPin = data.managerPin;
+                        localStorage.setItem(KEYS.MANAGER_PIN, managerPin);
+                    }
+                }
+
+                mergeSalesFromCloud(salesSnap.docs.map(d => d.data()));
+                mergeLogsFromCloud(logsSnap.docs.map(d => d.data()));
+                renderInventory();
+                renderSales();
+                renderStockLogs();
+            } finally {
+                cloudApplyingRemote = false;
+            }
+        }
+
+        function attachCloudListeners() {
+            if (cloudListenersAttached) return;
+            cloudListenersAttached = true;
+
+            cloudStateRef.onSnapshot((docSnap) => {
+                if (cloudBootstrapping || !docSnap.exists) return;
+                const data = docSnap.data() || {};
+                cloudApplyingRemote = true;
+                try {
+                    if (Array.isArray(data.products)) {
+                        products = data.products;
+                        localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(products));
+                    }
+                    if (Array.isArray(data.cashiers)) {
+                        cashiers = data.cashiers;
+                        localStorage.setItem(KEYS.CASHIERS, JSON.stringify(cashiers));
+                    }
+                    if (data.managerPin) {
+                        managerPin = data.managerPin;
+                        localStorage.setItem(KEYS.MANAGER_PIN, managerPin);
+                    }
+                    renderInventory();
+                } finally {
+                    cloudApplyingRemote = false;
+                }
+            }, err => console.error('Cloud state listen error', err));
+
+            cloudSalesCol.onSnapshot(snapshot => {
+                if (cloudBootstrapping) return;
+                mergeSalesFromCloud(snapshot.docs.map(d => d.data()));
+                renderSales();
+            }, err => console.error('Cloud sales listen error', err));
+
+            cloudLogsCol.onSnapshot(snapshot => {
+                if (cloudBootstrapping) return;
+                mergeLogsFromCloud(snapshot.docs.map(d => d.data()));
+                renderStockLogs();
+            }, err => console.error('Cloud logs listen error', err));
+        }
+
+        async function initCloudSync() {
+            if (!cloudSyncCode || !firebaseAvailable()) return;
+            try {
+                if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+                await firebase.auth().signInAnonymously();
+                cloudDb = firebase.firestore();
+                cloudDocRef = cloudDb.collection('stores').doc(cloudSyncCode);
+                cloudStateRef = cloudDocRef.collection('state').doc('main');
+                cloudSalesCol = cloudDocRef.collection('sales');
+                cloudLogsCol = cloudDocRef.collection('stockLogs');
+                cloudInventoryOpsCol = cloudDocRef.collection('inventoryOps');
+                cloudBootstrapping = true;
+
+                await migrateLegacyCloudIfNeeded();
+                cloudReady = true;
+
+                await processCloudOutbox();
+                await pullCloudStateAndRecords();
+                attachCloudListeners();
+
+                cloudBootstrapping = false;
+                await processCloudOutbox();
+                renderCloudSyncStatus();
+            } catch (err) {
+                cloudBootstrapping = false;
+                cloudReady = false;
+                console.error('Cloud sync init error', err);
+                renderCloudSyncStatus();
+            }
+        }
+
+        function initCloudSyncIfConfigured() {
+            if (cloudSyncCode) initCloudSync();
+        }
+
+        function openCloudSyncManager() {
+            if (cloudSyncCode) {
+                showModal('المزامنة السحابية', `هذا الجهاز متصل برمز المزامنة:\n\n<div style="font-size:20px; font-weight:bold; color:var(--teal-primary); direction:ltr; text-align:center; margin:10px 0;">${cloudSyncCode}</div>\n\nلربط جهاز آخر، أدخل نفس هذا الرمز فيه من نفس هذه الصفحة.`, false, () => {}, false, 'sync_manage_connected');
+            } else {
+                promptCloudSetup();
+            }
+        }
+
+        function promptCloudSetup() {
+            showModal('المزامنة السحابية بين الأجهزة', 'هل هذا أول جهاز تُعِدّ عليه المزامنة، أم أن لديك رمزًا من جهاز آخر بالفعل؟', false, () => {}, true, 'sync_setup');
+        }
+
+        function generateNewSyncCode() {
+            const code = 'store-' + Math.random().toString(36).slice(2, 8) + Math.random().toString(36).slice(2, 6);
+            localStorage.setItem('pos_sync_code', code);
+            cloudSyncCode = code;
+            showModal('احتفظ بهذا الرمز!', `هذا رمز المزامنة الخاص بمتجرك. لا يمكن استرجاعه لاحقًا إذا فقدته، لذا يُرجى تصويره أو كتابته الآن:\n\n<div style="font-size:22px; font-weight:bold; color:var(--teal-primary); direction:ltr; text-align:center; margin:12px 0;">${code}</div>\n\nأدخل نفس هذا الرمز في أي جهاز آخر لمزامنة بياناته مع هذا المتجر.`, false, () => {
+                initCloudSync();
+                renderCloudSyncStatus();
+            });
+        }
+
+        function promptEnterSyncCode() {
+            showModal('أدخل رمز المزامنة', 'أدخل رمز المزامنة المستخدم في الجهاز الأول بالضبط:', 'text', (val) => {
+                const code = (val || '').trim();
+                if (!code) {
+                    showModal('خطأ', 'يرجى إدخال رمز صحيح.', false, () => promptEnterSyncCode());
+                    return;
+                }
+                localStorage.setItem('pos_sync_code', code);
+                cloudSyncCode = code;
+                initCloudSync();
+                renderCloudSyncStatus();
+            });
+        }
+
+        function disconnectCloudSync() {
+            showModal('فصل المزامنة', 'هل تريد فصل هذا الجهاز عن المزامنة السحابية؟ ستبقى بياناته المحلية كما هي.', false, () => {
+                localStorage.removeItem('pos_sync_code');
+                cloudSyncCode = null;
+                cloudDb = null;
+                cloudDocRef = null;
+                cloudStateRef = null;
+                cloudSalesCol = null;
+                cloudLogsCol = null;
+                cloudInventoryOpsCol = null;
+                cloudReady = false;
+                cloudListenersAttached = false;
+                renderCloudSyncStatus();
+            });
+        }
+
+        function renderCloudSyncStatus() {
+            const el = document.getElementById('cloud-sync-status');
+            if (!el) return;
+            if (!cloudSyncCode) {
+                el.innerHTML = 'غير متصل بالمزامنة السحابية — البيانات محفوظة على هذا الجهاز فقط.';
+            } else {
+                const pending = cloudOutbox.length;
+                const pendingText = pending ? ` — ${pending} عملية تنتظر المزامنة` : '';
+                el.innerHTML = `متصل ${cloudReady ? '✅' : '⏳'} برمز: <span style="direction:ltr; display:inline-block; font-weight:bold;">${cloudSyncCode}</span>${pendingText} &nbsp; <a href="#" onclick="disconnectCloudSync(); return false;" style="color:var(--red-alert);">(فصل)</a>`;
+            }
+        }
+    </script>
+    <script>
+        (function setupKeyboardDetection() {
+            let restingHeight = window.innerHeight;
+
+            function onResize() {
+                const h = window.innerHeight;
+                if (h > restingHeight) restingHeight = h;
+
+                const keyboardOpen = (restingHeight - h) > 150;
+                document.body.classList.toggle('kb-open', keyboardOpen);
+
+                if (keyboardOpen) {
+                    const panel = document.getElementById('selected-product-panel');
+                    if (panel && panel.style.display !== 'none') {
+                        document.body.style.paddingBottom = h + 'px';
+                        requestAnimationFrame(() => {
+                            const margin = 12;
+                            const rect = panel.getBoundingClientRect();
+                            const delta = rect.bottom - (window.innerHeight - margin);
+                            window.scrollBy({ top: delta, behavior: 'smooth' });
+                        });
+                    }
+                } else {
+                    document.body.style.removeProperty('padding-bottom');
+                }
+            }
+
+            window.addEventListener('resize', onResize);
+        })();
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js').catch(err => {
+                    console.warn('Service worker registration failed:', err);
+                });
             });
         }
     </script>
