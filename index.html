@@ -1106,10 +1106,37 @@
                 `;
             } else if (inputType === 'sale_edit_form') {
                 const sale = onConfirm.saleData;
-                inputContainer.innerHTML = sale.items.map((item, index) => `
+                inputContainer.innerHTML = sale.items.map((item, index) => {
+                    if (isMoneyReturnItem(item)) {
+                        return `
+                    <div style="border:1px solid #ddd; border-radius:8px; padding:8px; margin-bottom:8px;">
+                        <div style="font-weight:bold;">${item.name}</div>
+                        <div style="font-size:13px; color:#555; margin-top:2px;">المبلغ المباع حالياً: <strong style="color:var(--teal-primary);">${formatNum(item.total)} د.ل</strong></div>
+                        <label class="form-label">المبلغ المراد إرجاعه (د.ل)</label>
+                        <input type="number" id="sale-item-${index}" min="0" step="any" value="" placeholder="0" oninput="updateSaleEditPreview(${index})">
+                        <label class="checkbox-container" style="margin-bottom:6px;">
+                            <input type="checkbox" id="sale-item-full-${index}" onchange="toggleSaleEditFull(${index})">
+                            <span>إرجاع المنتج بالكامل</span>
+                        </label>
+                        ${Number(item.discount || 0) > 0 ? `
+                        <div style="background:#fff9f0; border:1px dashed #ff8c00; border-radius:6px; padding:6px; margin-bottom:6px;">
+                            <div style="font-size:13px;">الخصم الحالي على المنتج: <strong style="color:#d32f2f;">${formatNum(item.discount)} د.ل</strong> (يبقى كما هو إذا لم تغيّره)</div>
+                            <label class="form-label">الخصم المراد إلغاؤه (د.ل)</label>
+                            <input type="number" id="sale-item-disc-${index}" min="0" step="any" value="" placeholder="0" oninput="updateSaleEditPreview(${index})">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="sale-item-discfull-${index}" onchange="toggleSaleEditDiscFull(${index})">
+                                <span>إلغاء الخصم بالكامل</span>
+                            </label>
+                        </div>` : ''}
+                        <div id="sale-item-preview-${index}" style="font-size:13px; line-height:1.7;"></div>
+                    </div>`;
+                    }
+                    return `
                     <label class="form-label">${item.name} — الكمية الأصلية: ${formatNum(item.qty)}</label>
                     <input type="number" id="sale-item-${index}" min="0" step="${item.unitType === 'weight' ? '0.01' : '1'}" value="${item.qty}">
-                `).join('');
+                `;
+                }).join('');
+                sale.items.forEach((item, index) => { if (isMoneyReturnItem(item)) updateSaleEditPreview(index); });
             } else if (inputType === 'product_form') {
                 const p = onConfirm.existingData || {};
                 const pType = p.unitType || 'unit';
@@ -1211,7 +1238,18 @@
                             notes: document.getElementById('pb-notes').value || ''
                         };
                     } else if (inputType === 'sale_edit_form') {
-                        val = onConfirm.saleData.items.map((item, index) => Math.max(0, parseFloat(document.getElementById(`sale-item-${index}`).value) || 0));
+                        val = onConfirm.saleData.items.map((item, index) => {
+                            if (isMoneyReturnItem(item)) {
+                                const full = document.getElementById(`sale-item-full-${index}`).checked;
+                                const entered = Math.max(0, parseFloat(document.getElementById(`sale-item-${index}`).value) || 0);
+                                const discEl = document.getElementById(`sale-item-disc-${index}`);
+                                const discFull = document.getElementById(`sale-item-discfull-${index}`);
+                                const maxDisc = Number(item.discount || 0);
+                                const cancelDiscount = discEl ? (discFull && discFull.checked ? maxDisc : Math.min(Math.max(parseFloat(discEl.value) || 0, 0), maxDisc)) : 0;
+                                return { returnMoney: full ? Number(item.total || 0) : Math.min(entered, Number(item.total || 0)), cancelDiscount, full };
+                            }
+                            return Math.max(0, parseFloat(document.getElementById(`sale-item-${index}`).value) || 0);
+                        });
                     } else if (inputType) {
                         val = document.getElementById('modal-field').value;
                     } else {
@@ -1495,22 +1533,105 @@
             return { newDeltas, adjustment: Array.from(combined.entries()).map(([productId, inventoryDelta]) => ({ productId, inventoryDelta })).filter(entry => Object.values(entry.inventoryDelta).some(value => Math.abs(value) > 1e-12)) };
         }
 
+        function isMoneyReturnItem(item) {
+            return item && item.unitType === 'weight' && item.sellMode === 'retail' && !item.isFree && Number(item.total || 0) > 0;
+        }
+
+        function toggleSaleEditFull(index) {
+            const sale = window.__editingSale;
+            const full = document.getElementById('sale-item-full-' + index).checked;
+            const input = document.getElementById('sale-item-' + index);
+            if (full && sale) input.value = formatNum(sale.items[index].total);
+            else if (!full) input.value = '';
+            updateSaleEditPreview(index);
+        }
+
+        function toggleSaleEditDiscFull(index) {
+            const sale = window.__editingSale;
+            const checked = document.getElementById('sale-item-discfull-' + index).checked;
+            const input = document.getElementById('sale-item-disc-' + index);
+            if (checked && sale) input.value = formatNum(sale.items[index].discount);
+            else if (!checked) input.value = '';
+            updateSaleEditPreview(index);
+        }
+
+        function updateSaleEditPreview(index) {
+            const sale = window.__editingSale;
+            const box = document.getElementById('sale-item-preview-' + index);
+            if (!sale || !box) return;
+            const item = sale.items[index];
+            const current = Number(item.total || 0);
+            const currentDisc = Number(item.discount || 0);
+            const entered = parseFloat(document.getElementById('sale-item-' + index).value) || 0;
+            const fullChecked = document.getElementById('sale-item-full-' + index).checked;
+            const ret = fullChecked ? current : Math.min(Math.max(entered, 0), current);
+            const remain = Math.max(0, current - ret);
+            const isFull = ret >= current - 1e-9 && current > 0;
+            const discEl = document.getElementById('sale-item-disc-' + index);
+            const discFullEl = document.getElementById('sale-item-discfull-' + index);
+            let cancelDisc = 0;
+            if (discEl) cancelDisc = discFullEl && discFullEl.checked ? currentDisc : Math.min(Math.max(parseFloat(discEl.value) || 0, 0), currentDisc);
+            const remainDisc = isFull ? 0 : currentDisc - cancelDisc;
+            let warn = '';
+            if (!fullChecked && entered > current) warn += `<div style="color:#d32f2f; font-weight:bold;">المبلغ أكبر من المباع، سيتم إرجاع ${formatNum(current)} د.ل فقط</div>`;
+            if (discEl && !(discFullEl && discFullEl.checked) && (parseFloat(discEl.value) || 0) > currentDisc) warn += `<div style="color:#d32f2f; font-weight:bold;">الخصم أكبر من المسجل، سيتم إلغاء ${formatNum(currentDisc)} د.ل فقط</div>`;
+            let html = `${warn}<div style="color:#d32f2f;">↩ سيتم إرجاع: <strong>${formatNum(ret)} د.ل</strong></div><div style="color:#2e7d32;">✔ سيتبقى في الفاتورة: <strong>${formatNum(remain)} د.ل</strong></div>`;
+            if (currentDisc > 0) html += `<div style="color:#ff8c00;">الخصم: ${formatNum(currentDisc)} ← <strong>${formatNum(remainDisc)} د.ل</strong>${isFull ? ' (يُلغى مع الإرجاع الكامل)' : ''}</div>`;
+            box.innerHTML = html;
+        }
+
         function editSale(saleId) {
             const sale = sales.find(s => String(s.id) === String(saleId));
             if (!sale || sale.returnedAt) return;
-            const callback = quantities => {
+            window.__editingSale = sale;
+            const callback = inputs => {
                 const editedItems = sale.items.map((item, index) => {
-                    const qty = quantities[index];
+                    const input = inputs[index];
+                    if (isMoneyReturnItem(item) && input && typeof input === 'object') {
+                        const current = Number(item.total || 0);
+                        const returned = Math.min(Math.max(Number(input.returnMoney || 0), 0), current);
+                        if (returned <= 0) return { ...item };
+                        if (input.full || returned >= current - 1e-9) return { ...item, qty: 0, discount: 0, total: 0 };
+                        const currentDisc = Number(item.discount || 0);
+                        const cancelDisc = Math.min(Math.max(Number(input.cancelDiscount || 0), 0), currentDisc);
+                        const newTotal = current - returned;
+                        const newDiscount = currentDisc - cancelDisc;
+                        const price = Number(item.price || 0);
+                        const newQty = price > 0 ? Math.min(Number(item.qty || 0), (newTotal + newDiscount) / price) : Number(item.qty || 0);
+                        return { ...item, qty: newQty, discount: newDiscount, total: newTotal };
+                    }
+                    const qty = input;
                     const total = item.isFree ? 0 : Math.max(0, (qty * Number(item.price || 0)) - Number(item.discount || 0));
                     return { ...item, qty, total };
                 });
                 const calculation = calculateEditedSaleDeltas(sale, editedItems);
                 const total = Math.max(0, editedItems.reduce((sum, item) => sum + Number(item.total || 0), 0) - Number(sale.globalDiscount || 0));
                 const profit = total - editedItems.reduce((sum, item) => sum + (Number(item.qty || 0) * Number(item.cost || 0)), 0);
-                showModal('تأكيد تعديل البيع', 'سيتم تحديث الفاتورة وتعديل المخزون تلقائياً حسب فرق الكميات. هل تريد المتابعة؟', false, () => {
+                const summaryLines = editedItems.map((item, index) => {
+                    const before = sale.items[index];
+                    if (Number(before.total || 0) === Number(item.total || 0) && Number(before.qty || 0) === Number(item.qty || 0)) return '';
+                    if (isMoneyReturnItem(before)) return `• ${before.name}: إرجاع ${formatNum(Number(before.total || 0) - Number(item.total || 0))} د.ل — يتبقى ${formatNum(item.total)} د.ل` + (Number(before.discount || 0) !== Number(item.discount || 0) ? ` (الخصم: ${formatNum(before.discount)} ← ${formatNum(item.discount)} د.ل)` : '');
+                    return `• ${before.name}: الكمية ${formatNum(before.qty)} ← ${formatNum(item.qty)}`;
+                }).filter(Boolean);
+                if (!summaryLines.length) {
+                    showModal('لا يوجد تغيير', 'لم يتم تغيير أي منتج في هذه الفاتورة.', false, () => {});
+                    return;
+                }
+                showModal('تأكيد تعديل البيع', summaryLines.join('\n') + '\n\nسيتم تحديث الفاتورة وتعديل المخزون تلقائياً. هل تريد المتابعة؟', false, () => {
                     applyInventoryDeltas(products, calculation.adjustment);
                     const amendedAt = new Date().toISOString();
-                    const changes = editedItems.map((item, index) => ({ name: item.name, fromQty: Number(sale.items[index].qty || 0), toQty: Number(item.qty || 0) })).filter(change => change.fromQty !== change.toQty);
+                    const changes = editedItems.map((item, index) => {
+                        const before = sale.items[index];
+                        const change = { name: item.name, fromQty: Number(before.qty || 0), toQty: Number(item.qty || 0) };
+                        if (isMoneyReturnItem(before)) {
+                            change.fromTotal = Number(before.total || 0);
+                            change.toTotal = Number(item.total || 0);
+                            change.returnedMoney = change.fromTotal - change.toTotal;
+                            change.fromDiscount = Number(before.discount || 0);
+                            change.toDiscount = Number(item.discount || 0);
+                        }
+                        return change;
+                    }).filter(change => change.fromQty !== change.toQty || (change.fromTotal !== undefined && (change.fromTotal !== change.toTotal || change.fromDiscount !== change.toDiscount)));
                     const amendment = { at: amendedAt, by: activeCashier, changes };
                     Object.assign(sale, { items: editedItems, total, profit, inventoryDeltas: calculation.newDeltas, amendedAt, amendedBy: activeCashier, amendmentHistory: [...(sale.amendmentHistory || []), amendment] });
                     safeSave(KEYS.PRODUCTS, products); safeSave(KEYS.SALES, sales);
@@ -1520,7 +1641,7 @@
                 });
             };
             callback.saleData = sale;
-            showModal('تعديل البيع', 'عدّل الكمية لكل منتج. ضع الكمية 0 لإرجاع هذا المنتج بالكامل.', 'sale_edit_form', callback);
+            showModal('تعديل البيع', 'للمنتجات المباعة بالوزن: اكتب المبلغ (د.ل) الذي تريد إرجاعه. للمنتجات الأخرى: عدّل الكمية، وضع 0 لإرجاع المنتج بالكامل.', 'sale_edit_form', callback);
         }
 
         function renderSales() {
@@ -1546,7 +1667,6 @@
                 }
 
                 const hasGlobalDiscount = s.globalDiscount && s.globalDiscount > 0;
-                const latestAmendment = (s.amendmentHistory || []).slice(-1)[0];
 
                 html += `
                     <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
@@ -1573,7 +1693,7 @@
                         <div style="font-size:13px; color:#ff8c00; margin-top:2px;">
                             ملاحظة الفاتورة: ${s.note ? `<strong>${s.note}</strong>` : '<span style="color:#aaa;">لا توجد ملاحظة</span>'}
                         </div>
-                        ${latestAmendment ? `<div style="font-size:12px; color:#1565c0; margin-top:4px;">✏️ تم تعديل البيع ${new Date(latestAmendment.at).toLocaleString('ar-LY')} بواسطة ${latestAmendment.by || 'غير محدد'}: ${latestAmendment.changes.map(c => `${c.name} (${formatNum(c.fromQty)} ← ${formatNum(c.toQty)})`).join('، ') || 'تم تحديث الفاتورة'}</div>` : ''}
+                        ${(s.amendmentHistory || []).length ? `<div style="margin-top:4px;">${(s.amendmentHistory || []).map((a, n) => `<div style="font-size:12px; color:#1565c0; margin-top:3px;">✏️ تعديل ${n + 1} — ${new Date(a.at).toLocaleString('ar-LY')} بواسطة ${a.by || 'غير محدد'}: ${(a.changes || []).map(c => c.fromTotal !== undefined ? `${c.name} (إرجاع ${formatNum(c.returnedMoney)} د.ل: ${formatNum(c.fromTotal)} ← ${formatNum(c.toTotal)} د.ل${c.fromDiscount !== undefined && c.fromDiscount !== c.toDiscount ? ` | الخصم: ${formatNum(c.fromDiscount)} ← ${formatNum(c.toDiscount)} د.ل` : ''})` : `${c.name} (${formatNum(c.fromQty)} ← ${formatNum(c.toQty)})`).join('، ') || 'تم تحديث الفاتورة'}</div>`).join('')}</div>` : ''}
                         ${s.returnedAt ? `<div style="font-size:12px; color:#d32f2f; font-weight:bold; margin-top:4px;">↩ تم إرجاع هذه الفاتورة بالكامل ${new Date(s.returnedAt).toLocaleString('ar-LY')} بواسطة ${s.returnedBy || 'غير محدد'} — المنتجات أعلاه أُعيدت إلى المخزون.</div>` : ''}
 
                         <div style="display:flex; justify-content:space-between; align-items:center; gap:4px; flex-wrap:wrap; margin-top:6px;">
