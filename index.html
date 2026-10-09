@@ -818,6 +818,13 @@
             document.body.classList.add('panel-open');
         }
 
+        /* Cost of one whole bag = the bag cost entered for the product.
+           If no bag cost was entered, it counts as "no cost entered" (0) and bag sales show no profit. */
+        function getWholeBagCost(prod) {
+            const bagCost = Number(prod.bagCost || 0);
+            return bagCost > 0 ? bagCost : 0;
+        }
+
         function setSellMode(mode) {
             currentSellMode = mode;
             if (!activeProductObj) return;
@@ -862,7 +869,7 @@
                 weightPanel.style.display = 'none';
                 activeSelection = {
                     id: prod.id, name: `${prod.name} (شكارة كاملة - ${prod.bagWeightKg || 0}كجم)`, unitType: 'fullbag', sellMode: 'fullbag',
-                    price: prod.fullBagPrice, cost: prod.cost, qty: 1, bagWeight: prod.bagWeightKg || 0
+                    price: prod.fullBagPrice, cost: getWholeBagCost(prod), qty: 1, bagWeight: prod.bagWeightKg || 0
                 };
             } else if (mode === 'halfbag') {
                 unitPanel.style.display = 'none';
@@ -870,7 +877,7 @@
                 const halfKg = (prod.bagWeightKg || 0) / 2;
                 activeSelection = {
                     id: prod.id, name: `${prod.name} (نصف شكارة - ${halfKg}كجم)`, unitType: 'halfbag', sellMode: 'halfbag',
-                    price: prod.halfBagPrice, cost: prod.cost / 2, qty: 1, halfKg: halfKg
+                    price: prod.halfBagPrice, cost: getWholeBagCost(prod) / 2, qty: 1, halfKg: halfKg
                 };
             }
 
