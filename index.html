@@ -668,7 +668,7 @@
 
                 <!-- UNIT CONTROLS: LTR so Minus (-) is on LEFT and Plus (+) is on RIGHT -->
                 <div id="panel-unit-controls" style="display:none; margin-bottom:8px;">
-                    <span class="form-label">الكمية (بالقطعة)</span>
+                    <span class="form-label" id="sel-unit-qty-label">الكمية (بالقطعة)</span>
                     <div style="display:flex; align-items:center; gap:6px; direction: ltr;">
                         <button class="qty-btn" onclick="adjustSelQty(-1)">-</button>
                         <input type="number" id="sel-unit-qty-input" placeholder="" onfocus="handlePosInputFocus(this)" oninput="onSelUnitQtyChange(this.value)" style="margin:0; text-align:center;">
@@ -687,6 +687,17 @@
                             <input type="number" id="sel-weight-input" placeholder="" onfocus="handlePosInputFocus(this)" oninput="updateSelFromWeight(this.value)" style="margin:0;">
                         </div>
                     </div>
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <div style="flex:1;">
+                            <span class="form-label">قروش إضافية</span>
+                            <input type="number" id="sel-extra-gurush" placeholder="" onfocus="handlePosInputFocus(this)" oninput="updateExtraFromGurush(this.value)" style="margin:0;">
+                        </div>
+                        <div style="flex:1;">
+                            <span class="form-label">جرامات إضافية</span>
+                            <input type="number" id="sel-extra-grams" placeholder="" onfocus="handlePosInputFocus(this)" oninput="updateExtraFromGrams(this.value)" style="margin:0;">
+                        </div>
+                    </div>
+                    <div style="font-size:11px; color:var(--muted); margin-top:4px;">الإضافة لا تُحسب في المبلغ وتُخصم من المخزون.</div>
                 </div>
 
                 <div style="display:flex; gap:8px;">
@@ -777,6 +788,8 @@
                 <p>إجمالي مبيعات اليوم: <strong id="stat-today-sales">0</strong> د.ل</p>
                 <p>إجمالي أرباح اليوم: <strong id="stat-today-profit" style="color:#2e7d32;">0</strong> د.ل</p>
                 <p>عدد العملاء اليوم: <strong id="stat-today-customers">0</strong></p>
+                <p>قروش إضافية اليوم (غير محسوبة في المبيعات): <strong id="stat-today-extra-gurush">0</strong> د.ل</p>
+                <p>جرامات إضافية اليوم: <strong id="stat-today-extra-grams">0</strong> جرام</p>
                 <p>تسديد ديون اليوم (محسوب ضمن المبيعات): <strong id="stat-today-debt-paid">0</strong> د.ل</p>
                 <p>إجمالي الديون المستحقة (غير مسددة): <strong id="stat-debt-owed" style="color:#d32f2f;">0</strong> د.ل</p>
             </div>
@@ -1073,6 +1086,8 @@
             const prod = activeProductObj;
             const unitPanel = document.getElementById('panel-unit-controls');
             const weightPanel = document.getElementById('panel-weight-controls');
+            document.getElementById('sel-unit-qty-label').innerText =
+                mode === 'fullbag' ? 'العدد (شكارة كاملة)' : (mode === 'halfbag' ? 'العدد (نصف شكارة)' : 'الكمية (بالقطعة)');
 
             if (mode === 'retail') {
                 if (prod.unitType === 'unit') {
@@ -1088,10 +1103,12 @@
                     weightPanel.style.display = 'block';
                     activeSelection = {
                         id: prod.id, name: prod.name, unitType: 'weight', sellMode: 'retail',
-                        price: prod.kgPrice, cost: prod.cost, qty: 0
+                        price: prod.kgPrice, cost: prod.cost, qty: 0, extraKg: 0
                     };
                     document.getElementById('sel-price-input').value = '';
                     document.getElementById('sel-weight-input').value = '';
+                    document.getElementById('sel-extra-gurush').value = '';
+                    document.getElementById('sel-extra-grams').value = '';
                 }
             } else if (mode === 'wholesale') {
                 unitPanel.style.display = 'block';
@@ -1102,15 +1119,17 @@
                 };
                 document.getElementById('sel-unit-qty-input').value = '';
             } else if (mode === 'fullbag') {
-                unitPanel.style.display = 'none';
+                unitPanel.style.display = 'block';
                 weightPanel.style.display = 'none';
+                document.getElementById('sel-unit-qty-input').value = '1';
                 activeSelection = {
                     id: prod.id, name: `${prod.name} (شكارة كاملة - ${prod.bagWeightKg || 0}كجم)`, unitType: 'fullbag', sellMode: 'fullbag',
                     price: prod.fullBagPrice, cost: getWholeBagCost(prod), qty: 1, bagWeight: prod.bagWeightKg || 0
                 };
             } else if (mode === 'halfbag') {
-                unitPanel.style.display = 'none';
+                unitPanel.style.display = 'block';
                 weightPanel.style.display = 'none';
+                document.getElementById('sel-unit-qty-input').value = '1';
                 const halfKg = (prod.bagWeightKg || 0) / 2;
                 activeSelection = {
                     id: prod.id, name: `${prod.name} (نصف شكارة - ${halfKg}كجم)`, unitType: 'halfbag', sellMode: 'halfbag',
@@ -1121,18 +1140,53 @@
             calculateSelTotal();
         }
 
+        function isBagSelection() {
+            return !!activeSelection && (activeSelection.sellMode === 'fullbag' || activeSelection.sellMode === 'halfbag');
+        }
+
         function onSelUnitQtyChange(val) {
             if (!activeSelection) return;
-            activeSelection.qty = parseFloat(val) || 0;
+            activeSelection.qty = isBagSelection() ? (Math.floor(parseFloat(val)) || 0) : (parseFloat(val) || 0);
             calculateSelTotal();
         }
 
         function adjustSelQty(delta) {
             if (!activeSelection) return;
             const current = activeSelection.qty || 0;
-            activeSelection.qty = Math.max(0, current + delta);
+            const minimum = isBagSelection() ? 1 : 0;
+            activeSelection.qty = Math.max(minimum, current + delta);
             document.getElementById('sel-unit-qty-input').value = activeSelection.qty > 0 ? activeSelection.qty : '';
             calculateSelTotal();
+        }
+
+        /* Extra weight given on top of a sale: linked gurush <-> grams (100 gurush = 1 dinar).
+           It is not added to the total, only deducted from inventory. */
+        function updateExtraFromGurush(val) {
+            if (!activeSelection) return;
+            const gramsBox = document.getElementById('sel-extra-grams');
+            const gurush = parseFloat(val) || 0;
+            const price = Number(activeSelection.price || 0);
+            if (val === '' || gurush <= 0 || price <= 0) {
+                activeSelection.extraKg = 0;
+                gramsBox.value = '';
+                return;
+            }
+            activeSelection.extraKg = (gurush / 100) / price;
+            gramsBox.value = formatNum(activeSelection.extraKg * 1000);
+        }
+
+        function updateExtraFromGrams(val) {
+            if (!activeSelection) return;
+            const gurushBox = document.getElementById('sel-extra-gurush');
+            const grams = parseFloat(val) || 0;
+            const price = Number(activeSelection.price || 0);
+            if (val === '' || grams <= 0) {
+                activeSelection.extraKg = 0;
+                gurushBox.value = '';
+                return;
+            }
+            activeSelection.extraKg = grams / 1000;
+            gurushBox.value = price > 0 ? formatNum(activeSelection.extraKg * price * 100) : '';
         }
 
         function updateSelFromPrice(val) {
@@ -1210,8 +1264,9 @@
             if (prod.unitType === 'weight' && activeSelection.sellMode === 'retail') {
                 const openKg = prod.openBagKg || 0;
                 const fullBags = prod.bagsCount || 0;
+                const neededKg = qty + (activeSelection.extraKg || 0);
 
-                if (openKg < qty) {
+                if (openKg < neededKg) {
                     if (fullBags > 0) {
                         showModal('تنبيه: لا يوجد وزن مفتوح كافٍ', `الوزن المفتوح المتاح حالياً هو (${formatNum(openKg)} كجم)، ولديك (${fullBags}) شكارة كاملة بالمخزون.\nهل ترغب في فتح شكارة جديدة الآن وإكمال البيع؟`, false, () => {
                             const bagCap = prod.bagWeightKg || 15;
@@ -1266,6 +1321,7 @@
                 qty: qty,
                 bagWeight: activeSelection.bagWeight || 0,
                 halfKg: activeSelection.halfKg || 0,
+                extraKg: (activeSelection.sellMode === 'retail' && activeSelection.unitType === 'weight') ? (activeSelection.extraKg || 0) : 0,
                 discount: discount,
                 isFree: isFree,
                 isDebt: isDebt,
@@ -1311,6 +1367,7 @@
 
                     ${item.isNegativeSale ? `<div style="font-size:12px; color:#d32f2f; margin-top:2px; font-weight:bold;">[بيع بالسالب - مخزون غير متوفر]</div>` : ''}
                     ${item.isDebt ? `<div style="font-size:12px; color:#e65100; margin-top:2px; font-weight:bold;">[دين]</div>` : ''}
+                    ${item.extraKg > 0 ? `<div style="font-size:12px; color:#6a1b9a; margin-top:2px;">[إضافة غير محسوبة: ${formatNum(item.extraKg * 1000)} جرام (${formatNum(item.extraKg * item.price)} د.ل)]</div>` : ''}
                     ${item.discount > 0 ? `<div style="font-size:12px; color:#d32f2f; margin-top:2px;">[خصم على المنتج: ${formatNum(item.discount)} د.ل]</div>` : ''}
                     ${item.note ? `<div style="font-size:12px; color:#ff8c00; margin-top:2px;">[ملاحظة: ${item.note}]</div>` : ''}
                 </div>
@@ -1377,18 +1434,22 @@
                     if (item.sellMode === 'fullbag') {
                         prod.bagsCount = (prod.bagsCount || 0) - item.qty;
                     } else if (item.sellMode === 'halfbag') {
-                        if ((prod.bagsCount || 0) > 0) {
-                            prod.bagsCount -= 1;
-                            prod.openBagKg = (prod.openBagKg || 0) + item.halfKg;
-                        } else {
-                            prod.openBagKg = (prod.openBagKg || 0) - item.halfKg;
+                        const halfCount = Math.max(1, Math.floor(Number(item.qty) || 1));
+                        for (let h = 0; h < halfCount; h++) {
+                            if ((prod.bagsCount || 0) > 0) {
+                                prod.bagsCount -= 1;
+                                prod.openBagKg = (prod.openBagKg || 0) + item.halfKg;
+                            } else {
+                                prod.openBagKg = (prod.openBagKg || 0) - item.halfKg;
+                            }
                         }
                     } else if (prod.unitType === 'weight') {
+                        const kgToDeduct = Number(item.qty || 0) + (Number(item.qty || 0) > 0 ? Number(item.extraKg || 0) : 0);
                         let currentOpen = prod.openBagKg || 0;
-                        if (currentOpen >= item.qty) {
-                            prod.openBagKg = currentOpen - item.qty;
+                        if (currentOpen >= kgToDeduct) {
+                            prod.openBagKg = currentOpen - kgToDeduct;
                         } else {
-                            let remainingToDeduct = item.qty - currentOpen;
+                            let remainingToDeduct = kgToDeduct - currentOpen;
                             prod.openBagKg = 0;
                             const bagCapacity = prod.bagWeightKg || 1;
                             
@@ -1968,6 +2029,7 @@
         function renderStatsAndShow(tab, element) {
             const todayStr = new Date().toLocaleDateString('ar-LY');
             let totalRev = 0, totalProfit = 0, customers = 0, paidToday = 0, owed = 0;
+            let extraKgToday = 0, extraValueToday = 0;
 
             sales.forEach(s => {
                 if (s.returnedAt) return;
@@ -1976,6 +2038,12 @@
                     totalRev += bd.cashAmount;
                     totalProfit += bd.cashProfit;
                     customers++;
+                    (s.items || []).forEach(i => {
+                        if (Number(i.extraKg || 0) > 0 && Number(i.qty || 0) > 0) {
+                            extraKgToday += Number(i.extraKg);
+                            extraValueToday += Number(i.extraKg) * Number(i.price || 0);
+                        }
+                    });
                 }
                 if (bd.debtAmount > 1e-7) {
                     if (s.debtPaidAt) {
@@ -1993,6 +2061,8 @@
             document.getElementById('stat-today-sales').innerText = formatNum(totalRev);
             document.getElementById('stat-today-profit').innerText = formatNum(totalProfit);
             document.getElementById('stat-today-customers').innerText = customers;
+            document.getElementById('stat-today-extra-gurush').innerText = formatNum(extraValueToday);
+            document.getElementById('stat-today-extra-grams').innerText = formatNum(extraKgToday * 1000);
             document.getElementById('stat-today-debt-paid').innerText = formatNum(paidToday);
             document.getElementById('stat-debt-owed').innerText = formatNum(owed);
 
@@ -2049,10 +2119,13 @@
                 if (!prod) return;
                 if (item.sellMode === 'fullbag') prod.bagsCount = Number(prod.bagsCount || 0) - Number(item.qty || 0);
                 else if (item.sellMode === 'halfbag') {
-                    if (Number(prod.bagsCount || 0) > 0) { prod.bagsCount -= 1; prod.openBagKg = Number(prod.openBagKg || 0) + Number(item.halfKg || 0); }
-                    else prod.openBagKg = Number(prod.openBagKg || 0) - Number(item.halfKg || 0);
+                    const halfCount = Math.max(0, Math.floor(Number(item.qty) || 0));
+                    for (let h = 0; h < halfCount; h++) {
+                        if (Number(prod.bagsCount || 0) > 0) { prod.bagsCount -= 1; prod.openBagKg = Number(prod.openBagKg || 0) + Number(item.halfKg || 0); }
+                        else prod.openBagKg = Number(prod.openBagKg || 0) - Number(item.halfKg || 0);
+                    }
                 } else if (prod.unitType === 'weight') {
-                    let remaining = Number(item.qty || 0);
+                    let remaining = Number(item.qty || 0) + (Number(item.qty || 0) > 0 ? Number(item.extraKg || 0) : 0);
                     const open = Number(prod.openBagKg || 0);
                     if (open >= remaining) prod.openBagKg = open - remaining;
                     else {
@@ -2274,6 +2347,7 @@
                                         ${i.isNegativeSale ? '<span style="color:#d32f2f; font-weight:bold;">[مبيعات بالسالب]</span>' : ''} 
                                         ${i.isFree ? '<span style="color:#2e7d32;">[مجاني]</span>' : ''} 
                                         ${i.isDebt ? '<span style="color:#e65100; font-weight:bold;">[دين]</span>' : ''} 
+                                        ${(i.extraKg > 0 && i.qty > 0) ? `<span style="color:#6a1b9a;">[إضافة: ${formatNum(i.extraKg * 1000)} جرام (${formatNum(i.extraKg * i.price)} د.ل)]</span>` : ''} 
                                         ${i.discount > 0 ? `<span style="color:#d32f2f;">[خصم: ${formatNum(i.discount)} د.ل]</span>` : ''} 
                                         ${i.note ? `<span style="color:#ff8c00;">[${i.note}]</span>` : ''}
                                     </div>
