@@ -608,6 +608,12 @@
         }
         .sale-card.sale-returned::before { background-color: #8a949c; }
 
+        /* Extra boxes: locked until tapped twice */
+        .extra-box[readonly] { background-color: #eef3f6; cursor: pointer; }
+        .extra-box.extra-armed { border-color: var(--teal-primary); background-color: #e5f3f4; }
+        .extra-box::placeholder { font-size: 12px; }
+        .extra-box.extra-armed::placeholder { color: var(--teal-primary); }
+
         /* Popups */
         .modal-overlay { background: rgba(10, 36, 50, 0.55); }
         .modal-box {
@@ -676,6 +682,14 @@
                     </div>
                 </div>
 
+                <div id="half-source-box" style="display:none; margin-bottom:8px;">
+                    <span class="form-label">مصدر نصف الشكارة</span>
+                    <div style="display:flex; gap:6px;">
+                        <button class="mode-btn half-src-btn active" id="half-src-newbag" onclick="setHalfSource('newbag')">فتح شكارة جديدة</button>
+                        <button class="mode-btn half-src-btn" id="half-src-open" onclick="setHalfSource('open')">من الوزن المفتوح</button>
+                    </div>
+                </div>
+
                 <div id="panel-weight-controls" style="display:none; margin-bottom:8px;">
                     <div style="display:flex; gap:8px;">
                         <div style="flex:1;">
@@ -690,14 +704,14 @@
                     <div style="display:flex; gap:8px; margin-top:8px;">
                         <div style="flex:1;">
                             <span class="form-label">قروش إضافية</span>
-                            <input type="number" id="sel-extra-gurush" placeholder="" onfocus="handlePosInputFocus(this)" oninput="updateExtraFromGurush(this.value)" style="margin:0;">
+                            <input type="number" id="sel-extra-gurush" class="extra-box" readonly placeholder="" onclick="onExtraBoxTap(this)" onblur="lockExtraBox(this)" onfocus="handlePosInputFocus(this)" oninput="updateExtraFromGurush(this.value)" style="margin:0;">
                         </div>
                         <div style="flex:1;">
                             <span class="form-label">جرامات إضافية</span>
-                            <input type="number" id="sel-extra-grams" placeholder="" onfocus="handlePosInputFocus(this)" oninput="updateExtraFromGrams(this.value)" style="margin:0;">
+                            <input type="number" id="sel-extra-grams" class="extra-box" readonly placeholder="" onclick="onExtraBoxTap(this)" onblur="lockExtraBox(this)" onfocus="handlePosInputFocus(this)" oninput="updateExtraFromGrams(this.value)" style="margin:0;">
                         </div>
                     </div>
-                    <div style="font-size:11px; color:var(--muted); margin-top:4px;">الإضافة لا تُحسب في المبلغ وتُخصم من المخزون.</div>
+                    <div style="font-size:11px; color:var(--muted); margin-top:4px;">الإضافة لا تُحسب في المبلغ وتُخصم من المخزون. (اضغط على الخانة مرتين لفتحها)</div>
                 </div>
 
                 <div style="display:flex; gap:8px;">
@@ -739,7 +753,7 @@
             <div id="cart-options" style="display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
                 <input type="number" id="cart-discount" placeholder="أدخل مبلغ الخصم على الفاتورة (د.ل)" oninput="renderCart()">
                 <label class="checkbox-container" style="margin-top:2px;">
-                    <input type="checkbox" id="cart-debt">
+                    <input type="checkbox" id="cart-debt" onchange="onCartDebtChange(this)">
                     <span>جعل الفاتورة كلها دين</span>
                 </label>
             </div>
@@ -1088,6 +1102,7 @@
             const weightPanel = document.getElementById('panel-weight-controls');
             document.getElementById('sel-unit-qty-label').innerText =
                 mode === 'fullbag' ? 'العدد (شكارة كاملة)' : (mode === 'halfbag' ? 'العدد (نصف شكارة)' : 'الكمية (بالقطعة)');
+            document.getElementById('half-source-box').style.display = mode === 'halfbag' ? 'block' : 'none';
 
             if (mode === 'retail') {
                 if (prod.unitType === 'unit') {
@@ -1109,6 +1124,8 @@
                     document.getElementById('sel-weight-input').value = '';
                     document.getElementById('sel-extra-gurush').value = '';
                     document.getElementById('sel-extra-grams').value = '';
+                    lockExtraBox(document.getElementById('sel-extra-gurush'));
+                    lockExtraBox(document.getElementById('sel-extra-grams'));
                 }
             } else if (mode === 'wholesale') {
                 unitPanel.style.display = 'block';
@@ -1133,11 +1150,63 @@
                 const halfKg = (prod.bagWeightKg || 0) / 2;
                 activeSelection = {
                     id: prod.id, name: `${prod.name} (نصف شكارة - ${halfKg}كجم)`, unitType: 'halfbag', sellMode: 'halfbag',
-                    price: prod.halfBagPrice, cost: getWholeBagCost(prod) / 2, qty: 1, halfKg: halfKg
+                    price: prod.halfBagPrice, cost: getWholeBagCost(prod) / 2, qty: 1, halfKg: halfKg, halfSource: 'newbag'
                 };
+                setHalfSource('newbag');
             }
 
             calculateSelTotal();
+        }
+
+        /* Extra gurush / grams boxes need two taps to open, so nothing is typed into them by accident. */
+        let extraTapTarget = null;
+        let extraTapTimer = null;
+
+        function resetExtraBoxHint(el) {
+            if (!el) return;
+            el.placeholder = '';
+            el.classList.remove('extra-armed');
+        }
+
+        function lockExtraBox(el) {
+            if (!el) return;
+            el.readOnly = true;
+            resetExtraBoxHint(el);
+            if (extraTapTarget === el) {
+                extraTapTarget = null;
+                clearTimeout(extraTapTimer);
+            }
+        }
+
+        function onExtraBoxTap(el) {
+            if (!el.readOnly) return;
+            if (extraTapTarget === el) {
+                clearTimeout(extraTapTimer);
+                extraTapTarget = null;
+                resetExtraBoxHint(el);
+                el.blur();
+                el.readOnly = false;
+                el.focus();
+                return;
+            }
+            resetExtraBoxHint(extraTapTarget);
+            extraTapTarget = el;
+            el.placeholder = 'اضغط مرة أخرى للفتح';
+            el.classList.add('extra-armed');
+            clearTimeout(extraTapTimer);
+            extraTapTimer = setTimeout(() => {
+                resetExtraBoxHint(el);
+                if (extraTapTarget === el) extraTapTarget = null;
+            }, 3000);
+        }
+
+        /* Half bag: take it from a newly opened bag, or from the open (remaining) weight. */
+        function setHalfSource(source) {
+            if (activeSelection && activeSelection.sellMode === 'halfbag') activeSelection.halfSource = source;
+            const newBtn = document.getElementById('half-src-newbag');
+            const openBtn = document.getElementById('half-src-open');
+            if (newBtn) newBtn.classList.toggle('active', source === 'newbag');
+            if (openBtn) openBtn.classList.toggle('active', source === 'open');
         }
 
         function isBagSelection() {
@@ -1216,6 +1285,30 @@
         }
 
         function onSelFreeDebtChange(which) {
+            const box = document.getElementById(which === 'free' ? 'sel-free' : 'sel-debt');
+            if (box.checked) {
+                box.checked = false;
+                const message = which === 'free'
+                    ? 'هل تريد جعل هذا المنتج مجاني؟ لن يُحسب له أي مبلغ في الفاتورة.'
+                    : 'هل تريد جعل هذا المنتج دين؟ سيُسجَّل كمبلغ مستحق ولا يُحسب ضمن المبيعات حتى يتم سداده.';
+                showModal('تأكيد', message, false, () => {
+                    box.checked = true;
+                    applyFreeDebtState(which);
+                });
+                return;
+            }
+            applyFreeDebtState(which);
+        }
+
+        function onCartDebtChange(box) {
+            if (!box.checked) return;
+            box.checked = false;
+            showModal('تأكيد', 'هل تريد جعل الفاتورة كلها دين؟ سيُسجَّل المبلغ كدين مستحق ولا يُحسب ضمن المبيعات حتى يتم سداده.', false, () => {
+                box.checked = true;
+            });
+        }
+
+        function applyFreeDebtState(which) {
             const freeBox = document.getElementById('sel-free');
             const debtBox = document.getElementById('sel-debt');
             if (which === 'free') {
@@ -1294,6 +1387,33 @@
                     });
                     return;
                 }
+            } else if (activeSelection.sellMode === 'fullbag') {
+                const bagsAvailable = prod.bagsCount || 0;
+                if (bagsAvailable < qty) {
+                    showModal('تحذير: الشكائر غير متوفرة بالمخزون!', `عدد الشكائر الكاملة المتاحة حالياً هو (${bagsAvailable}) والمطلوب (${qty}).\nهل تريد إتمام العملية والبيع بالسالب؟`, false, () => {
+                        processAddToCartExecution(true);
+                    });
+                    return;
+                }
+            } else if (activeSelection.sellMode === 'halfbag') {
+                if (activeSelection.halfSource === 'open') {
+                    const openAvailable = prod.openBagKg || 0;
+                    const neededOpenKg = qty * (activeSelection.halfKg || 0);
+                    if (openAvailable < neededOpenKg - 1e-9) {
+                        showModal('تحذير: الوزن المفتوح غير كافٍ!', `الوزن المفتوح المتاح حالياً هو (${formatNum(openAvailable)} كجم) والمطلوب (${formatNum(neededOpenKg)} كجم).\nهل تريد إتمام العملية والبيع بالسالب؟`, false, () => {
+                            processAddToCartExecution(true);
+                        });
+                        return;
+                    }
+                } else {
+                    const bagsAvailable = prod.bagsCount || 0;
+                    if (bagsAvailable < qty) {
+                        showModal('تحذير: الشكائر غير متوفرة بالمخزون!', `عدد الشكائر الكاملة المتاحة لفتحها حالياً هو (${bagsAvailable}) والمطلوب (${qty}).\nهل تريد إتمام العملية والبيع بالسالب؟`, false, () => {
+                            processAddToCartExecution(true);
+                        });
+                        return;
+                    }
+                }
             }
 
             processAddToCartExecution(false);
@@ -1321,6 +1441,7 @@
                 qty: qty,
                 bagWeight: activeSelection.bagWeight || 0,
                 halfKg: activeSelection.halfKg || 0,
+                halfSource: activeSelection.sellMode === 'halfbag' ? (activeSelection.halfSource || 'newbag') : '',
                 extraKg: (activeSelection.sellMode === 'retail' && activeSelection.unitType === 'weight') ? (activeSelection.extraKg || 0) : 0,
                 discount: discount,
                 isFree: isFree,
@@ -1367,6 +1488,7 @@
 
                     ${item.isNegativeSale ? `<div style="font-size:12px; color:#d32f2f; margin-top:2px; font-weight:bold;">[بيع بالسالب - مخزون غير متوفر]</div>` : ''}
                     ${item.isDebt ? `<div style="font-size:12px; color:#e65100; margin-top:2px; font-weight:bold;">[دين]</div>` : ''}
+                    ${item.halfSource === 'open' ? `<div style="font-size:12px; color:#6a1b9a; margin-top:2px;">[من الوزن المفتوح]</div>` : ''}
                     ${item.extraKg > 0 ? `<div style="font-size:12px; color:#6a1b9a; margin-top:2px;">[إضافة غير محسوبة: ${formatNum(item.extraKg * 1000)} جرام (${formatNum(item.extraKg * item.price)} د.ل)]</div>` : ''}
                     ${item.discount > 0 ? `<div style="font-size:12px; color:#d32f2f; margin-top:2px;">[خصم على المنتج: ${formatNum(item.discount)} د.ل]</div>` : ''}
                     ${item.note ? `<div style="font-size:12px; color:#ff8c00; margin-top:2px;">[ملاحظة: ${item.note}]</div>` : ''}
@@ -1435,12 +1557,16 @@
                         prod.bagsCount = (prod.bagsCount || 0) - item.qty;
                     } else if (item.sellMode === 'halfbag') {
                         const halfCount = Math.max(1, Math.floor(Number(item.qty) || 1));
-                        for (let h = 0; h < halfCount; h++) {
-                            if ((prod.bagsCount || 0) > 0) {
-                                prod.bagsCount -= 1;
-                                prod.openBagKg = (prod.openBagKg || 0) + item.halfKg;
-                            } else {
-                                prod.openBagKg = (prod.openBagKg || 0) - item.halfKg;
+                        if (item.halfSource === 'open') {
+                            prod.openBagKg = (prod.openBagKg || 0) - halfCount * item.halfKg;
+                        } else {
+                            for (let h = 0; h < halfCount; h++) {
+                                if ((prod.bagsCount || 0) > 0) {
+                                    prod.bagsCount -= 1;
+                                    prod.openBagKg = (prod.openBagKg || 0) + item.halfKg;
+                                } else {
+                                    prod.openBagKg = (prod.openBagKg || 0) - item.halfKg;
+                                }
                             }
                         }
                     } else if (prod.unitType === 'weight') {
@@ -2120,9 +2246,13 @@
                 if (item.sellMode === 'fullbag') prod.bagsCount = Number(prod.bagsCount || 0) - Number(item.qty || 0);
                 else if (item.sellMode === 'halfbag') {
                     const halfCount = Math.max(0, Math.floor(Number(item.qty) || 0));
-                    for (let h = 0; h < halfCount; h++) {
-                        if (Number(prod.bagsCount || 0) > 0) { prod.bagsCount -= 1; prod.openBagKg = Number(prod.openBagKg || 0) + Number(item.halfKg || 0); }
-                        else prod.openBagKg = Number(prod.openBagKg || 0) - Number(item.halfKg || 0);
+                    if (item.halfSource === 'open') {
+                        prod.openBagKg = Number(prod.openBagKg || 0) - halfCount * Number(item.halfKg || 0);
+                    } else {
+                        for (let h = 0; h < halfCount; h++) {
+                            if (Number(prod.bagsCount || 0) > 0) { prod.bagsCount -= 1; prod.openBagKg = Number(prod.openBagKg || 0) + Number(item.halfKg || 0); }
+                            else prod.openBagKg = Number(prod.openBagKg || 0) - Number(item.halfKg || 0);
+                        }
                     }
                 } else if (prod.unitType === 'weight') {
                     let remaining = Number(item.qty || 0) + (Number(item.qty || 0) > 0 ? Number(item.extraKg || 0) : 0);
@@ -2347,6 +2477,7 @@
                                         ${i.isNegativeSale ? '<span style="color:#d32f2f; font-weight:bold;">[مبيعات بالسالب]</span>' : ''} 
                                         ${i.isFree ? '<span style="color:#2e7d32;">[مجاني]</span>' : ''} 
                                         ${i.isDebt ? '<span style="color:#e65100; font-weight:bold;">[دين]</span>' : ''} 
+                                        ${i.halfSource === 'open' ? '<span style="color:#6a1b9a;">[من الوزن المفتوح]</span>' : ''} 
                                         ${(i.extraKg > 0 && i.qty > 0) ? `<span style="color:#6a1b9a;">[إضافة: ${formatNum(i.extraKg * 1000)} جرام (${formatNum(i.extraKg * i.price)} د.ل)]</span>` : ''} 
                                         ${i.discount > 0 ? `<span style="color:#d32f2f;">[خصم: ${formatNum(i.discount)} د.ل]</span>` : ''} 
                                         ${i.note ? `<span style="color:#ff8c00;">[${i.note}]</span>` : ''}

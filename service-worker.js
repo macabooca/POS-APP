@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pos-app-cache-v29';
+const CACHE_NAME = 'pos-app-cache-v30';
 
 const APP_FILES = [
   './',
