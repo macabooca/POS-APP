@@ -608,11 +608,19 @@
         }
         .sale-card.sale-returned::before { background-color: #8a949c; }
 
-        /* Extra boxes: locked until tapped twice */
-        .extra-box[readonly] { background-color: #eef3f6; cursor: pointer; }
-        .extra-box.extra-armed { border-color: var(--teal-primary); background-color: #e5f3f4; }
-        .extra-box::placeholder { font-size: 12px; }
-        .extra-box.extra-armed::placeholder { color: var(--teal-primary); }
+        /* Filter chips (sales history) */
+        .chip-btn {
+            flex: 1;
+            border: 1px solid #cfe3e6;
+            background-color: #ffffff;
+            color: var(--teal-primary);
+            border-radius: 12px;
+            padding: 9px 6px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .chip-btn.active { background-color: var(--teal-primary); border-color: var(--teal-primary); color: #ffffff; }
 
         /* Popups */
         .modal-overlay { background: rgba(10, 36, 50, 0.55); }
@@ -677,7 +685,7 @@
                     <span class="form-label" id="sel-unit-qty-label">الكمية (بالقطعة)</span>
                     <div style="display:flex; align-items:center; gap:6px; direction: ltr;">
                         <button class="qty-btn" onclick="adjustSelQty(-1)">-</button>
-                        <input type="number" id="sel-unit-qty-input" placeholder="" onfocus="handlePosInputFocus(this)" oninput="onSelUnitQtyChange(this.value)" style="margin:0; text-align:center;">
+                        <input type="number" id="sel-unit-qty-input" placeholder="" onfocus="this.select(); handlePosInputFocus(this)" oninput="onSelUnitQtyChange(this.value)" style="margin:0; text-align:center;">
                         <button class="qty-btn" onclick="adjustSelQty(1)">+</button>
                     </div>
                 </div>
@@ -704,14 +712,14 @@
                     <div style="display:flex; gap:8px; margin-top:8px;">
                         <div style="flex:1;">
                             <span class="form-label">قروش إضافية</span>
-                            <input type="number" id="sel-extra-gurush" class="extra-box" readonly placeholder="" onclick="onExtraBoxTap(this)" onblur="lockExtraBox(this)" onfocus="handlePosInputFocus(this)" oninput="updateExtraFromGurush(this.value)" style="margin:0;">
+                            <input type="number" id="sel-extra-gurush" placeholder="" onfocus="handlePosInputFocus(this)" oninput="updateExtraFromGurush(this.value)" style="margin:0;">
                         </div>
                         <div style="flex:1;">
                             <span class="form-label">جرامات إضافية</span>
-                            <input type="number" id="sel-extra-grams" class="extra-box" readonly placeholder="" onclick="onExtraBoxTap(this)" onblur="lockExtraBox(this)" onfocus="handlePosInputFocus(this)" oninput="updateExtraFromGrams(this.value)" style="margin:0;">
+                            <input type="number" id="sel-extra-grams" placeholder="" onfocus="handlePosInputFocus(this)" oninput="updateExtraFromGrams(this.value)" style="margin:0;">
                         </div>
                     </div>
-                    <div style="font-size:11px; color:var(--muted); margin-top:4px;">الإضافة لا تُحسب في المبلغ وتُخصم من المخزون. (اضغط على الخانة مرتين لفتحها)</div>
+                    <div style="font-size:11px; color:var(--muted); margin-top:4px;">الإضافة لا تُحسب في المبلغ وتُخصم من المخزون.</div>
                 </div>
 
                 <div style="display:flex; gap:8px;">
@@ -737,13 +745,18 @@
                 </div>
 
                 <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
-                    <button class="btn btn-orange btn-add-to-cart" onclick="confirmAddToCart()">إضافة إلى السلة</button>
+                    <button class="btn btn-orange btn-add-to-cart" id="btn-add-to-cart" onclick="confirmAddToCart()">إضافة إلى السلة</button>
                     <div>المجموع: <strong id="sel-total-display" style="color:var(--teal-primary);">0</strong> د.ل</div>
                 </div>
             </div>
         </div>
 
         <div class="card cart-empty" id="cart-card">
+            <div id="edit-sale-banner" style="display:none; background:#fff4e5; border:1px solid #f5c98a; border-radius:12px; padding:10px 12px; margin-bottom:10px;">
+                <div id="edit-sale-banner-text" style="font-weight:700; color:#b45f06; font-size:14px;">✏️ تعديل فاتورة سابقة</div>
+                <div style="font-size:12px; color:#7a5a2a; margin:2px 0 8px 0;">عدّل المنتجات كما تشاء ثم اضغط «حفظ التعديلات».</div>
+                <button class="btn btn-red" style="padding:4px 10px; font-size:12px;" onclick="cancelSaleEdit()">إلغاء التعديل</button>
+            </div>
             <div class="cart-card-header">
                 <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M3 4h2.4l2.1 11h10.2l1.8-8H6.2"/></svg></span>سلة المشتريات</h3>
                 <span class="cart-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
@@ -751,6 +764,7 @@
             <div id="cart-container"></div>
 
             <div id="cart-options" style="display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+                <input type="text" id="cart-customer" placeholder="اسم العميل (اختياري)">
                 <input type="number" id="cart-discount" placeholder="أدخل مبلغ الخصم على الفاتورة (د.ل)" oninput="renderCart()">
                 <label class="checkbox-container" style="margin-top:2px;">
                     <input type="checkbox" id="cart-debt" onchange="onCartDebtChange(this)">
@@ -763,7 +777,7 @@
             <h4 dir="rtl">الإجمالي: <span id="cart-total" style="color:var(--teal-primary);">0</span> د.ل</h4>
 
             <div style="display: flex; gap: 8px; align-items: center; direction: rtl;">
-                <button class="btn btn-teal btn-complete-sale" onclick="completeSale()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h8l3 3V20.5H7z"/><path d="M10 11h5M10 14.5h5M10 8h2"/></svg><span>إتمام البيع</span></button>
+                <button class="btn btn-teal btn-complete-sale" onclick="completeSale()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h8l3 3V20.5H7z"/><path d="M10 11h5M10 14.5h5M10 8h2"/></svg><span id="complete-sale-label">إتمام البيع</span></button>
                 <button class="btn btn-red btn-clear-cart" title="تفريغ السلة" onclick="clearCart()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
             </div>
         </div>
@@ -773,6 +787,13 @@
     <div id="view-sales" class="view-page" style="display: none;">
         <div class="card">
             <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V12M10 20V6M15 20V10M20 20V15"/></svg></span>سجل المبيعات التفصيلي</h3>
+            <input type="search" id="sales-search" placeholder="ابحث: عميل، مدين، ملاحظة، خصم، منتج" oninput="renderSales()" style="margin-bottom:8px;">
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+                <button class="chip-btn active" id="sales-filter-all" onclick="setSalesFilter('all')">الكل</button>
+                <button class="chip-btn" id="sales-filter-unpaid" onclick="setSalesFilter('unpaid')">ديون غير مسددة</button>
+                <button class="chip-btn" id="sales-filter-paid" onclick="setSalesFilter('paid')">ديون مسددة</button>
+            </div>
+            <div id="sales-search-info" style="display:none; font-size:12px; color:var(--muted); margin-bottom:8px;"></div>
             <div id="sales-list"></div>
         </div>
     </div>
@@ -911,6 +932,13 @@
         let deletedSaleIds = new Set(safeLoad(KEYS.DELETED_SALES, []).map(String));
 
         /* Sales history: which day groups are open (today is open by default). */
+        /* Cart editing / debtor names */
+        let editingCartIndex = null;
+        let editingSaleId = null;
+        let salesDebtFilter = 'all';
+        let selDebtorName = '';
+        let cartDebtorName = '';
+
         let salesDayKeys = [];
         let salesDayToggled = new Map();
         
@@ -958,8 +986,60 @@
             initCloudSyncIfConfigured();
             renderCloudSyncStatus();
 
-            setInterval(startBackupReminder, 30 * 60 * 1000);
+            registerAppOpenForBackup();
+            setTimeout(checkBackupReminder, 3000);
+            setInterval(checkBackupReminder, 60 * 1000);
         });
+
+        /* Backup reminders: every 30 minutes counted from the first app open of the day (even if the app was closed
+           and reopened), and a strong warning after 4 hours without a backup. Downloading a backup restarts the count. */
+        const BACKUP_REMINDER_EVERY_MS = 30 * 60 * 1000;
+        const BACKUP_STRONG_AFTER_MS = 4 * 60 * 60 * 1000;
+
+        function localDayKey(ts) {
+            const d = new Date(ts);
+            return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+        }
+
+        function getFirstOpenToday() {
+            let first = null;
+            try { first = JSON.parse(localStorage.getItem('pos_backup_first_open') || 'null'); } catch (e) { first = null; }
+            return first;
+        }
+
+        function registerAppOpenForBackup() {
+            const now = Date.now();
+            const first = getFirstOpenToday();
+            if (!first || first.day !== localDayKey(now)) {
+                localStorage.setItem('pos_backup_first_open', JSON.stringify({ day: localDayKey(now), ts: now }));
+                localStorage.removeItem('pos_last_reminder_at');
+            }
+        }
+
+        function checkBackupReminder() {
+            registerAppOpenForBackup();
+            if (modalLocked) return;
+            const modalEl = document.getElementById('custom-modal');
+            if (modalEl && modalEl.style.display === 'flex') return;
+            const now = Date.now();
+            const first = getFirstOpenToday();
+            if (!first) return;
+            const lastBackup = Number(localStorage.getItem('pos_last_backup_at') || 0);
+            const lastReminder = Number(localStorage.getItem('pos_last_reminder_at') || 0);
+            if (now - Math.max(first.ts, lastBackup, lastReminder) < BACKUP_REMINDER_EVERY_MS) return;
+            const unsavedMs = now - Math.max(first.ts, lastBackup);
+            localStorage.setItem('pos_last_reminder_at', String(now));
+            if (unsavedMs >= BACKUP_STRONG_AFTER_MS) showStrongBackupWarning(unsavedMs);
+            else startBackupReminder();
+        }
+
+        function showStrongBackupWarning(unsavedMs) {
+            const hours = Math.floor(unsavedMs / 3600000);
+            showModal('⚠️ تحذير: لم تُحمّل نسخة احتياطية!',
+                `مضى أكثر من <span style="color:#d53637; font-weight:700;">${hours} ساعات</span> من العمل دون تحميل نسخة احتياطية.\nإذا مُسحت بيانات المتصفح أو تعطل الهاتف فقد تضيع كل المبيعات والمخزون.\n<span style="color:#d53637; font-weight:700;">حمّل نسخة الآن.</span>`,
+                false, (choice) => { if (choice === 'download') exportBackup(); }, false, 'reminder');
+            document.getElementById('modal-title').style.color = '#d53637';
+        }
 
         function startBackupReminder() {
             if (modalLocked) return;
@@ -1002,6 +1082,25 @@
             });
         }
 
+        /* Search: any word order, partial words, similar Arabic letters treated as the same. */
+        function normalizeSearchText(text) {
+            return String(text === undefined || text === null ? '' : text).toLowerCase()
+                .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
+                .replace(/[أإآٱ]/g, 'ا')
+                .replace(/ى/g, 'ي')
+                .replace(/ة/g, 'ه')
+                .replace(/[٠-٩]/g, d => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function matchesSearch(text, query) {
+            const tokens = normalizeSearchText(query).split(' ').filter(Boolean);
+            if (!tokens.length) return true;
+            const hay = normalizeSearchText(text);
+            return tokens.every(token => hay.includes(token));
+        }
+
         function showSearchDropdown() {
             const query = document.getElementById('pos-search').value.trim();
             if (query === '') {
@@ -1018,7 +1117,7 @@
                 return;
             }
 
-            const matches = products.filter(p => p.name.toLowerCase().includes(query));
+            const matches = products.filter(p => matchesSearch(p.name, query));
             renderProductDropdown(matches, 'نتائج البحث');
         }
 
@@ -1049,6 +1148,7 @@
             const prod = products.find(p => String(p.id) === String(productId));
             if (!prod) return;
 
+            resetSelectionEditState();
             activeProductObj = prod;
             currentSellMode = 'retail';
 
@@ -1110,9 +1210,9 @@
                     weightPanel.style.display = 'none';
                     activeSelection = {
                         id: prod.id, name: prod.name, unitType: 'unit', sellMode: 'retail',
-                        price: prod.price, cost: prod.cost, qty: 0
+                        price: prod.price, cost: prod.cost, qty: 1
                     };
-                    document.getElementById('sel-unit-qty-input').value = '';
+                    document.getElementById('sel-unit-qty-input').value = '1';
                 } else {
                     unitPanel.style.display = 'none';
                     weightPanel.style.display = 'block';
@@ -1124,17 +1224,15 @@
                     document.getElementById('sel-weight-input').value = '';
                     document.getElementById('sel-extra-gurush').value = '';
                     document.getElementById('sel-extra-grams').value = '';
-                    lockExtraBox(document.getElementById('sel-extra-gurush'));
-                    lockExtraBox(document.getElementById('sel-extra-grams'));
                 }
             } else if (mode === 'wholesale') {
                 unitPanel.style.display = 'block';
                 weightPanel.style.display = 'none';
                 activeSelection = {
                     id: prod.id, name: `${prod.name} (جملة)`, unitType: 'unit', sellMode: 'wholesale',
-                    price: prod.wholesaleUnitPrice || prod.price, cost: prod.cost, qty: 0
+                    price: prod.wholesaleUnitPrice || prod.price, cost: prod.cost, qty: 1
                 };
-                document.getElementById('sel-unit-qty-input').value = '';
+                document.getElementById('sel-unit-qty-input').value = '1';
             } else if (mode === 'fullbag') {
                 unitPanel.style.display = 'block';
                 weightPanel.style.display = 'none';
@@ -1144,9 +1242,8 @@
                     price: prod.fullBagPrice, cost: getWholeBagCost(prod), qty: 1, bagWeight: prod.bagWeightKg || 0
                 };
             } else if (mode === 'halfbag') {
-                unitPanel.style.display = 'block';
+                unitPanel.style.display = 'none';
                 weightPanel.style.display = 'none';
-                document.getElementById('sel-unit-qty-input').value = '1';
                 const halfKg = (prod.bagWeightKg || 0) / 2;
                 activeSelection = {
                     id: prod.id, name: `${prod.name} (نصف شكارة - ${halfKg}كجم)`, unitType: 'halfbag', sellMode: 'halfbag',
@@ -1156,48 +1253,6 @@
             }
 
             calculateSelTotal();
-        }
-
-        /* Extra gurush / grams boxes need two taps to open, so nothing is typed into them by accident. */
-        let extraTapTarget = null;
-        let extraTapTimer = null;
-
-        function resetExtraBoxHint(el) {
-            if (!el) return;
-            el.placeholder = '';
-            el.classList.remove('extra-armed');
-        }
-
-        function lockExtraBox(el) {
-            if (!el) return;
-            el.readOnly = true;
-            resetExtraBoxHint(el);
-            if (extraTapTarget === el) {
-                extraTapTarget = null;
-                clearTimeout(extraTapTimer);
-            }
-        }
-
-        function onExtraBoxTap(el) {
-            if (!el.readOnly) return;
-            if (extraTapTarget === el) {
-                clearTimeout(extraTapTimer);
-                extraTapTarget = null;
-                resetExtraBoxHint(el);
-                el.blur();
-                el.readOnly = false;
-                el.focus();
-                return;
-            }
-            resetExtraBoxHint(extraTapTarget);
-            extraTapTarget = el;
-            el.placeholder = 'اضغط مرة أخرى للفتح';
-            el.classList.add('extra-armed');
-            clearTimeout(extraTapTimer);
-            extraTapTimer = setTimeout(() => {
-                resetExtraBoxHint(el);
-                if (extraTapTarget === el) extraTapTarget = null;
-            }, 3000);
         }
 
         /* Half bag: take it from a newly opened bag, or from the open (remaining) weight. */
@@ -1222,7 +1277,7 @@
         function adjustSelQty(delta) {
             if (!activeSelection) return;
             const current = activeSelection.qty || 0;
-            const minimum = isBagSelection() ? 1 : 0;
+            const minimum = (activeSelection.unitType === 'unit' || isBagSelection()) ? 1 : 0;
             activeSelection.qty = Math.max(minimum, current + delta);
             document.getElementById('sel-unit-qty-input').value = activeSelection.qty > 0 ? activeSelection.qty : '';
             calculateSelTotal();
@@ -1288,24 +1343,36 @@
             const box = document.getElementById(which === 'free' ? 'sel-free' : 'sel-debt');
             if (box.checked) {
                 box.checked = false;
-                const message = which === 'free'
-                    ? 'هل تريد جعل هذا المنتج مجاني؟ لن يُحسب له أي مبلغ في الفاتورة.'
-                    : 'هل تريد جعل هذا المنتج دين؟ سيُسجَّل كمبلغ مستحق ولا يُحسب ضمن المبيعات حتى يتم سداده.';
-                showModal('تأكيد', message, false, () => {
+                if (which === 'free') {
+                    showModal('تأكيد', 'هل تريد جعل هذا المنتج مجاني؟ لن يُحسب له أي مبلغ في الفاتورة.', false, () => {
+                        box.checked = true;
+                        applyFreeDebtState(which);
+                    });
+                    return;
+                }
+                const askDebt = (name) => {
                     box.checked = true;
+                    selDebtorName = String(name || '').trim();
                     applyFreeDebtState(which);
-                });
+                };
+                askDebt.placeholder = 'اسم المدين (اختياري)';
+                showModal('تأكيد', 'هل تريد جعل هذا المنتج دين؟ سيُسجَّل كمبلغ مستحق ولا يُحسب ضمن المبيعات حتى يتم سداده.\nاكتب اسم الشخص الذي أخذه (اختياري):', 'text', askDebt);
                 return;
             }
+            if (which === 'debt') selDebtorName = '';
             applyFreeDebtState(which);
         }
 
         function onCartDebtChange(box) {
-            if (!box.checked) return;
+            if (!box.checked) { cartDebtorName = ''; return; }
             box.checked = false;
-            showModal('تأكيد', 'هل تريد جعل الفاتورة كلها دين؟ سيُسجَّل المبلغ كدين مستحق ولا يُحسب ضمن المبيعات حتى يتم سداده.', false, () => {
+            const askCartDebt = (name) => {
                 box.checked = true;
-            });
+                cartDebtorName = String(name || '').trim();
+            };
+            askCartDebt.placeholder = 'اسم المدين (اختياري)';
+            askCartDebt.initialValue = (document.getElementById('cart-customer').value || '').trim();
+            showModal('تأكيد', 'هل تريد جعل الفاتورة كلها دين؟ سيُسجَّل المبلغ كدين مستحق ولا يُحسب ضمن المبيعات حتى يتم سداده.\nاكتب اسم المدين (اختياري):', 'text', askCartDebt);
         }
 
         function applyFreeDebtState(which) {
@@ -1336,7 +1403,15 @@
             document.getElementById('sel-total-display').innerText = formatNum(finalTotal);
         }
 
+        function resetSelectionEditState() {
+            editingCartIndex = null;
+            selDebtorName = '';
+            const addBtn = document.getElementById('btn-add-to-cart');
+            if (addBtn) addBtn.textContent = 'إضافة إلى السلة';
+        }
+
         function cancelProductSelection() {
+            resetSelectionEditState();
             activeSelection = null;
             activeProductObj = null;
             document.getElementById('selected-product-panel').style.display = 'none';
@@ -1353,6 +1428,9 @@
             }
 
             const prod = activeProductObj;
+
+            /* while editing a finished sale, stock is checked once when saving the changes */
+            if (editingSaleId) { processAddToCartExecution(false); return; }
 
             if (prod.unitType === 'weight' && activeSelection.sellMode === 'retail') {
                 const openKg = prod.openBagKg || 0;
@@ -1431,7 +1509,7 @@
                 itemTotal = Math.max(0, (qty * activeSelection.price) - discount);
             }
 
-            cart.push({
+            const newCartItem = {
                 id: activeSelection.id,
                 name: activeSelection.name,
                 unitType: activeSelection.unitType,
@@ -1446,16 +1524,83 @@
                 discount: discount,
                 isFree: isFree,
                 isDebt: isDebt,
+                debtorName: isDebt ? selDebtorName : '',
                 isNegativeSale: isNegative,
                 total: itemTotal,
                 note: note
-            });
+            };
+            if (editingCartIndex !== null && cart[editingCartIndex]) cart[editingCartIndex] = newCartItem;
+            else cart.push(newCartItem);
 
             cancelProductSelection();
             renderCart();
         }
 
+        function editCartItem(idx) {
+            const item = cart[idx];
+            if (!item) return;
+            const prod = products.find(p => String(p.id) === String(item.id));
+            if (!prod) {
+                showModal('تنبيه', 'هذا المنتج لم يعد موجوداً في المخزون، لا يمكن تعديله. يمكنك حذفه من السلة.', false, () => {});
+                return;
+            }
+
+            resetSelectionEditState();
+            activeProductObj = prod;
+            document.getElementById('pos-search').value = '';
+            document.getElementById('product-dropdown').innerHTML = '';
+            document.getElementById('sel-product-name').innerText = prod.name;
+
+            const btnFull = document.getElementById('mode-btn-fullbag');
+            const btnHalf = document.getElementById('mode-btn-halfbag');
+            const btnWholesale = document.getElementById('mode-btn-wholesale');
+            if (prod.unitType === 'weight') {
+                btnFull.style.display = 'block'; btnHalf.style.display = 'block'; btnWholesale.style.display = 'none';
+            } else {
+                btnFull.style.display = 'none'; btnHalf.style.display = 'none';
+                btnWholesale.style.display = prod.wholesaleUnitPrice ? 'block' : 'none';
+            }
+
+            setSellMode(item.sellMode);
+            editingCartIndex = idx;
+
+            /* keep the values saved on the cart line (price, cost, name), then fill the boxes */
+            activeSelection.price = item.price;
+            activeSelection.cost = item.cost;
+            activeSelection.name = item.name;
+            activeSelection.qty = item.qty;
+            activeSelection.extraKg = item.extraKg || 0;
+            if (item.sellMode === 'halfbag') setHalfSource(item.halfSource || 'newbag');
+            if (item.sellMode === 'retail' && item.unitType === 'weight') {
+                document.getElementById('sel-weight-input').value = formatNum(item.qty);
+                document.getElementById('sel-price-input').value = formatNum(item.qty * item.price);
+                document.getElementById('sel-extra-grams').value = item.extraKg > 0 ? formatNum(item.extraKg * 1000) : '';
+                document.getElementById('sel-extra-gurush').value = item.extraKg > 0 ? formatNum(item.extraKg * item.price * 100) : '';
+            } else {
+                document.getElementById('sel-unit-qty-input').value = item.qty;
+            }
+            document.getElementById('sel-discount').value = item.discount > 0 ? item.discount : '';
+            document.getElementById('sel-note').value = item.note || '';
+            const freeBox = document.getElementById('sel-free');
+            const debtBox = document.getElementById('sel-debt');
+            freeBox.checked = !!item.isFree;
+            debtBox.checked = !!item.isDebt && !item.isFree;
+            freeBox.disabled = debtBox.checked;
+            debtBox.disabled = freeBox.checked;
+            selDebtorName = item.debtorName || '';
+
+            document.getElementById('btn-add-to-cart').textContent = 'حفظ التعديل';
+            document.getElementById('selected-product-panel').style.display = 'block';
+            document.body.classList.add('panel-open');
+            calculateSelTotal();
+            document.getElementById('selected-product-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
         function removeFromCart(index) {
+            if (editingCartIndex !== null) {
+                if (index === editingCartIndex) cancelProductSelection();
+                else if (index < editingCartIndex) editingCartIndex--;
+            }
             cart.splice(index, 1);
             renderCart();
         }
@@ -1475,10 +1620,13 @@
 
             optionsBox.style.display = 'block';
             container.innerHTML = cart.map((item, idx) => `
-                <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="border-bottom: 1px solid #eee; padding: 10px 0; cursor:pointer;" onclick="editCartItem(${idx})">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                         <strong>${item.name}</strong>
-                        <button class="btn btn-red" style="padding:2px 8px; font-size:12px;" onclick="removeFromCart(${idx})">✕</button>
+                        <span style="display:flex; gap:6px; flex:none;">
+                            <button class="btn btn-teal" style="padding:2px 8px; font-size:12px;" onclick="event.stopPropagation(); editCartItem(${idx})">✏️ تعديل</button>
+                            <button class="btn btn-red" style="padding:2px 8px; font-size:12px;" onclick="event.stopPropagation(); removeFromCart(${idx})">✕</button>
+                        </span>
                     </div>
 
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:13px;">
@@ -1487,7 +1635,7 @@
                     </div>
 
                     ${item.isNegativeSale ? `<div style="font-size:12px; color:#d32f2f; margin-top:2px; font-weight:bold;">[بيع بالسالب - مخزون غير متوفر]</div>` : ''}
-                    ${item.isDebt ? `<div style="font-size:12px; color:#e65100; margin-top:2px; font-weight:bold;">[دين]</div>` : ''}
+                    ${item.isDebt ? `<div style="font-size:12px; color:#e65100; margin-top:2px; font-weight:bold;">[دين${item.debtorName ? ': ' + escapeHtml(item.debtorName) : ''}]</div>` : ''}
                     ${item.halfSource === 'open' ? `<div style="font-size:12px; color:#6a1b9a; margin-top:2px;">[من الوزن المفتوح]</div>` : ''}
                     ${item.extraKg > 0 ? `<div style="font-size:12px; color:#6a1b9a; margin-top:2px;">[إضافة غير محسوبة: ${formatNum(item.extraKg * 1000)} جرام (${formatNum(item.extraKg * item.price)} د.ل)]</div>` : ''}
                     ${item.discount > 0 ? `<div style="font-size:12px; color:#d32f2f; margin-top:2px;">[خصم على المنتج: ${formatNum(item.discount)} د.ل]</div>` : ''}
@@ -1506,11 +1654,16 @@
             cart = [];
             document.getElementById('cart-discount').value = '';
             document.getElementById('cart-debt').checked = false;
+            document.getElementById('cart-customer').value = '';
+            cartDebtorName = '';
+            editingSaleId = null;
+            updateEditSaleUI();
             cancelProductSelection();
             renderCart();
         }
 
         function completeSale() {
+            if (editingSaleId) { saveEditedSale(); return; }
             if (cart.length === 0) return;
 
             const globalDiscount = parseFloat(document.getElementById('cart-discount').value) || 0;
@@ -1544,6 +1697,8 @@
                 total: finalTotal,
                 profit: 0,
                 cartDebt: cartDebt,
+                customerName: (document.getElementById('cart-customer').value || '').trim(),
+                debtorName: cartDebt ? cartDebtorName : '',
                 note: invoiceNote,
                 inventoryDeltas: []
             };
@@ -1632,6 +1787,7 @@
             modalCancelHandler = (onConfirm && typeof onConfirm.onCancel === 'function') ? onConfirm.onCancel : null;
 
             document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-title').style.color = '';
             document.getElementById('modal-body').innerHTML = text ? text.replace(/\n/g, '<br>') : '';
             const inputContainer = document.getElementById('modal-input-container');
             const buttonsBox = document.getElementById('modal-buttons-box');
@@ -1668,7 +1824,7 @@
                 inputContainer.innerHTML = `<input type="password" id="modal-field" placeholder="أدخل الرقم السري">`;
             } else if (inputType === 'text') {
                 const initVal = onConfirm.initialValue || '';
-                inputContainer.innerHTML = `<input type="text" id="modal-field" placeholder="أدخل البيانات" value="${initVal}">`;
+                inputContainer.innerHTML = `<input type="text" id="modal-field" placeholder="${escapeHtml(onConfirm.placeholder || 'أدخل البيانات')}" value="${escapeHtml(initVal)}">`;
             } else if (inputType === 'cashier_form') {
                 const c = onConfirm.cashierData || {};
                 inputContainer.innerHTML = `
@@ -1769,7 +1925,7 @@
                         <input type="number" id="p-kg-price" placeholder="" value="${p.kgPrice !== undefined ? p.kgPrice : ''}">
 
                         <label class="form-label">سعر الشكارة / الصندوق الكامل</label>
-                        <input type="number" id="p-full-bag-price" placeholder="" value="${p.fullBagPrice !== undefined ? p.fullBagPrice : ''}">
+                        <input type="number" id="p-full-bag-price" placeholder="" oninput="autoFillHalfBagPrice(this.value)" value="${p.fullBagPrice !== undefined ? p.fullBagPrice : ''}">
 
                         <label class="form-label">سعر نصف الشكارة / نصف الصندوق</label>
                         <input type="number" id="p-half-bag-price" placeholder="" value="${p.halfBagPrice !== undefined ? p.halfBagPrice : ''}">
@@ -1887,6 +2043,13 @@
                 if (weightCostBox) weightCostBox.style.display = 'none';
                 if (costLabel) costLabel.textContent = 'سعر التكلفة (خاص بالمدير)';
             }
+        }
+
+        function autoFillHalfBagPrice(val) {
+            const half = document.getElementById('p-half-bag-price');
+            if (!half) return;
+            const v = parseFloat(val);
+            half.value = (val === '' || isNaN(v)) ? '' : String(Math.round((v / 2) * 100) / 100);
         }
 
         function setProductType(type) {
@@ -2345,7 +2508,7 @@
             box.innerHTML = html;
         }
 
-        function editSale(saleId) {
+        function editSaleLegacyPopup(saleId) {
             const sale = sales.find(s => String(s.id) === String(saleId));
             if (!sale || sale.returnedAt) return;
             window.__editingSale = sale;
@@ -2410,6 +2573,148 @@
             showModal('تعديل البيع', 'للمنتجات المباعة بالوزن: اكتب المبلغ (د.ل) الذي تريد إرجاعه. للمنتجات الأخرى: عدّل الكمية، وضع 0 لإرجاع المنتج بالكامل.', 'sale_edit_form', callback);
         }
 
+        /* ===== Edit a finished sale inside the main-page cart ===== */
+        function updateEditSaleUI() {
+            const banner = document.getElementById('edit-sale-banner');
+            const label = document.getElementById('complete-sale-label');
+            const sale = editingSaleId ? sales.find(x => String(x.id) === String(editingSaleId)) : null;
+            if (banner) banner.style.display = sale ? 'block' : 'none';
+            if (sale) {
+                const when = new Date(sale.timestamp).toLocaleString('ar-LY');
+                document.getElementById('edit-sale-banner-text').textContent = '✏️ تعديل فاتورة سابقة (' + when + ')' + (sale.customerName ? ' — ' + sale.customerName : '');
+            }
+            if (label) label.textContent = editingSaleId ? 'حفظ التعديلات' : 'إتمام البيع';
+        }
+
+        function cancelSaleEdit() {
+            clearCart();
+        }
+
+        function editSale(saleId) {
+            const sale = sales.find(x => String(x.id) === String(saleId));
+            if (!sale || sale.returnedAt) return;
+            if (cart.length > 0 || editingSaleId) {
+                showModal('تأكيد', 'السلة الحالية فيها منتجات وسيتم استبدالها بمنتجات هذه الفاتورة. هل تريد المتابعة؟', false, () => beginSaleEdit(sale));
+                return;
+            }
+            beginSaleEdit(sale);
+        }
+
+        function beginSaleEdit(sale) {
+            clearCart();
+            editingSaleId = sale.id;
+            cart = (sale.items || []).map(item => {
+                const copy = { ...item };
+                if (sale.cartDebt) copy.isDebt = false;
+                return copy;
+            });
+            document.getElementById('cart-discount').value = Number(sale.globalDiscount || 0) > 0 ? sale.globalDiscount : '';
+            document.getElementById('cart-customer').value = sale.customerName || '';
+            document.getElementById('cart-debt').checked = !!sale.cartDebt;
+            cartDebtorName = sale.debtorName || '';
+            updateEditSaleUI();
+            renderCart();
+            switchTab('pos', document.querySelectorAll('.nav-item')[0]);
+        }
+
+        function summarizeSaleChanges(oldItems, newItems) {
+            const key = i => `${i.name}||${i.sellMode}`;
+            const aggregate = list => {
+                const map = new Map();
+                list.forEach(i => map.set(key(i), (map.get(key(i)) || 0) + Number(i.qty || 0)));
+                return map;
+            };
+            const before = aggregate(oldItems), after = aggregate(newItems);
+            const changes = [];
+            new Set([...before.keys(), ...after.keys()]).forEach(k => {
+                const fromQty = before.get(k) || 0, toQty = after.get(k) || 0;
+                if (Math.abs(fromQty - toQty) > 1e-9) changes.push({ name: k.split('||')[0], fromQty, toQty });
+            });
+            return changes;
+        }
+
+        function saveEditedSale() {
+            const sale = sales.find(x => String(x.id) === String(editingSaleId));
+            if (!sale || sale.returnedAt) {
+                clearCart();
+                showModal('تنبيه', 'لم يعد بالإمكان تعديل هذه الفاتورة.', false, () => {});
+                return;
+            }
+            if (cart.length === 0) {
+                showModal('تنبيه', 'لا يمكن حفظ فاتورة بدون منتجات. لإلغاء الفاتورة بالكامل استخدم زر إرجاع البيع من سجل المبيعات.', false, () => {});
+                return;
+            }
+
+            const cartDebt = !!document.getElementById('cart-debt').checked;
+            const customerName = (document.getElementById('cart-customer').value || '').trim();
+            const globalDiscount = parseFloat(document.getElementById('cart-discount').value) || 0;
+            const debtorName = cartDebt ? cartDebtorName : '';
+            const editedItems = cart.map(item => (cartDebt && !item.isFree) ? { ...item, isDebt: true } : { ...item });
+            const total = Math.max(0, editedItems.reduce((sum, item) => sum + Number(item.total || 0), 0) - globalDiscount);
+
+            const signature = (items, discount, debt, customer, debtor) => JSON.stringify([
+                items.map(i => [i.id, i.sellMode, i.qty, i.price, i.total, i.discount, i.note || '', !!i.isFree, !!i.isDebt, i.debtorName || '', i.extraKg || 0, i.halfSource || '']),
+                Number(discount || 0), !!debt, customer || '', debtor || ''
+            ]);
+            if (signature(editedItems, globalDiscount, cartDebt, customerName, debtorName) === signature(sale.items || [], sale.globalDiscount, sale.cartDebt, sale.customerName, sale.debtorName)) {
+                showModal('لا يوجد تغيير', 'لم يتم تغيير أي شيء في هذه الفاتورة.', false, () => {});
+                return;
+            }
+
+            const calculation = calculateEditedSaleDeltas(sale, editedItems);
+            const changes = summarizeSaleChanges(sale.items || [], editedItems);
+
+            const simulated = products.map(p => ({ ...p }));
+            applyInventoryDeltas(simulated, calculation.adjustment);
+            const fieldNames = { qty: 'الكمية', bagsCount: 'الشكائر', openBagKg: 'الوزن المفتوح (كجم)' };
+            const warnings = [];
+            simulated.forEach(after => {
+                const current = products.find(p => String(p.id) === String(after.id));
+                if (!current) return;
+                ['qty', 'bagsCount', 'openBagKg'].forEach(field => {
+                    const newValue = Number(after[field] || 0), oldValue = Number(current[field] || 0);
+                    if (newValue < -1e-9 && newValue < oldValue - 1e-9) warnings.push(`• ${current.name}: ${fieldNames[field]} ${formatNum(oldValue)} ← ${formatNum(newValue)}`);
+                });
+            });
+
+            const lines = changes.map(c => `• ${c.name}: ${formatNum(c.fromQty)} ← ${formatNum(c.toQty)}`);
+            lines.push(`الإجمالي: ${formatNum(sale.total)} ← ${formatNum(total)} د.ل`);
+            let message = lines.join('\n') + '\n\nسيتم تحديث الفاتورة وتعديل المخزون تلقائياً. هل تريد المتابعة؟';
+            let heading = 'تأكيد تعديل الفاتورة';
+            if (warnings.length) {
+                heading = 'تحذير: المخزون سيصبح بالسالب';
+                message = lines.join('\n') + '\n\nبعد هذا التعديل سيصبح المخزون بالسالب:\n' + warnings.join('\n') + '\n\nهل تريد المتابعة؟';
+            }
+
+            showModal(heading, message, false, () => {
+                applyInventoryDeltas(products, calculation.adjustment);
+                const amendedAt = new Date().toISOString();
+                const breakdown = getSaleBreakdown({ items: editedItems, globalDiscount });
+                const profit = breakdown.cashProfit + breakdown.debtProfit;
+                const itemNotes = editedItems.map(item => String(item.note || '').trim()).filter(Boolean).join(' | ');
+                const note = itemNotes || sale.note || '';
+                const amendment = { at: amendedAt, by: activeCashier, changes };
+                Object.assign(sale, {
+                    items: editedItems, globalDiscount, total, profit, cartDebt, customerName, debtorName, note,
+                    inventoryDeltas: calculation.newDeltas, amendedAt, amendedBy: activeCashier,
+                    amendmentHistory: [...(sale.amendmentHistory || []), amendment]
+                });
+                safeSave(KEYS.PRODUCTS, products);
+                safeSave(KEYS.SALES, sales);
+                queueCloudOperation({
+                    id: 'sale-amend:' + sale.id + ':' + Date.now(), type: 'saleAmendment',
+                    payload: { id: sale.id, items: sale.items, total: sale.total, profit: sale.profit, inventoryDeltas: sale.inventoryDeltas, adjustment: calculation.adjustment,
+                        amendedAt, amendedBy: sale.amendedBy, amendment, globalDiscount, cartDebt, customerName, debtorName, note },
+                    createdAt: Date.now()
+                });
+                clearCart();
+                renderInventory();
+                renderSales();
+                switchTab('sales', document.querySelectorAll('.nav-item')[1]);
+                showModal('تم التعديل', 'تم تحديث الفاتورة والمخزون بنجاح.', false, () => {});
+            });
+        }
+
         /* Splits a sale into the part paid now (cash) and the part owed (debt), with amounts and profits.
            Profit is counted only for products that have a cost entered (cost > 0). */
         function getSaleBreakdown(sale) {
@@ -2445,6 +2750,14 @@
             };
         }
 
+        function getSaleDebtorNames(sale) {
+            const names = [];
+            const add = n => { n = String(n || '').trim(); if (n && !names.includes(n)) names.push(n); };
+            add(sale.debtorName);
+            (sale.items || []).forEach(i => { if (i.isDebt) add(i.debtorName); });
+            return names.join('، ');
+        }
+
         function renderSaleCard(s, timeStr) {
             const hasGlobalDiscount = s.globalDiscount && s.globalDiscount > 0;
             const bd = getSaleBreakdown(s);
@@ -2452,12 +2765,14 @@
             const cardClass = 'sale-card' + (s.returnedAt ? ' sale-returned' : (hasDebt && !s.debtPaidAt ? ' sale-debt' : ''));
 
             let debtBanner = '';
+            const debtorNames = getSaleDebtorNames(s);
+            const debtorsText = debtorNames ? ` — على: ${escapeHtml(debtorNames)}` : '';
             if (hasDebt && !s.returnedAt) {
                 if (s.debtPaidAt) {
-                    debtBanner = `<div style="font-size:13px; color:#2e7d32; font-weight:bold; margin-top:4px;">✔ تم سداد الدين (${formatNum(bd.debtAmount)} د.ل) — ${new Date(s.debtPaidAt).toLocaleString('ar-LY')} بواسطة ${s.debtPaidBy || 'غير محدد'}</div>`;
+                    debtBanner = `<div style="font-size:13px; color:#2e7d32; font-weight:bold; margin-top:4px;">✔ تم سداد الدين (${formatNum(bd.debtAmount)} د.ل)${debtorsText} — ${new Date(s.debtPaidAt).toLocaleString('ar-LY')} بواسطة ${s.debtPaidBy || 'غير محدد'}</div>`;
                 } else {
                     debtBanner = `<div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap; margin-top:4px;">
-                        <span style="font-size:13px; color:#e65100; font-weight:bold;">💳 ${s.cartDebt ? 'فاتورة دين' : 'يوجد دين'} — المبلغ المستحق: ${formatNum(bd.debtAmount)} د.ل (لم يُسدد)</span>
+                        <span style="font-size:13px; color:#e65100; font-weight:bold;">💳 ${s.cartDebt ? 'فاتورة دين' : 'يوجد دين'} — المبلغ المستحق: ${formatNum(bd.debtAmount)} د.ل (لم يُسدد)${debtorsText}</span>
                         <button class="btn btn-green" style="padding:2px 8px; font-size:11px;" onclick='markSaleDebtPaid(${JSON.stringify(s.id)})'>تم السداد</button>
                     </div>`;
                 }
@@ -2469,6 +2784,7 @@
                             <span>الوقت: ${timeStr}</span>
                             <span>الكاشير: ${s.cashier}</span>
                         </div>
+                        ${s.customerName ? `<div style="font-size:13px; color:var(--navy); font-weight:700; margin-top:3px;">👤 العميل: ${escapeHtml(s.customerName)}</div>` : ''}
                         <div style="margin: 4px 0;">
                             ${s.items.map(i => `
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
@@ -2476,7 +2792,7 @@
                                         • ${i.name} × ${formatNum(i.qty)} ${i.unitType === 'weight' ? 'كجم' : (i.unitType === 'unit' ? 'قطعة' : 'شكارة')} 
                                         ${i.isNegativeSale ? '<span style="color:#d32f2f; font-weight:bold;">[مبيعات بالسالب]</span>' : ''} 
                                         ${i.isFree ? '<span style="color:#2e7d32;">[مجاني]</span>' : ''} 
-                                        ${i.isDebt ? '<span style="color:#e65100; font-weight:bold;">[دين]</span>' : ''} 
+                                        ${i.isDebt ? `<span style="color:#e65100; font-weight:bold;">[دين${i.debtorName ? ': ' + escapeHtml(i.debtorName) : ''}]</span>` : ''} 
                                         ${i.halfSource === 'open' ? '<span style="color:#6a1b9a;">[من الوزن المفتوح]</span>' : ''} 
                                         ${(i.extraKg > 0 && i.qty > 0) ? `<span style="color:#6a1b9a;">[إضافة: ${formatNum(i.extraKg * 1000)} جرام (${formatNum(i.extraKg * i.price)} د.ل)]</span>` : ''} 
                                         ${i.discount > 0 ? `<span style="color:#d32f2f;">[خصم: ${formatNum(i.discount)} د.ل]</span>` : ''} 
@@ -2515,7 +2831,17 @@
             }
 
             const todayStr = new Date().toLocaleDateString('ar-LY');
-            const sortedSales = [...sales].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            const searchBox = document.getElementById('sales-search');
+            const searchQuery = searchBox ? searchBox.value : '';
+            const searching = searchQuery.trim() !== '' || salesDebtFilter !== 'all';
+            let sortedSales = [...sales].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            if (searching) sortedSales = sortedSales.filter(sale => saleMatchesSearch(sale, searchQuery));
+            updateSalesSearchInfo(searching, sortedSales.length);
+            if (searching && sortedSales.length === 0) {
+                container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد نتائج مطابقة</p>';
+                salesDayKeys = [];
+                return;
+            }
             const groups = [];
 
             sortedSales.forEach(s => {
@@ -2534,7 +2860,7 @@
 
             salesDayKeys = groups.map(g => g.key);
             container.innerHTML = groups.map((g, idx) => {
-                const open = salesDayToggled.has(g.key) ? salesDayToggled.get(g.key) : g.isToday;
+                const open = searching ? true : (salesDayToggled.has(g.key) ? salesDayToggled.get(g.key) : g.isToday);
                 return `
                     <div class="day-group-header" onclick="toggleSalesDay(${idx})">
                         <span>${g.key}</span>
@@ -2543,6 +2869,50 @@
                     <div id="sales-day-body-${idx}" style="display:${open ? 'block' : 'none'};">${g.cards.join('')}</div>
                 `;
             }).join('');
+        }
+
+        /* Everything searchable about a sale, as one text. */
+        function saleSearchText(sale) {
+            const parts = [];
+            const bd = getSaleBreakdown(sale);
+            parts.push(sale.customerName, sale.debtorName, getSaleDebtorNames(sale), sale.cashier, sale.note, sale.dayName,
+                new Date(sale.timestamp).toLocaleDateString('ar-LY'), formatNum(sale.total));
+            if (Number(sale.globalDiscount || 0) > 0) parts.push('خصم', 'خصم على الفاتورة', formatNum(sale.globalDiscount));
+            (sale.items || []).forEach(i => {
+                parts.push(i.name, i.note, i.debtorName);
+                if (Number(i.discount || 0) > 0) parts.push('خصم', formatNum(i.discount));
+                if (i.isFree) parts.push('مجاني');
+                if (Number(i.extraKg || 0) > 0) parts.push('إضافة');
+            });
+            if (bd.debtAmount > 1e-7) parts.push('دين', sale.debtPaidAt ? 'دين مسدد' : 'دين مستحق');
+            if (sale.returnedAt) parts.push('مرتجع', 'ارجاع');
+            return parts.filter(p => p !== undefined && p !== null && String(p).trim() !== '').join(' | ');
+        }
+
+        function saleMatchesSearch(sale, query) {
+            if (salesDebtFilter !== 'all') {
+                const bd = getSaleBreakdown(sale);
+                if (!(bd.debtAmount > 1e-7) || sale.returnedAt) return false;
+                if (salesDebtFilter === 'unpaid' && sale.debtPaidAt) return false;
+                if (salesDebtFilter === 'paid' && !sale.debtPaidAt) return false;
+            }
+            return matchesSearch(saleSearchText(sale), query);
+        }
+
+        function setSalesFilter(mode) {
+            salesDebtFilter = mode;
+            ['all', 'unpaid', 'paid'].forEach(m => {
+                const btn = document.getElementById('sales-filter-' + m);
+                if (btn) btn.classList.toggle('active', m === mode);
+            });
+            renderSales();
+        }
+
+        function updateSalesSearchInfo(searching, count) {
+            const info = document.getElementById('sales-search-info');
+            if (!info) return;
+            info.style.display = searching ? 'block' : 'none';
+            info.textContent = searching ? `عدد الفواتير المطابقة: ${count}` : '';
         }
 
         function toggleSalesDay(idx) {
@@ -2596,7 +2966,7 @@
                 return;
             }
             const query = (document.getElementById('inventory-search')?.value || '').trim().toLocaleLowerCase();
-            const visibleProducts = query ? products.filter(p => String(p.name || '').toLocaleLowerCase().includes(query)) : products;
+            const visibleProducts = query ? products.filter(p => matchesSearch(p.name, query)) : products;
             if (visibleProducts.length === 0) {
                 container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد منتجات مطابقة</p>';
                 return;
@@ -2810,6 +3180,8 @@
             a.href = URL.createObjectURL(blob);
             a.download = `POS_Backup_${new Date().toISOString().slice(0,10)}.json`;
             a.click();
+            localStorage.setItem('pos_last_backup_at', String(Date.now()));
+            localStorage.setItem('pos_last_reminder_at', String(Date.now()));
         }
 
         function importBackup(event) {
@@ -3042,7 +3414,7 @@
                     applyInventoryDeltas(remoteProducts, p.adjustment || []);
                     transaction.set(cloudStateRef, { products: remoteProducts, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), schemaVersion: CLOUD_SCHEMA_VERSION }, { merge: true });
                     const priorHistory = saleSnap.data().amendmentHistory || [];
-                    transaction.set(saleRef, { items: p.items || [], total: Number(p.total || 0), profit: Number(p.profit || 0), inventoryDeltas: p.inventoryDeltas || [], amendedAt: p.amendedAt, amendedBy: p.amendedBy || '', amendmentHistory: p.amendment ? [...priorHistory, p.amendment] : priorHistory }, { merge: true });
+                    transaction.set(saleRef, { items: p.items || [], total: Number(p.total || 0), profit: Number(p.profit || 0), inventoryDeltas: p.inventoryDeltas || [], ...(p.globalDiscount !== undefined ? { globalDiscount: Number(p.globalDiscount || 0), cartDebt: !!p.cartDebt, customerName: p.customerName || '', debtorName: p.debtorName || '', note: p.note || '' } : {}), amendedAt: p.amendedAt, amendedBy: p.amendedBy || '', amendmentHistory: p.amendment ? [...priorHistory, p.amendment] : priorHistory }, { merge: true });
                     transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'saleAmendment' });
                 });
                 return true;
@@ -3503,7 +3875,7 @@
                 var t = e.target && e.target.closest ? e.target.closest('button, .btn, .mode-btn, .qty-btn, .nav-item, .item-row[onclick], .day-group-header, a[onclick]') : null;
                 if (!t || t.disabled) return;
                 try {
-                    if (navigator.vibrate) navigator.vibrate(10);
+                    if (navigator.vibrate) navigator.vibrate(40);
                 } catch (err) {}
                 try {
                     if (getComputedStyle(t).position === 'static') t.style.position = 'relative';
