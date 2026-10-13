@@ -645,20 +645,20 @@
         /* v35: Quick sale button (right side, a little above the checkout bar) */
         .quick-sale-btn {
             position: fixed;
-            right: 18px;
-            bottom: calc(166px + env(safe-area-inset-bottom, 0px));
-            width: 60px; height: 60px;
+            right: 34px;
+            bottom: calc(190px + env(safe-area-inset-bottom, 0px));
+            width: 72px; height: 72px;
             border: none; border-radius: 50%;
-            background: linear-gradient(135deg, #f08a24, #f6a53b);
+            background: linear-gradient(135deg, #ea8a2a, #f19f3e);
             color: #ffffff;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            box-shadow: 0 6px 16px rgba(240, 138, 36, 0.45);
+            box-shadow: 0 5px 14px rgba(234, 138, 42, 0.38);
             z-index: 101;
             padding: 0;
             cursor: pointer;
         }
-        .quick-sale-btn b { font-size: 26px; line-height: 22px; font-weight: 900; }
-        .quick-sale-btn small { font-size: 11px; font-weight: 700; }
+        .quick-sale-btn b { font-size: 30px; line-height: 22px; font-weight: 900; }
+        .quick-sale-btn small { font-size: 12px; font-weight: 700; }
         body.panel-open .quick-sale-btn,
         body.kb-open .quick-sale-btn { display: none !important; }
         body.pos-active { padding-bottom: 250px; }
@@ -1435,6 +1435,21 @@
             }
         }
 
+        /* Opens the product panel in the same place on screen whether or not the cart has items
+           (the panel sits above the cart, so scrolling to the top puts it where it is with an empty cart). */
+        function placeProductPanelAtDefault() {
+            const go = () => {
+                const panel = document.getElementById('selected-product-panel');
+                if (!panel || panel.style.display === 'none') return;
+                if (document.body.classList.contains('kb-open')) return;
+                const a = document.activeElement;
+                if (a && a.id && a.id !== 'pos-search' && panel.contains(a)) return;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+            requestAnimationFrame(go);
+            setTimeout(go, 350);
+        }
+
         function handlePosInputFocus(inputEl) {
             setTimeout(() => {
                 const panel = document.getElementById('selected-product-panel');
@@ -1715,6 +1730,7 @@
             setSellMode('retail');
             document.getElementById('selected-product-panel').style.display = 'block';
             document.body.classList.add('panel-open');
+            placeProductPanelAtDefault();
         }
 
         /* Cost of one whole bag = the bag cost entered for the product.
@@ -2128,7 +2144,7 @@
             document.getElementById('selected-product-panel').style.display = 'block';
             document.body.classList.add('panel-open');
             calculateSelTotal();
-            document.getElementById('selected-product-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            placeProductPanelAtDefault();
         }
 
         function removeFromCart(index) {
@@ -2710,13 +2726,11 @@
                 if (container) {
                     const bioBtn = document.createElement('button');
                     bioBtn.type = 'button';
-                    bioBtn.className = 'btn btn-teal';
-                    bioBtn.style.cssText = 'width:100%; margin-top:8px;';
-                    bioBtn.textContent = '👆 استخدام البصمة';
+                    bioBtn.style.cssText = 'display:flex; align-items:center; justify-content:center; gap:8px; margin:12px auto 0; padding:10px 22px; border-radius:999px; border:1px solid rgba(15,118,122,0.25); background:#e6f2f2; color:var(--teal-primary); font-family:inherit; font-size:14px; font-weight:700; cursor:pointer;';
+                    bioBtn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/></svg><span>الدخول بالبصمة</span>';
                     bioBtn.onclick = () => runManagerBiometric(action);
                     container.appendChild(bioBtn);
                 }
-                runManagerBiometric(action, true);
             }
         }
 
