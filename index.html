@@ -637,9 +637,90 @@
         .modal-box #modal-cancel-btn { background-color: var(--teal-soft); color: var(--teal-primary); }
         .modal-box #modal-cancel-btn:hover { background-color: #d3e9eb; }
         .modal-box #modal-buttons-box .btn { border-radius: 14px; }
+
+        /* v35: Cancel / Close buttons in popups are red */
+        .modal-box #modal-cancel-btn.btn-red { background-color: var(--red-alert); color: #ffffff; }
+        .modal-box #modal-cancel-btn.btn-red:hover { background-color: var(--red-hover); }
+
+        /* v35: Quick sale button (right side, a little above the checkout bar) */
+        .quick-sale-btn {
+            position: fixed;
+            right: 18px;
+            bottom: calc(166px + env(safe-area-inset-bottom, 0px));
+            width: 60px; height: 60px;
+            border: none; border-radius: 50%;
+            background: linear-gradient(135deg, #f08a24, #f6a53b);
+            color: #ffffff;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: 0 6px 16px rgba(240, 138, 36, 0.45);
+            z-index: 101;
+            padding: 0;
+            cursor: pointer;
+        }
+        .quick-sale-btn b { font-size: 26px; line-height: 22px; font-weight: 900; }
+        .quick-sale-btn small { font-size: 11px; font-weight: 700; }
+        body.panel-open .quick-sale-btn,
+        body.kb-open .quick-sale-btn { display: none !important; }
+        body.pos-active { padding-bottom: 250px; }
+        body.pos-active.panel-open { padding-bottom: 12px; }
+
+        /* v35: Inventory products as separate cards */
+        #inventory-list .item-row {
+            background-color: #ffffff;
+            border: 1px solid #e7eef3;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(18, 40, 58, 0.07);
+            padding: 12px;
+            margin: 10px 0;
+            gap: 8px;
+        }
+
+        /* v35: Statistics page */
+        .stats-chips { display: flex; gap: 5px; margin-bottom: 10px; }
+        .stats-chips .chip-btn { padding: 8px 2px; font-size: 12px; white-space: nowrap; }
+        .stats-day-picker { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .stats-day-label { position: relative; flex: 1; text-align: center; background: #ffffff; border: 1.5px solid var(--teal-primary); border-radius: 14px; padding: 9px 6px; font-weight: 700; color: var(--navy); font-size: 14px; }
+        .stats-day-label input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; margin: 0; padding: 0; border: none; }
+        .stats-period-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; text-align: center; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+        .stat-tile { background: #ffffff; border: 1px solid #e7eef3; border-radius: 16px; padding: 10px 8px; text-align: center; box-shadow: 0 2px 10px rgba(18, 40, 58, 0.06); }
+        .stat-ic { width: 34px; height: 34px; border-radius: 50%; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+        .stat-ic-teal { background: #e3f4f2; } .stat-ic-green { background: #e6f4e7; } .stat-ic-orange { background: #fdeedd; }
+        .stat-t { font-size: 12px; color: var(--muted); line-height: 1.4; }
+        .stat-v { font-size: 19px; font-weight: 800; color: var(--navy); margin-top: 2px; }
+        .stat-v small { font-size: 11px; font-weight: 600; color: var(--muted); }
+        .stat-sm .stat-v { font-size: 15px; } .stat-sm .stat-ic { width: 28px; height: 28px; font-size: 14px; }
+        .stats-debt-alert { display: flex; justify-content: space-between; align-items: center; background: #fbe9e9; border: 1px solid #f2bcbc; border-radius: 14px; padding: 10px 12px; margin-bottom: 10px; color: var(--navy); }
+        .stats-debt-alert b { color: #d32f2f; }
+        .stats-debt-value { font-size: 17px; white-space: nowrap; }
+        .stats-chart { background: #ffffff; border: 1px solid #e7eef3; border-radius: 16px; padding: 10px 12px; margin-bottom: 10px; box-shadow: 0 2px 10px rgba(18, 40, 58, 0.06); }
+        .stats-chart-title { font-size: 13px; font-weight: 800; margin-bottom: 8px; color: var(--navy); }
+        #stats-chart-pick { font-weight: 700; color: var(--teal-primary); font-size: 12px; }
+        .stats-bars { display: flex; align-items: flex-end; gap: 4px; height: 80px; direction: ltr; }
+        .stats-bars.thin { gap: 2px; }
+        .stats-bars div { flex: 1; min-height: 2px; background: #bfe5e1; border-radius: 4px 4px 2px 2px; cursor: pointer; }
+        .stats-bars div.sel { background: var(--teal-primary); }
+        .stats-bar-days { display: flex; gap: 4px; direction: ltr; font-size: 9px; color: var(--muted); margin-top: 3px; }
+        .stats-bar-days.thin { gap: 2px; }
+        .stats-bar-days span { flex: 1; text-align: center; overflow: visible; white-space: nowrap; }
+
+        .del-all-option { display: flex; align-items: center; gap: 10px; text-align: right; border: 1px solid #e1ecf0; background: #f5fafb; border-radius: 12px; padding: 10px 12px; margin-top: 8px; font-weight: 700; cursor: pointer; }
+        .del-all-option input { width: 20px; height: 20px; margin: 0; flex: 0 0 auto; accent-color: var(--red-alert); }
+
+        /* v35: More page */
+        .vibe-levels { display: flex; gap: 5px; }
+        .vibe-levels .chip-btn { padding: 8px 2px; }
     </style>
 </head>
 <body onclick="handleGlobalClick(event)">
+
+    <div id="storage-error-banner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:10000; background:#d53637; color:#ffffff; padding:calc(10px + env(safe-area-inset-top, 0px)) 14px 10px 14px; font-size:14px; font-weight:700; box-shadow:0 4px 14px rgba(0,0,0,0.3);">
+        <div>⚠️ تعذّر حفظ آخر البيانات: مساحة التخزين ممتلئة! حمّل نسخة احتياطية الآن.</div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="btn" style="background:#ffffff; color:#d53637; padding:6px 12px;" onclick="exportBackup()">تحميل نسخة الآن</button>
+            <button class="btn" style="background:rgba(255,255,255,0.2); color:#ffffff; padding:6px 12px;" onclick="document.getElementById('storage-error-banner').style.display='none'">إخفاء</button>
+        </div>
+    </div>
 
     <!-- Header & Quick Backup -->
     <div class="app-header">
@@ -773,6 +854,7 @@
             </div>
         </div>
 
+        <button type="button" id="quick-sale-btn" class="quick-sale-btn" onclick="openQuickSale(event)" aria-label="بيع سريع"><b>+</b><small>بيع</small></button>
         <div class="fixed-checkout-bar">
             <h4 dir="rtl">الإجمالي: <span id="cart-total" style="color:var(--teal-primary);">0</span> د.ل</h4>
 
@@ -787,14 +869,18 @@
     <div id="view-sales" class="view-page" style="display: none;">
         <div class="card">
             <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V12M10 20V6M15 20V10M20 20V15"/></svg></span>سجل المبيعات التفصيلي</h3>
-            <input type="search" id="sales-search" placeholder="ابحث: عميل، مدين، ملاحظة، خصم، منتج" oninput="renderSales()" style="margin-bottom:8px;">
-            <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <div id="sales-search-area">
+            <input type="search" id="sales-search" placeholder="ابحث: عميل، مدين، ملاحظة، خصم، منتج" oninput="renderSales()" onfocus="showSalesFilters()" style="margin-bottom:8px;">
+            <div id="sales-filter-row" style="display:none; gap:6px; margin-bottom:8px;">
                 <button class="chip-btn active" id="sales-filter-all" onclick="setSalesFilter('all')">الكل</button>
                 <button class="chip-btn" id="sales-filter-unpaid" onclick="setSalesFilter('unpaid')">ديون غير مسددة</button>
                 <button class="chip-btn" id="sales-filter-paid" onclick="setSalesFilter('paid')">ديون مسددة</button>
             </div>
+            </div>
             <div id="sales-search-info" style="display:none; font-size:12px; color:var(--muted); margin-bottom:8px;"></div>
             <div id="sales-list"></div>
+            <button class="btn btn-teal" id="sales-load-older" style="display:none; width:100%; margin-top:10px;" onclick="loadOlderSales()">تحميل أيام أقدم</button>
+            <button class="btn btn-red" id="sales-delete-all" style="width:100%; margin-top:14px;" onclick="startDeleteAllSales()">🗑️ حذف كل سجل المبيعات (للمدير)</button>
         </div>
     </div>
 
@@ -805,7 +891,8 @@
                 <h3 class="card-title" style="margin-bottom:0;"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg></span>المخزون</h3>
                 <button class="btn btn-teal btn-add-new-product" onclick="requireManagerPass(() => showProductFormModal())">+ إضافة منتج جديد</button>
             </div>
-            <input id="inventory-search" type="search" placeholder="ابحث عن منتج في المخزون..." oninput="renderInventory()" style="margin-bottom:10px;">
+            <input id="inventory-search" type="search" placeholder="ابحث عن منتج في المخزون..." oninput="renderInventory()" style="margin-bottom:8px;">
+            <div id="inventory-count" style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;"></div>
             <div id="inventory-list"></div>
         </div>
         
@@ -819,16 +906,67 @@
     <div id="view-stats" class="view-page" style="display: none;">
         <div class="card">
             <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 1 0 8.5 8.5H12z"/><path d="M15 3.8A8.5 8.5 0 0 1 20.2 9H15z"/></svg></span>إحصائيات المبيعات والأرباح (خاص بالمدير)</h3>
-            <div id="stats-content" style="line-height: 1.8;">
-                <p>إجمالي مبيعات اليوم: <strong id="stat-today-sales">0</strong> د.ل</p>
-                <p>إجمالي أرباح اليوم: <strong id="stat-today-profit" style="color:#2e7d32;">0</strong> د.ل</p>
-                <p>عدد العملاء اليوم: <strong id="stat-today-customers">0</strong></p>
-                <p>قروش إضافية اليوم (غير محسوبة في المبيعات): <strong id="stat-today-extra-gurush">0</strong> د.ل</p>
-                <p>جرامات إضافية اليوم: <strong id="stat-today-extra-grams">0</strong> جرام</p>
-                <p>تسديد ديون اليوم (محسوب ضمن المبيعات): <strong id="stat-today-debt-paid">0</strong> د.ل</p>
-                <p>إجمالي الديون المستحقة (غير مسددة): <strong id="stat-debt-owed" style="color:#d32f2f;">0</strong> د.ل</p>
+            <div class="stats-chips">
+                <button class="chip-btn active" id="stats-chip-today" onclick="setStatsPeriod('today')">اليوم</button>
+                <button class="chip-btn" id="stats-chip-day" onclick="setStatsPeriod('day')">📅 اختر يوم</button>
+                <button class="chip-btn" id="stats-chip-7" onclick="setStatsPeriod('7')">آخر 7 أيام</button>
+                <button class="chip-btn" id="stats-chip-30" onclick="setStatsPeriod('30')">آخر 30 يوم</button>
             </div>
-            
+            <div id="stats-day-picker" class="stats-day-picker" style="display:none;">
+                <button class="qty-btn" onclick="shiftStatsDay(-1)" aria-label="اليوم السابق">›</button>
+                <label class="stats-day-label"><span id="stats-day-text"></span><input type="date" id="stats-day-input" onchange="onStatsDayPicked(this.value)"></label>
+                <button class="qty-btn" id="stats-day-next" onclick="shiftStatsDay(1)" aria-label="اليوم التالي">‹</button>
+            </div>
+            <div id="stats-period-label" class="stats-period-label"></div>
+            <div id="stats-content">
+                <div class="stats-grid">
+                    <div class="stat-tile"><div class="stat-ic stat-ic-teal">🛒</div><div class="stat-t">المبيعات</div><div class="stat-v"><span id="stat-today-sales">0</span> <small>د.ل</small></div></div>
+                    <div class="stat-tile"><div class="stat-ic stat-ic-green">📈</div><div class="stat-t">الأرباح</div><div class="stat-v" style="color:#2e7d32;"><span id="stat-today-profit">0</span> <small>د.ل</small></div></div>
+                    <div class="stat-tile"><div class="stat-ic stat-ic-teal">👥</div><div class="stat-t">عدد العملاء</div><div class="stat-v"><span id="stat-today-customers">0</span></div></div>
+                    <div class="stat-tile"><div class="stat-ic stat-ic-green">✅</div><div class="stat-t">ديون سُددت (محسوبة ضمن المبيعات)</div><div class="stat-v"><span id="stat-today-debt-paid">0</span> <small>د.ل</small></div></div>
+                </div>
+                <div id="stats-chart" class="stats-chart" style="display:none;">
+                    <div class="stats-chart-title">المبيعات يوماً بيوم <span id="stats-chart-pick"></span></div>
+                    <div id="stats-bars" class="stats-bars"></div>
+                    <div id="stats-bar-days" class="stats-bar-days"></div>
+                </div>
+                <div class="stats-debt-alert">
+                    <div><b>ديون غير مسددة</b><br><span style="font-size:12px;">إجمالي المستحق الآن</span></div>
+                    <b class="stats-debt-value"><span id="stat-debt-owed">0</span> د.ل</b>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-orange">🪙</div><div class="stat-t">قروش إضافية (غير محسوبة في المبيعات)</div><div class="stat-v"><span id="stat-today-extra-gurush">0</span> <small>د.ل</small></div></div>
+                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-orange">⚖️</div><div class="stat-t">جرامات إضافية</div><div class="stat-v"><span id="stat-today-extra-grams">0</span> <small>جرام</small></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MORE PAGE (manager only) -->
+    <div id="view-more" class="view-page" style="display: none;">
+        <div class="card">
+            <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18.5" cy="12" r="1.3"/></svg></span>الإعدادات (خاص بالمدير)</h3>
+            <div style="font-weight:700; margin-bottom:6px;">قوة الاهتزاز عند الضغط: <span id="vibration-level-text"></span></div>
+            <div class="vibe-levels" id="vibe-levels">
+                <button class="chip-btn" onclick="setVibrationLevel(0)">إيقاف</button>
+                <button class="chip-btn" onclick="setVibrationLevel(1)">1</button>
+                <button class="chip-btn" onclick="setVibrationLevel(2)">2</button>
+                <button class="chip-btn" onclick="setVibrationLevel(3)">3</button>
+                <button class="chip-btn" onclick="setVibrationLevel(4)">4</button>
+                <button class="chip-btn" onclick="setVibrationLevel(5)">5</button>
+            </div>
+            <div style="font-size:12px; color:var(--muted); margin:4px 0 14px;">1 = خفيف جداً، 5 = قوي. (لا يعمل الاهتزاز على أجهزة آيفون)</div>
+
+            <hr style="margin: 15px 0; border-color: #eee;">
+            <div style="font-weight:700; margin-bottom:6px;">البصمة لكلمة سر المدير</div>
+            <div id="bio-status" style="font-size:13px; color:var(--muted); margin-bottom:8px;"></div>
+            <button class="btn btn-teal" id="bio-toggle-btn" style="width:100%; margin-bottom:6px;" onclick="toggleManagerBiometric()">تفعيل البصمة</button>
+            <div style="font-size:12px; color:var(--muted); margin-bottom:10px;">تنبيه: الهاتف يقبل أي بصمة محفوظة فيه (أو قفل الشاشة)، فإذا كانت بصمة الكاشير محفوظة على نفس الهاتف ستعمل أيضاً. كلمة السر تبقى متاحة دائماً.</div>
+
+            <hr style="margin: 15px 0; border-color: #eee;">
+            <p style="margin:0 0 4px;">مساحة التخزين المستخدمة: <strong id="stat-storage">0%</strong></p>
+            <p id="stat-storage-db-row" style="display:none; margin:0;">حجم ما يستخدمه التطبيق من مساحة الجهاز: <strong id="stat-storage-db">-</strong></p>
+
             <hr style="margin: 15px 0; border-color: #eee;">
             <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="3.5"/><path d="M10.5 12.5 20 3M16 7l2.5 2.5M13.5 9.5 16 12"/></svg></span>إدارة كلمات السر والحسابات</h3>
             <div class="cashier-item">
@@ -861,6 +999,7 @@
         <div class="nav-item" onclick="switchTab('sales', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V12M10 20V6M15 20V10M20 20V15"/></svg><span>المبيعات</span></div>
         <div class="nav-item" onclick="switchTab('inventory', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg><span>المخزون</span></div>
         <div class="nav-item" onclick="switchTab('stats', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 1 0 8.5 8.5H12z"/><path d="M15 3.8A8.5 8.5 0 0 1 20.2 9H15z"/></svg><span>الإحصائيات</span></div>
+        <div class="nav-item" onclick="switchTab('more', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18.5" cy="12" r="1.6"/></svg><span>المزيد</span></div>
     </div>
 
     <!-- UNIVERSAL ORANGE MODAL -->
@@ -905,7 +1044,341 @@
                 localStorage.setItem(key, JSON.stringify(value));
             } catch (e) {
                 console.error("Error saving key " + key, e);
+                showStorageErrorBanner();
             }
+        }
+
+        function showStorageErrorBanner(message) {
+            const banner = document.getElementById('storage-error-banner');
+            if (!banner) return;
+            const textEl = banner.querySelector('div');
+            if (textEl && message) textEl.textContent = message;
+            banner.style.display = 'block';
+        }
+
+        /* ===== Sales storage ===== */
+        /* Old way: all sales in localStorage ('local'). New way: sales in the browser database IndexedDB ('idb'),
+           with only the recent days (and unpaid debts) kept in memory; older days are loaded when you ask for them. */
+        const RECENT_DAYS = 30;
+        let salesMode = 'local';
+        let historyLoadedFromMs = 0;
+        let olderSalesExist = false;
+        /* v35: when the whole sales history was deleted (ms). Sales made at or before this moment are never shown again. */
+        const SALES_CLEARED_KEY = 'pos_sales_cleared_at';
+        let salesClearedAt = Number(localStorage.getItem(SALES_CLEARED_KEY) || 0) || 0;
+        let idbWriteChain = Promise.resolve();
+        let salesReady = Promise.resolve();
+        let olderSearchToken = 0;
+        let olderSearchDone = '';
+        let salesMigrationOffered = false;
+
+        const SalesStore = {
+            db: null,
+            available() {
+                try { return typeof indexedDB !== 'undefined' && !!indexedDB; } catch (e) { return false; }
+            },
+            open() {
+                if (this.db) return Promise.resolve(this.db);
+                return new Promise((resolve, reject) => {
+                    let req;
+                    try { req = indexedDB.open('pos-sales-db', 1); } catch (e) { reject(e); return; }
+                    req.onupgradeneeded = () => {
+                        const d = req.result;
+                        if (!d.objectStoreNames.contains('sales')) {
+                            const st = d.createObjectStore('sales', { keyPath: 'id' });
+                            st.createIndex('ts', 'ts');
+                            st.createIndex('pin', 'pin');
+                            st.createIndex('paid', 'paid');
+                        }
+                    };
+                    req.onsuccess = () => { this.db = req.result; resolve(this.db); };
+                    req.onerror = () => reject(req.error || new Error('database open failed'));
+                    req.onblocked = () => reject(new Error('database blocked'));
+                });
+            },
+            toRecord(sale) {
+                const ts = new Date(sale.timestamp).getTime() || 0;
+                let pin = 0;
+                try {
+                    const bd = getSaleBreakdown(sale);
+                    pin = (bd.debtAmount > 1e-7 && !sale.debtPaidAt && !sale.returnedAt) ? 1 : 0;
+                } catch (e) { pin = 0; }
+                const paid = sale.debtPaidAt ? (new Date(sale.debtPaidAt).getTime() || 0) : 0;
+                return { id: String(sale.id), ts, pin, paid, data: sale };
+            },
+            run(mode, fn) {
+                return this.open().then(db => new Promise((resolve, reject) => {
+                    const tx = db.transaction('sales', mode);
+                    const st = tx.objectStore('sales');
+                    let finish;
+                    try { finish = fn(st); } catch (e) { try { tx.abort(); } catch (_) { /* ignore */ } reject(e); return; }
+                    tx.oncomplete = () => resolve(typeof finish === 'function' ? finish() : finish);
+                    tx.onerror = () => reject(tx.error);
+                    tx.onabort = () => reject(tx.error || new Error('transaction aborted'));
+                }));
+            },
+            putMany(list) { return this.run('readwrite', st => { list.forEach(s => st.put(this.toRecord(s))); }); },
+            remove(id) { return this.run('readwrite', st => { st.delete(String(id)); }); },
+            removeMany(ids) { return this.run('readwrite', st => { ids.forEach(id => st.delete(String(id))); }); },
+            replaceAll(list) { return this.run('readwrite', st => { st.clear(); list.forEach(s => st.put(this.toRecord(s))); }); },
+            getAll() { return this.run('readonly', st => { const r = st.getAll(); return () => r.result.map(x => x.data); }); },
+            getByIds(ids) { return this.run('readonly', st => { const reqs = ids.map(id => st.get(String(id))); return () => reqs.map(r => r.result).filter(Boolean).map(x => x.data); }); },
+            countBefore(ms) { return this.run('readonly', st => { const r = st.index('ts').count(IDBKeyRange.upperBound(ms, true)); return () => r.result; }); },
+            summary() {
+                return this.run('readonly', st => {
+                    const out = { count: 0, sum: 0 };
+                    const req = st.openCursor();
+                    req.onsuccess = () => { const c = req.result; if (c) { out.count++; out.sum += Number((c.value.data || {}).total || 0); c.continue(); } };
+                    return () => out;
+                });
+            },
+            loadWorking(cutoffMs) {
+                return this.run('readonly', st => {
+                    const recent = st.index('ts').getAll(IDBKeyRange.lowerBound(cutoffMs));
+                    const pinned = st.index('pin').getAll(1);
+                    const paid = st.index('paid').getAll(IDBKeyRange.lowerBound(Math.max(1, cutoffMs)));
+                    return () => {
+                        const map = new Map();
+                        [recent.result, pinned.result, paid.result].forEach(list => (list || []).forEach(x => map.set(x.id, x.data)));
+                        return Array.from(map.values());
+                    };
+                });
+            },
+            loadRange(fromMs, toMsExclusive) {
+                return this.run('readonly', st => { const r = st.index('ts').getAll(IDBKeyRange.bound(fromMs, toMsExclusive, false, true)); return () => r.result.map(x => x.data); });
+            },
+            loadPaidRange(fromMs, toMsExclusive) {
+                return this.run('readonly', st => { const r = st.index('paid').getAll(IDBKeyRange.bound(Math.max(1, fromMs), toMsExclusive, false, true)); return () => r.result.map(x => x.data); });
+            },
+            loadOlder(beforeMs, limit) {
+                return this.run('readonly', st => {
+                    const out = [];
+                    const req = st.index('ts').openCursor(IDBKeyRange.upperBound(beforeMs, true), 'prev');
+                    req.onsuccess = () => { const c = req.result; if (c && out.length < limit) { out.push(c.value.data); c.continue(); } };
+                    return () => out;
+                });
+            },
+            scanOlder(beforeMs, predicate, cap) {
+                return this.run('readonly', st => {
+                    const out = [];
+                    const req = st.index('ts').openCursor(IDBKeyRange.upperBound(beforeMs, true), 'prev');
+                    req.onsuccess = () => {
+                        const c = req.result;
+                        if (!c || out.length >= cap) return;
+                        try { if (predicate(c.value.data)) out.push(c.value.data); } catch (e) { /* ignore one bad record */ }
+                        c.continue();
+                    };
+                    return () => out;
+                });
+            }
+        };
+
+        function workingCutoffMs() {
+            const d = new Date();
+            d.setHours(0, 0, 0, 0);
+            return d.getTime() - (RECENT_DAYS - 1) * 86400000;
+        }
+        const saleTimeCache = new WeakMap();
+        function saleTimeMs(sale) {
+            let ms = saleTimeCache.get(sale);
+            if (ms === undefined) { ms = new Date(sale.timestamp).getTime() || 0; saleTimeCache.set(sale, ms); }
+            return ms;
+        }
+        function saleTimeLabel(sale) {
+            return new Date(saleTimeMs(sale)).toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' });
+        }
+        function sortSalesDesc(list) { return list.sort((a, b) => saleTimeMs(b) - saleTimeMs(a)); }
+        function isPinnedDebt(sale) {
+            try { return getSaleBreakdown(sale).debtAmount > 1e-7 && !sale.debtPaidAt && !sale.returnedAt; } catch (e) { return false; }
+        }
+        function isWorkingSale(sale, cutoff) {
+            if (saleTimeMs(sale) >= cutoff) return true;
+            if (isPinnedDebt(sale)) return true;
+            return !!sale.debtPaidAt && (new Date(sale.debtPaidAt).getTime() || 0) >= cutoff;
+        }
+        function mergeIntoMemory(list) {
+            const have = new Set(sales.map(s => String(s.id)));
+            let added = 0;
+            (list || []).forEach(s => {
+                const id = String(s.id);
+                if (!have.has(id) && !deletedSaleIds.has(id)) { sales.push(s); have.add(id); added++; }
+            });
+            if (added) sortSalesDesc(sales);
+        }
+
+        /* Save changed sales (a list, or one sale). In the old way the whole list is written. */
+        function persistSales(changed) {
+            if (salesMode !== 'idb') { safeSave(KEYS.SALES, sales); return; }
+            const list = (Array.isArray(changed) ? changed : [changed]).filter(Boolean);
+            if (!list.length) return;
+            idbWriteChain = idbWriteChain.then(() => SalesStore.putMany(list)).catch(err => {
+                console.error('Error saving sales', err);
+                showStorageErrorBanner();
+            });
+        }
+        function persistSaleRemoval(id) {
+            if (salesMode !== 'idb') { safeSave(KEYS.SALES, sales); return; }
+            idbWriteChain = idbWriteChain.then(() => SalesStore.remove(id)).catch(err => {
+                console.error('Error removing sale', err);
+                showStorageErrorBanner();
+            });
+        }
+        function persistSalesAfterImport(importedSales) {
+            if (salesMode !== 'idb') { safeSave(KEYS.SALES, sales); return; }
+            const cutoff = workingCutoffMs();
+            const everything = sortSalesDesc((importedSales || []).slice());
+            sales = everything.filter(s => isWorkingSale(s, cutoff));
+            historyLoadedFromMs = cutoff;
+            olderSalesExist = everything.length > sales.length;
+            idbWriteChain = idbWriteChain.then(() => SalesStore.replaceAll(everything)).catch(err => {
+                console.error('Error restoring sales', err);
+                showStorageErrorBanner();
+            });
+        }
+
+        async function loadWorkingSalesFromIdb() {
+            const cutoff = workingCutoffMs();
+            const loaded = await SalesStore.loadWorking(cutoff);
+            const byId = new Map();
+            loaded.forEach(s => { if (!deletedSaleIds.has(String(s.id))) byId.set(String(s.id), s); });
+            const extra = [];
+            sales.forEach(s => { if (!byId.has(String(s.id))) { byId.set(String(s.id), s); extra.push(s); } });
+            if (extra.length) await SalesStore.putMany(extra);
+            sales = sortSalesDesc(Array.from(byId.values()));
+            historyLoadedFromMs = cutoff;
+            olderSalesExist = (await SalesStore.countBefore(cutoff)) > 0;
+            localStorage.removeItem(KEYS.SALES);
+        }
+
+        function requestProtectedStorage() {
+            try {
+                if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+            } catch (e) { /* ignore */ }
+        }
+
+        async function initSalesStorage() {
+            if (!SalesStore.available()) return;
+            try {
+                if (localStorage.getItem('pos_sales_in_idb') === '1') {
+                    await SalesStore.open();
+                    salesMode = 'idb';
+                    await loadWorkingSalesFromIdb();
+                    requestProtectedStorage();
+                } else if (sales.length === 0) {
+                    await SalesStore.open();
+                    localStorage.setItem('pos_sales_in_idb', '1');
+                    salesMode = 'idb';
+                    await loadWorkingSalesFromIdb();
+                    requestProtectedStorage();
+                }
+            } catch (e) {
+                console.error('Sales database unavailable, using the old storage', e);
+                salesMode = 'local';
+                if (localStorage.getItem('pos_sales_in_idb') === '1') {
+                    showStorageErrorBanner('⚠️ تعذّر فتح مخزن المبيعات! لن تظهر المبيعات القديمة حالياً وأي بيع جديد سيُحفظ مؤقتاً. أغلق التطبيق وافتحه من جديد، وإذا استمرت المشكلة استعد آخر نسخة احتياطية.');
+                }
+            }
+        }
+
+        /* One-time move of the old saved sales into the browser database (only after a verified copy). */
+        function checkSalesMigrationOffer() {
+            if (salesMode !== 'local' || salesMigrationOffered || !SalesStore.available() || sales.length === 0) return;
+            if (modalLocked) return;
+            const modalEl = document.getElementById('custom-modal');
+            if (modalEl && modalEl.style.display === 'flex') return;
+            salesMigrationOffered = true;
+            showModal('نقل المبيعات إلى مساحة أكبر',
+                'لتسريع التطبيق وتجنّب امتلاء التخزين سننقل المبيعات إلى مساحة أكبر داخل المتصفح، دون حذف أي شيء.\nسيتم أولاً تحميل نسخة احتياطية كاملة، ثم النقل مع التحقق من سلامة البيانات.\nهل تريد البدء الآن؟',
+                false, () => { startSalesMigration(); });
+        }
+
+        async function startSalesMigration() {
+            if (salesMode !== 'local') return;
+            const hold = () => {};
+            hold.nonDismissible = true;
+            showModal('جاري نقل المبيعات...', 'يرجى الانتظار وعدم إغلاق التطبيق.', false, hold);
+            try {
+                exportBackup({ silent: true });
+                const unique = Array.from(new Map(sales.map(s => [String(s.id), s])).values());
+                await SalesStore.open();
+                await SalesStore.replaceAll(unique);
+                const check = await SalesStore.summary();
+                const expectedSum = unique.reduce((sum, s) => sum + Number(s.total || 0), 0);
+                if (check.count !== unique.length || Math.abs(check.sum - expectedSum) > 0.01) throw new Error('verification failed');
+                localStorage.setItem('pos_sales_in_idb', '1');
+                salesMode = 'idb';
+                localStorage.removeItem(KEYS.SALES);
+                requestProtectedStorage();
+                const cutoff = workingCutoffMs();
+                const everything = sortSalesDesc(unique.slice());
+                sales = everything.filter(s => isWorkingSale(s, cutoff));
+                historyLoadedFromMs = cutoff;
+                olderSalesExist = everything.length > sales.length;
+                closeModal();
+                renderSales();
+                showModal('تم النقل بنجاح', `تم نقل ${unique.length} فاتورة وتم التحقق منها.\nأغلق التطبيق وافتحه من جديد لتفعيل كل التحسينات.`, false, () => {});
+            } catch (e) {
+                console.error('Sales migration failed', e);
+                try { await SalesStore.replaceAll([]); } catch (_) { /* ignore */ }
+                closeModal();
+                showModal('تعذّر النقل', 'لم يتم نقل المبيعات، وبياناتك كما هي دون أي تغيير. حمّلت نسخة احتياطية للاطمئنان.', false, () => {});
+            }
+        }
+
+        async function loadOlderSales() {
+            if (salesMode !== 'idb') return;
+            const btn = document.getElementById('sales-load-older');
+            if (btn) { btn.disabled = true; btn.textContent = 'جاري التحميل...'; }
+            try {
+                const chunk = await SalesStore.loadOlder(historyLoadedFromMs, 1500);
+                if (chunk.length) {
+                    const oldestTs = chunk.reduce((m, s) => Math.min(m, saleTimeMs(s)), Infinity);
+                    const dayStart = new Date(oldestTs); dayStart.setHours(0, 0, 0, 0);
+                    const sameDay = await SalesStore.loadRange(dayStart.getTime(), oldestTs);
+                    mergeIntoMemory(chunk.concat(sameDay));
+                    historyLoadedFromMs = dayStart.getTime();
+                    olderSalesExist = (await SalesStore.countBefore(historyLoadedFromMs)) > 0;
+                } else {
+                    olderSalesExist = false;
+                }
+            } catch (e) {
+                console.error('Error loading older sales', e);
+            }
+            renderSalesNow();
+        }
+
+        function updateLoadOlderButton(searching) {
+            const btn = document.getElementById('sales-load-older');
+            if (!btn) return;
+            btn.style.display = (salesMode === 'idb' && olderSalesExist && !searching) ? 'block' : 'none';
+            btn.disabled = false;
+            btn.textContent = 'تحميل أيام أقدم';
+        }
+
+        /* Search also looks into older days that are not loaded (waits a moment after typing). */
+        function scheduleOlderSearch(query) {
+            if (salesMode !== 'idb' || !olderSalesExist) return;
+            const key = query + '|' + salesDebtFilter;
+            if (key === olderSearchDone) return;
+            const token = ++olderSearchToken;
+            setTimeout(() => runOlderSearch(key, token, query), 350);
+        }
+
+        async function runOlderSearch(key, token, query) {
+            if (token !== olderSearchToken) return;
+            const info = document.getElementById('sales-search-info');
+            if (info && info.style.display !== 'none') info.textContent += ' — جاري البحث في الأيام الأقدم...';
+            try {
+                const memoryIds = new Set(sales.map(s => String(s.id)));
+                const found = await SalesStore.scanOlder(historyLoadedFromMs, sale => !memoryIds.has(String(sale.id)) && !deletedSaleIds.has(String(sale.id)) && saleMatchesSearch(sale, query), SALES_SEARCH_CAP);
+                if (token !== olderSearchToken) return;
+                olderSearchDone = key;
+                mergeIntoMemory(found);
+            } catch (e) {
+                console.error('Older sales search failed', e);
+                olderSearchDone = key;
+            }
+            if (token === olderSearchToken) renderSalesNow();
         }
 
         let products = safeLoad(KEYS.PRODUCTS, []);
@@ -983,7 +1456,8 @@
             renderStockLogs();
             if (activeCashier === 'غير محدد') promptShiftLogin();
 
-            initCloudSyncIfConfigured();
+            salesReady = initSalesStorage().then(() => { renderSales(); }).catch(() => {});
+            salesReady.then(() => initCloudSyncIfConfigured());
             renderCloudSyncStatus();
 
             registerAppOpenForBackup();
@@ -1016,7 +1490,55 @@
             }
         }
 
+        /* How full the browser's storage is (about 5 million characters are available). */
+        const STORAGE_LIMIT_CHARS = 5000000;
+        let lastStorageCheckAt = 0;
+
+        function getStorageUsage() {
+            let used = 0;
+            try {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    used += key.length + (localStorage.getItem(key) || '').length;
+                }
+            } catch (e) { /* ignore */ }
+            return { used, limit: STORAGE_LIMIT_CHARS, percent: Math.round((used / STORAGE_LIMIT_CHARS) * 100) };
+        }
+
+        function checkStorageWarning() {
+            if (modalLocked) return;
+            const modalEl = document.getElementById('custom-modal');
+            if (modalEl && modalEl.style.display === 'flex') return;
+            const now = Date.now();
+            if (now - lastStorageCheckAt < 10 * 60 * 1000) return;
+            lastStorageCheckAt = now;
+            const usage = getStorageUsage();
+            if (usage.percent < 70) return;
+            if (usage.percent >= 90) {
+                const last = Number(localStorage.getItem('pos_storage_warn_strong_at') || 0);
+                if (now - last < 2 * 3600 * 1000) return;
+                localStorage.setItem('pos_storage_warn_strong_at', String(now));
+                showModal('⚠️ مساحة التخزين شبه ممتلئة!',
+                    `مساحة التخزين ممتلئة بنسبة <span style="color:#d53637; font-weight:700;">${usage.percent}%</span>.\nعند الامتلاء سيتوقف حفظ المبيعات الجديدة.\n<span style="color:#d53637; font-weight:700;">حمّل نسخة احتياطية الآن، وستحتاج قريباً لنقل البيانات إلى مساحة أكبر.</span>`,
+                    false, (choice) => { if (choice === 'download') exportBackup(); }, false, 'reminder');
+                document.getElementById('modal-title').style.color = '#d53637';
+            } else {
+                const today = localDayKey(now);
+                if (localStorage.getItem('pos_storage_warn_day') === today) return;
+                localStorage.setItem('pos_storage_warn_day', today);
+                showModal('تنبيه: مساحة التخزين',
+                    `مساحة التخزين المستخدمة وصلت إلى ${usage.percent}%.\nعند الامتلاء يتوقف حفظ البيانات الجديدة، لذلك حمّل نسخة احتياطية وتواصل لنقل البيانات إلى مساحة أكبر قريباً.`,
+                    false, (choice) => { if (choice === 'download') exportBackup(); }, false, 'reminder');
+            }
+        }
+
         function checkBackupReminder() {
+            checkBackupReminderCore();
+            checkStorageWarning();
+            checkSalesMigrationOffer();
+        }
+
+        function checkBackupReminderCore() {
             registerAppOpenForBackup();
             if (modalLocked) return;
             const modalEl = document.getElementById('custom-modal');
@@ -1099,6 +1621,19 @@
             if (!tokens.length) return true;
             const hay = normalizeSearchText(text);
             return tokens.every(token => hay.includes(token));
+        }
+
+        /* Quick sale button (v35): jumps to the product search and opens it. */
+        function openQuickSale(event) {
+            if (event) event.stopPropagation();
+            const input = document.getElementById('pos-search');
+            if (!input) return;
+            input.focus();
+            showSearchDropdown();
+            setTimeout(() => {
+                const card = input.closest('.card');
+                (card || input).scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 60);
         }
 
         function showSearchDropdown() {
@@ -1767,7 +2302,7 @@
 
             sales.unshift(saleRecord);
             safeSave(KEYS.PRODUCTS, products);
-            safeSave(KEYS.SALES, sales);
+            persistSales([saleRecord]);
             queueSaleForCloud(saleRecord);
 
             showModal('تم إتمام البيع بنجاح!', `المبلغ الإجمالي للفاتورة:\n<span style="font-size:22px; color:var(--teal-primary); font-weight:bold;">${formatNum(finalTotal)} د.ل</span>`, false, () => {}, false, 'auto_dismiss');
@@ -1813,6 +2348,21 @@
                     <button id="modal-confirm-btn" class="btn btn-orange">موافق</button>
                     <button id="modal-cancel-btn" class="btn btn-teal" onclick="cancelModalAction()">إلغاء</button>
                 `;
+            }
+
+            if (onConfirm && onConfirm.confirmLabel) {
+                const labelledConfirm = document.getElementById('modal-confirm-btn');
+                if (labelledConfirm) labelledConfirm.textContent = onConfirm.confirmLabel;
+            }
+            if (onConfirm && onConfirm.cancelLabel) {
+                const labelledCancel = document.getElementById('modal-cancel-btn');
+                if (labelledCancel) labelledCancel.textContent = onConfirm.cancelLabel;
+            }
+
+            const cancelBtnEl = document.getElementById('modal-cancel-btn');
+            if (cancelBtnEl && /^(إلغاء|إغلاق)/.test(cancelBtnEl.textContent.trim())) {
+                cancelBtnEl.classList.remove('btn-teal');
+                cancelBtnEl.classList.add('btn-red');
             }
 
             if (modalLocked) {
@@ -2144,7 +2694,9 @@
         }
 
         function promptManagerPassword(action) {
-            showModal('التحقق من المدير', 'أدخل الرقم السري الخاص بالمدير:', 'password', (pin) => {
+            const bioOn = isManagerBiometricEnabled();
+            const text = bioOn ? 'أدخل الرقم السري الخاص بالمدير أو استخدم البصمة:' : 'أدخل الرقم السري الخاص بالمدير:';
+            showModal('التحقق من المدير', text, 'password', (pin) => {
                 if (pin === managerPin) {
                     if (isManagerRole) managerUnlocked = true;
                     closeModal();
@@ -2153,6 +2705,120 @@
                     showModal('خطأ', 'الرقم السري غير صحيح!', false, () => {});
                 }
             }, true);
+            if (bioOn) {
+                const container = document.getElementById('modal-input-container');
+                if (container) {
+                    const bioBtn = document.createElement('button');
+                    bioBtn.type = 'button';
+                    bioBtn.className = 'btn btn-teal';
+                    bioBtn.style.cssText = 'width:100%; margin-top:8px;';
+                    bioBtn.textContent = '👆 استخدام البصمة';
+                    bioBtn.onclick = () => runManagerBiometric(action);
+                    container.appendChild(bioBtn);
+                }
+                runManagerBiometric(action, true);
+            }
+        }
+
+        /* ---------- Manager fingerprint (v35): uses the phone's own fingerprint check (WebAuthn). The password always works too. ---------- */
+        const BIO_CRED_KEY = 'pos_manager_bio_cred';
+        let bioBusy = false;
+
+        function isManagerBiometricEnabled() {
+            try { return !!localStorage.getItem(BIO_CRED_KEY) && !!window.PublicKeyCredential && !!navigator.credentials; } catch (e) { return false; }
+        }
+        function bufToB64(buf) { return btoa(String.fromCharCode.apply(null, new Uint8Array(buf))); }
+        function b64ToBuf(b64) { const bin = atob(b64); const out = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i); return out.buffer; }
+        function randomBytes(n) { const a = new Uint8Array(n); crypto.getRandomValues(a); return a; }
+
+        async function runManagerBiometric(action, silent) {
+            if (bioBusy || !isManagerBiometricEnabled()) return;
+            bioBusy = true;
+            try {
+                await navigator.credentials.get({ publicKey: {
+                    challenge: randomBytes(32),
+                    allowCredentials: [{ type: 'public-key', id: b64ToBuf(localStorage.getItem(BIO_CRED_KEY)), transports: ['internal'] }],
+                    userVerification: 'required',
+                    timeout: 60000
+                } });
+                bioBusy = false;
+                if (isManagerRole) managerUnlocked = true;
+                closeModal();
+                action();
+            } catch (e) {
+                bioBusy = false;
+                if (!silent && !(e && (e.name === 'NotAllowedError' || e.name === 'AbortError'))) {
+                    const hint = document.getElementById('modal-body');
+                    if (hint) hint.innerHTML = 'تعذّر التحقق بالبصمة، أدخل الرقم السري:';
+                }
+            }
+        }
+
+        async function toggleManagerBiometric() {
+            if (isManagerBiometricEnabled()) {
+                showModal('إيقاف البصمة', 'سيتم إيقاف البصمة على هذا الجهاز، وتبقى كلمة السر كما هي. هل تريد المتابعة؟', false, () => {
+                    localStorage.removeItem(BIO_CRED_KEY);
+                    updateBiometricUI();
+                });
+                return;
+            }
+            let available = false;
+            try { available = !!window.PublicKeyCredential && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); } catch (e) { available = false; }
+            if (!available) {
+                showModal('البصمة غير متاحة', 'هذا الجهاز أو المتصفح لا يدعم البصمة داخل التطبيق، أو لا توجد بصمة محفوظة في إعدادات الهاتف.', false, () => {});
+                return;
+            }
+            try {
+                const cred = await navigator.credentials.create({ publicKey: {
+                    challenge: randomBytes(32),
+                    rp: { name: 'POS' },
+                    user: { id: randomBytes(16), name: 'manager', displayName: 'المدير' },
+                    pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+                    authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'discouraged' },
+                    timeout: 60000,
+                    attestation: 'none'
+                } });
+                localStorage.setItem(BIO_CRED_KEY, bufToB64(cred.rawId));
+                updateBiometricUI();
+                showModal('تم التفعيل', 'تم تفعيل البصمة لكلمة سر المدير على هذا الجهاز.', false, () => {});
+            } catch (e) {
+                if (e && (e.name === 'NotAllowedError' || e.name === 'AbortError')) return;
+                showModal('تعذّر التفعيل', 'لم يتم تفعيل البصمة. تأكد من وجود بصمة محفوظة في إعدادات الهاتف ثم حاول مرة أخرى.', false, () => {});
+            }
+        }
+
+        function updateBiometricUI() {
+            const on = isManagerBiometricEnabled();
+            const status = document.getElementById('bio-status');
+            const btn = document.getElementById('bio-toggle-btn');
+            if (status) status.textContent = on ? '✅ البصمة مفعّلة على هذا الجهاز' : 'البصمة غير مفعّلة';
+            if (btn) {
+                btn.textContent = on ? 'إيقاف البصمة' : 'تفعيل البصمة';
+                btn.classList.toggle('btn-red', on);
+                btn.classList.toggle('btn-teal', !on);
+            }
+        }
+
+        /* ---------- Vibration level (v35) ---------- */
+        const VIBRATION_KEY = 'pos_vibration_level';
+        const VIBRATION_MS = [0, 10, 20, 30, 40, 55];
+        function getVibrationLevel() {
+            let v = 3;
+            try { const raw = localStorage.getItem(VIBRATION_KEY); if (raw !== null && raw !== '') v = Number(raw); } catch (e) { v = 3; }
+            return (Number.isInteger(v) && v >= 0 && v <= 5) ? v : 3;
+        }
+        window.getVibrationMs = function () { return VIBRATION_MS[getVibrationLevel()]; };
+        function setVibrationLevel(level) {
+            try { localStorage.setItem(VIBRATION_KEY, String(level)); } catch (e) { /* ignore */ }
+            updateVibrationUI();
+            const ms = VIBRATION_MS[level];
+            setTimeout(() => { try { if (ms && navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* ignore */ } }, 80);
+        }
+        function updateVibrationUI() {
+            const level = getVibrationLevel();
+            const text = document.getElementById('vibration-level-text');
+            if (text) text.textContent = level === 0 ? 'متوقف' : String(level);
+            document.querySelectorAll('#vibe-levels .chip-btn').forEach((b, i) => b.classList.toggle('active', i === level));
         }
 
         function requireManagerPass(action) {
@@ -2299,6 +2965,10 @@
                 promptManagerPassword(() => renderStatsAndShow(tab, element));
                 return;
             }
+            if (tab === 'more') {
+                promptManagerPassword(() => renderMoreAndShow(tab, element));
+                return;
+            }
             showTab(tab, element);
         }
 
@@ -2312,48 +2982,198 @@
                 checkoutBar.style.display = (tab === 'pos') ? 'flex' : 'none';
             }
 
+            document.body.classList.toggle('pos-active', tab === 'pos');
             if (element) element.classList.add('active');
+            if (tab === 'sales') renderSalesNow();
         }
 
-        function renderStatsAndShow(tab, element) {
-            const todayStr = new Date().toLocaleDateString('ar-LY');
-            let totalRev = 0, totalProfit = 0, customers = 0, paidToday = 0, owed = 0;
-            let extraKgToday = 0, extraValueToday = 0;
+        /* ---------- Statistics (v35): today / a chosen day / last 7 days / last 30 days ---------- */
+        let statsPeriod = 'today';
+        let statsDayMs = null;      // start of the chosen day (for "pick a day")
+        let statsRenderToken = 0;
+        let statsSeries = [];
 
-            sales.forEach(s => {
+        function dayStartMs(ms) { const d = new Date(ms); d.setHours(0, 0, 0, 0); return d.getTime(); }
+        function addDaysMs(ms, n) { const d = new Date(ms); d.setDate(d.getDate() + n); d.setHours(0, 0, 0, 0); return d.getTime(); }
+        function msToDateInput(ms) { const d = new Date(ms); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+
+        function statsRange() {
+            const today = dayStartMs(Date.now());
+            if (statsPeriod === 'day') { const from = statsDayMs || today; return { from, to: addDaysMs(from, 1), days: 1 }; }
+            if (statsPeriod === '7') return { from: addDaysMs(today, -6), to: addDaysMs(today, 1), days: 7 };
+            if (statsPeriod === '30') return { from: addDaysMs(today, -29), to: addDaysMs(today, 1), days: 30 };
+            return { from: today, to: addDaysMs(today, 1), days: 1 };
+        }
+
+        /* Sales needed for a period. Recent days are already in memory; older days are read from the device database. */
+        async function getSalesForStats(fromMs, toMs) {
+            if (salesMode !== 'idb' || fromMs >= workingCutoffMs()) return sales;
+            const map = new Map();
+            try {
+                await idbWriteChain;
+                const [inRange, paidInRange] = await Promise.all([SalesStore.loadRange(fromMs, toMs), SalesStore.loadPaidRange(fromMs, toMs)]);
+                inRange.concat(paidInRange).forEach(x => { if (!deletedSaleIds.has(String(x.id))) map.set(String(x.id), x); });
+            } catch (e) { console.error('Could not read older sales for statistics', e); }
+            sales.forEach(x => map.set(String(x.id), x));
+            return Array.from(map.values());
+        }
+
+        function computeStats(list, fromMs, toMs, days) {
+            const out = { rev: 0, profit: 0, customers: 0, paid: 0, extraKg: 0, extraValue: 0, perDay: new Array(days).fill(0) };
+            const dayIndex = ms => { const idx = Math.round((dayStartMs(ms) - fromMs) / 86400000); return Math.min(Math.max(idx, 0), days - 1); };
+            list.forEach(s => {
                 if (s.returnedAt) return;
                 const bd = getSaleBreakdown(s);
-                if (new Date(s.timestamp).toLocaleDateString('ar-LY') === todayStr) {
-                    totalRev += bd.cashAmount;
-                    totalProfit += bd.cashProfit;
-                    customers++;
+                const t = saleTimeMs(s);
+                if (t >= fromMs && t < toMs) {
+                    out.rev += bd.cashAmount;
+                    out.profit += bd.cashProfit;
+                    out.customers++;
+                    out.perDay[dayIndex(t)] += bd.cashAmount;
                     (s.items || []).forEach(i => {
                         if (Number(i.extraKg || 0) > 0 && Number(i.qty || 0) > 0) {
-                            extraKgToday += Number(i.extraKg);
-                            extraValueToday += Number(i.extraKg) * Number(i.price || 0);
+                            out.extraKg += Number(i.extraKg);
+                            out.extraValue += Number(i.extraKg) * Number(i.price || 0);
                         }
                     });
                 }
-                if (bd.debtAmount > 1e-7) {
-                    if (s.debtPaidAt) {
-                        if (new Date(s.debtPaidAt).toLocaleDateString('ar-LY') === todayStr) {
-                            totalRev += bd.debtAmount;
-                            totalProfit += bd.debtProfit;
-                            paidToday += bd.debtAmount;
-                        }
-                    } else {
-                        owed += bd.debtAmount;
+                if (bd.debtAmount > 1e-7 && s.debtPaidAt) {
+                    const pt = new Date(s.debtPaidAt).getTime() || 0;
+                    if (pt >= fromMs && pt < toMs) {
+                        out.rev += bd.debtAmount;
+                        out.profit += bd.debtProfit;
+                        out.paid += bd.debtAmount;
+                        out.perDay[dayIndex(pt)] += bd.debtAmount;
                     }
                 }
             });
+            return out;
+        }
 
-            document.getElementById('stat-today-sales').innerText = formatNum(totalRev);
-            document.getElementById('stat-today-profit').innerText = formatNum(totalProfit);
-            document.getElementById('stat-today-customers').innerText = customers;
-            document.getElementById('stat-today-extra-gurush').innerText = formatNum(extraValueToday);
-            document.getElementById('stat-today-extra-grams').innerText = formatNum(extraKgToday * 1000);
-            document.getElementById('stat-today-debt-paid').innerText = formatNum(paidToday);
-            document.getElementById('stat-debt-owed').innerText = formatNum(owed);
+        function currentDebtOwed() {
+            let owed = 0;
+            sales.forEach(s => {
+                if (s.returnedAt || s.debtPaidAt) return;
+                const bd = getSaleBreakdown(s);
+                if (bd.debtAmount > 1e-7) owed += bd.debtAmount;
+            });
+            return owed;
+        }
+
+        function updateStatsControls() {
+            ['today', 'day', '7', '30'].forEach(k => {
+                const btn = document.getElementById('stats-chip-' + k);
+                if (btn) btn.classList.toggle('active', k === statsPeriod);
+            });
+            const picker = document.getElementById('stats-day-picker');
+            if (picker) picker.style.display = statsPeriod === 'day' ? 'flex' : 'none';
+            const today = dayStartMs(Date.now());
+            if (statsPeriod === 'day') {
+                const ms = statsDayMs || today;
+                document.getElementById('stats-day-text').textContent = new Date(ms).toLocaleDateString('ar-LY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                const input = document.getElementById('stats-day-input');
+                input.value = msToDateInput(ms);
+                input.max = msToDateInput(today);
+                const next = document.getElementById('stats-day-next');
+                if (next) next.disabled = ms >= today;
+            }
+            const r = statsRange();
+            const label = document.getElementById('stats-period-label');
+            if (label) {
+                label.style.display = statsPeriod === 'day' ? 'none' : 'block';
+                const fmt = ms => new Date(ms).toLocaleDateString('ar-LY', { day: 'numeric', month: 'long' });
+                label.textContent = r.days === 1 ? new Date(r.from).toLocaleDateString('ar-LY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : `من ${fmt(r.from)} إلى ${fmt(r.to - 1)}`;
+            }
+        }
+
+        async function refreshStats() {
+            const token = ++statsRenderToken;
+            updateStatsControls();
+            const r = statsRange();
+            const list = await getSalesForStats(r.from, r.to);
+            if (token !== statsRenderToken) return;
+            const st = computeStats(list, r.from, r.to, r.days);
+            document.getElementById('stat-today-sales').innerText = formatNum(st.rev);
+            document.getElementById('stat-today-profit').innerText = formatNum(st.profit);
+            document.getElementById('stat-today-customers').innerText = st.customers;
+            document.getElementById('stat-today-extra-gurush').innerText = formatNum(st.extraValue);
+            document.getElementById('stat-today-extra-grams').innerText = formatNum(st.extraKg * 1000);
+            document.getElementById('stat-today-debt-paid').innerText = formatNum(st.paid);
+            document.getElementById('stat-debt-owed').innerText = formatNum(currentDebtOwed());
+            renderStatsChart(r, st.perDay);
+        }
+
+        function renderStatsChart(r, perDay) {
+            const box = document.getElementById('stats-chart');
+            if (!box) return;
+            if (r.days === 1) { box.style.display = 'none'; statsSeries = []; return; }
+            box.style.display = 'block';
+            statsSeries = perDay.map((v, i) => ({ ms: addDaysMs(r.from, i), v }));
+            const max = Math.max(...perDay, 0);
+            const thin = r.days > 10;
+            const bars = document.getElementById('stats-bars');
+            const days = document.getElementById('stats-bar-days');
+            bars.classList.toggle('thin', thin);
+            days.classList.toggle('thin', thin);
+            const last = statsSeries.length - 1;
+            bars.innerHTML = statsSeries.map((d, i) => `<div class="${i === last ? 'sel' : ''}" style="height:${max > 0 ? Math.max(2, Math.round(d.v / max * 100)) : 2}%" onclick="pickStatsBar(${i})"></div>`).join('');
+            days.innerHTML = statsSeries.map((d, i) => `<span>${(!thin || i % 5 === 0 || i === last) ? new Date(d.ms).getDate() : ''}</span>`).join('');
+            pickStatsBar(last);
+        }
+
+        function pickStatsBar(i) {
+            const d = statsSeries[i];
+            if (!d) return;
+            document.querySelectorAll('#stats-bars div').forEach((el, n) => el.classList.toggle('sel', n === i));
+            const pick = document.getElementById('stats-chart-pick');
+            if (pick) pick.textContent = `— ${new Date(d.ms).toLocaleDateString('ar-LY', { weekday: 'short', day: 'numeric', month: 'short' })}: ${formatNum(d.v)} د.ل`;
+        }
+
+        function setStatsPeriod(period) {
+            statsPeriod = period;
+            if (period === 'day' && !statsDayMs) statsDayMs = addDaysMs(Date.now(), -1);
+            refreshStats();
+        }
+
+        function shiftStatsDay(n) {
+            const today = dayStartMs(Date.now());
+            const next = addDaysMs(statsDayMs || today, n);
+            if (next > today) return;
+            statsDayMs = next;
+            refreshStats();
+        }
+
+        function onStatsDayPicked(value) {
+            if (!value) return;
+            const parts = value.split('-').map(Number);
+            const ms = new Date(parts[0], parts[1] - 1, parts[2]).getTime();
+            statsDayMs = Math.min(ms, dayStartMs(Date.now()));
+            refreshStats();
+        }
+
+        function renderStatsAndShow(tab, element) {
+            statsPeriod = 'today';
+            refreshStats();
+            showTab(tab, element);
+        }
+
+        /* ---------- More page (v35) ---------- */
+        function renderMoreAndShow(tab, element) {
+            const storageUsage = getStorageUsage();
+            const storageEl = document.getElementById('stat-storage');
+            storageEl.innerText = storageUsage.percent + '%';
+            storageEl.style.color = storageUsage.percent >= 90 ? '#d53637' : (storageUsage.percent >= 70 ? '#e65100' : '');
+            const dbRow = document.getElementById('stat-storage-db-row');
+            if (dbRow) {
+                if (salesMode === 'idb' && navigator.storage && navigator.storage.estimate) {
+                    navigator.storage.estimate().then(est => {
+                        document.getElementById('stat-storage-db').textContent = (Number(est.usage || 0) / 1048576).toFixed(1) + ' ميجابايت';
+                        dbRow.style.display = 'block';
+                    }).catch(() => {});
+                } else {
+                    dbRow.style.display = 'none';
+                }
+            }
 
             const managerPinSpan = document.getElementById('manager-pin-display');
             if (managerPinSpan) {
@@ -2364,6 +3184,8 @@
                 if (pinBtn) pinBtn.textContent = 'إظهار';
             }
 
+            updateVibrationUI();
+            updateBiometricUI();
             showTab(tab, element);
         }
 
@@ -2373,7 +3195,7 @@
 
             const callback = (newNote) => {
                 sale.note = newNote || '';
-                safeSave(KEYS.SALES, sales);
+                persistSales([sale]);
                 queueSaleNoteUpdateForCloud(sale);
                 renderSales();
             };
@@ -2394,7 +3216,7 @@
                 sale.returnedAt = new Date().toISOString();
                 sale.returnedBy = activeCashier;
                 safeSave(KEYS.PRODUCTS, products);
-                safeSave(KEYS.SALES, sales);
+                persistSales([sale]);
                 queueCloudOperation({ id: 'sale-return:' + sale.id, type: 'saleReturn', payload: { id: sale.id, adjustment, returnedAt: sale.returnedAt, returnedBy: sale.returnedBy }, createdAt: Date.now() });
                 renderInventory();
                 renderSales();
@@ -2563,7 +3385,7 @@
                     }).filter(change => change.fromQty !== change.toQty || (change.fromTotal !== undefined && (change.fromTotal !== change.toTotal || change.fromDiscount !== change.toDiscount)));
                     const amendment = { at: amendedAt, by: activeCashier, changes };
                     Object.assign(sale, { items: editedItems, total, profit, inventoryDeltas: calculation.newDeltas, amendedAt, amendedBy: activeCashier, amendmentHistory: [...(sale.amendmentHistory || []), amendment] });
-                    safeSave(KEYS.PRODUCTS, products); safeSave(KEYS.SALES, sales);
+                    safeSave(KEYS.PRODUCTS, products); persistSales([sale]);
                     queueCloudOperation({ id: 'sale-amend:' + sale.id + ':' + Date.now(), type: 'saleAmendment', payload: { id: sale.id, items: sale.items, total: sale.total, profit: sale.profit, inventoryDeltas: sale.inventoryDeltas, adjustment: calculation.adjustment, amendedAt: sale.amendedAt, amendedBy: sale.amendedBy, amendment }, createdAt: Date.now() });
                     renderInventory(); renderSales();
                     showModal('تم التعديل', 'تم تحديث البيع والمخزون بنجاح.', false, () => {});
@@ -2621,14 +3443,19 @@
             const key = i => `${i.name}||${i.sellMode}`;
             const aggregate = list => {
                 const map = new Map();
-                list.forEach(i => map.set(key(i), (map.get(key(i)) || 0) + Number(i.qty || 0)));
+                list.forEach(i => {
+                    const cur = map.get(key(i)) || { qty: 0, amt: 0 };
+                    cur.qty += Number(i.qty || 0);
+                    cur.amt += i.isFree ? 0 : Number(i.total || 0);
+                    map.set(key(i), cur);
+                });
                 return map;
             };
             const before = aggregate(oldItems), after = aggregate(newItems);
             const changes = [];
             new Set([...before.keys(), ...after.keys()]).forEach(k => {
-                const fromQty = before.get(k) || 0, toQty = after.get(k) || 0;
-                if (Math.abs(fromQty - toQty) > 1e-9) changes.push({ name: k.split('||')[0], fromQty, toQty });
+                const b = before.get(k) || { qty: 0, amt: 0 }, a = after.get(k) || { qty: 0, amt: 0 };
+                if (Math.abs(b.qty - a.qty) > 1e-9 || Math.abs(b.amt - a.amt) > 1e-9) changes.push({ name: k.split('||')[0], fromQty: b.qty, toQty: a.qty, fromAmt: b.amt, toAmt: a.amt });
             });
             return changes;
         }
@@ -2677,7 +3504,7 @@
                 });
             });
 
-            const lines = changes.map(c => `• ${c.name}: ${formatNum(c.fromQty)} ← ${formatNum(c.toQty)}`);
+            const lines = changes.map(c => `• ${c.name}: ${formatNum(c.fromAmt)} ← ${formatNum(c.toAmt)} د.ل`);
             lines.push(`الإجمالي: ${formatNum(sale.total)} ← ${formatNum(total)} د.ل`);
             let message = lines.join('\n') + '\n\nسيتم تحديث الفاتورة وتعديل المخزون تلقائياً. هل تريد المتابعة؟';
             let heading = 'تأكيد تعديل الفاتورة';
@@ -2700,7 +3527,7 @@
                     amendmentHistory: [...(sale.amendmentHistory || []), amendment]
                 });
                 safeSave(KEYS.PRODUCTS, products);
-                safeSave(KEYS.SALES, sales);
+                persistSales([sale]);
                 queueCloudOperation({
                     id: 'sale-amend:' + sale.id + ':' + Date.now(), type: 'saleAmendment',
                     payload: { id: sale.id, items: sale.items, total: sale.total, profit: sale.profit, inventoryDeltas: sale.inventoryDeltas, adjustment: calculation.adjustment,
@@ -2807,7 +3634,7 @@
                         <div style="font-size:13px; color:#ff8c00; margin-top:2px;">
                             ملاحظة الفاتورة: ${s.note ? `<strong>${s.note}</strong>` : '<span style="color:#aaa;">لا توجد ملاحظة</span>'}
                         </div>
-                        ${(s.amendmentHistory || []).length ? `<div style="margin-top:4px;">${(s.amendmentHistory || []).map((a, n) => `<div style="font-size:12px; color:#1565c0; margin-top:3px;">✏️ تعديل ${n + 1} — ${new Date(a.at).toLocaleString('ar-LY')} بواسطة ${a.by || 'غير محدد'}: ${(a.changes || []).map(c => c.fromTotal !== undefined ? `${c.name} (إرجاع ${formatNum(c.returnedMoney)} د.ل: ${formatNum(c.fromTotal)} ← ${formatNum(c.toTotal)} د.ل${c.fromDiscount !== undefined && c.fromDiscount !== c.toDiscount ? ` | الخصم: ${formatNum(c.fromDiscount)} ← ${formatNum(c.toDiscount)} د.ل` : ''})` : `${c.name} (${formatNum(c.fromQty)} ← ${formatNum(c.toQty)})`).join('، ') || 'تم تحديث الفاتورة'}</div>`).join('')}</div>` : ''}
+                        ${(s.amendmentHistory || []).length ? `<div style="margin-top:4px;">${(s.amendmentHistory || []).map((a, n) => `<div style="font-size:12px; color:#1565c0; margin-top:3px;">✏️ تعديل ${n + 1} — ${new Date(a.at).toLocaleString('ar-LY')} بواسطة ${a.by || 'غير محدد'}: ${(a.changes || []).map(c => c.fromTotal !== undefined ? `${c.name} (إرجاع ${formatNum(c.returnedMoney)} د.ل: ${formatNum(c.fromTotal)} ← ${formatNum(c.toTotal)} د.ل${c.fromDiscount !== undefined && c.fromDiscount !== c.toDiscount ? ` | الخصم: ${formatNum(c.fromDiscount)} ← ${formatNum(c.toDiscount)} د.ل` : ''})` : (c.fromAmt !== undefined ? `${c.name} (${formatNum(c.fromAmt)} ← ${formatNum(c.toAmt)} د.ل)` : `${c.name} (${formatNum(c.fromQty)} ← ${formatNum(c.toQty)})`)).join('، ') || 'تم تحديث الفاتورة'}</div>`).join('')}</div>` : ''}
                         ${s.returnedAt ? `<div style="font-size:12px; color:#d32f2f; font-weight:bold; margin-top:4px;">↩ تم إرجاع هذه الفاتورة بالكامل ${new Date(s.returnedAt).toLocaleString('ar-LY')} بواسطة ${s.returnedBy || 'غير محدد'} — المنتجات أعلاه أُعيدت إلى المخزون.</div>` : ''}
                         ${debtBanner}
 
@@ -2822,11 +3649,22 @@
                 `;
         }
 
+        let salesDayGroups = [];
+        const SALES_SEARCH_CAP = 300;
+
+        /* The history is only drawn while its page is open (it is drawn when you open it). */
         function renderSales() {
+            const view = document.getElementById('view-sales');
+            if (view && view.style.display === 'none') return;
+            renderSalesNow();
+        }
+
+        function renderSalesNow() {
             const container = document.getElementById('sales-list');
             if (sales.length === 0) {
                 container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد مبيعات سابقة</p>';
                 salesDayKeys = [];
+                updateLoadOlderButton(false);
                 return;
             }
 
@@ -2834,31 +3672,44 @@
             const searchBox = document.getElementById('sales-search');
             const searchQuery = searchBox ? searchBox.value : '';
             const searching = searchQuery.trim() !== '' || salesDebtFilter !== 'all';
-            let sortedSales = [...sales].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            let sortedSales = [...(searching ? sales : sales.filter(sale => saleTimeMs(sale) >= historyLoadedFromMs))].sort((a, b) => saleTimeMs(b) - saleTimeMs(a));
             if (searching) sortedSales = sortedSales.filter(sale => saleMatchesSearch(sale, searchQuery));
-            updateSalesSearchInfo(searching, sortedSales.length);
+            const totalMatches = sortedSales.length;
+            if (searching && sortedSales.length > SALES_SEARCH_CAP) sortedSales = sortedSales.slice(0, SALES_SEARCH_CAP);
+            updateSalesSearchInfo(searching, totalMatches, sortedSales.length);
+            if (searching) scheduleOlderSearch(searchQuery); else olderSearchDone = '';
             if (searching && sortedSales.length === 0) {
                 container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد نتائج مطابقة</p>';
                 salesDayKeys = [];
+                updateLoadOlderButton(true);
+                return;
+            }
+            if (!searching && sortedSales.length === 0) {
+                container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد مبيعات في الأيام الأخيرة</p>';
+                salesDayKeys = [];
+                updateLoadOlderButton(false);
                 return;
             }
             const groups = [];
 
+            const dateStrByDay = new Map();
             sortedSales.forEach(s => {
-                const dateObj = new Date(s.timestamp);
-                const dateStr = dateObj.toLocaleDateString('ar-LY');
-                const timeStr = dateObj.toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' });
+                const dateObj = new Date(saleTimeMs(s));
+                const dayKey = dateObj.getFullYear() + '-' + dateObj.getMonth() + '-' + dateObj.getDate();
+                let dateStr = dateStrByDay.get(dayKey);
+                if (dateStr === undefined) { dateStr = dateObj.toLocaleDateString('ar-LY'); dateStrByDay.set(dayKey, dateStr); }
                 const dayHeader = `${s.dayName} - ${dateStr}`;
 
                 let group = groups.length ? groups[groups.length - 1] : null;
                 if (!group || group.key !== dayHeader) {
-                    group = { key: dayHeader, isToday: dateStr === todayStr, cards: [] };
+                    group = { key: dayHeader, isToday: dateStr === todayStr, items: [] };
                     groups.push(group);
                 }
-                group.cards.push(renderSaleCard(s, timeStr));
+                group.items.push({ s });
             });
 
             salesDayKeys = groups.map(g => g.key);
+            salesDayGroups = groups;
             container.innerHTML = groups.map((g, idx) => {
                 const open = searching ? true : (salesDayToggled.has(g.key) ? salesDayToggled.get(g.key) : g.isToday);
                 return `
@@ -2866,9 +3717,10 @@
                         <span>${g.key}</span>
                         <span class="day-arrow" id="sales-day-arrow-${idx}">${open ? '▴' : '▾'}</span>
                     </div>
-                    <div id="sales-day-body-${idx}" style="display:${open ? 'block' : 'none'};">${g.cards.join('')}</div>
+                    <div id="sales-day-body-${idx}" data-lazy="${open ? '' : '1'}" style="display:${open ? 'block' : 'none'};">${open ? g.items.map(x => renderSaleCard(x.s, saleTimeLabel(x.s))).join('') : ''}</div>
                 `;
             }).join('');
+            updateLoadOlderButton(searching);
         }
 
         /* Everything searchable about a sale, as one text. */
@@ -2899,6 +3751,23 @@
             return matchesSearch(saleSearchText(sale), query);
         }
 
+        /* The debt filter buttons appear only after tapping the search box (v35). */
+        function showSalesFilters() {
+            const row = document.getElementById('sales-filter-row');
+            if (row) row.style.display = 'flex';
+        }
+        function hideSalesFiltersIfIdle() {
+            const row = document.getElementById('sales-filter-row');
+            const box = document.getElementById('sales-search');
+            if (!row || row.style.display === 'none') return;
+            if (salesDebtFilter !== 'all' || (box && box.value.trim() !== '')) return;
+            row.style.display = 'none';
+        }
+        document.addEventListener('pointerdown', (e) => {
+            const area = document.getElementById('sales-search-area');
+            if (area && !area.contains(e.target)) hideSalesFiltersIfIdle();
+        }, true);
+
         function setSalesFilter(mode) {
             salesDebtFilter = mode;
             ['all', 'unpaid', 'paid'].forEach(m => {
@@ -2908,11 +3777,13 @@
             renderSales();
         }
 
-        function updateSalesSearchInfo(searching, count) {
+        function updateSalesSearchInfo(searching, count, shown) {
             const info = document.getElementById('sales-search-info');
             if (!info) return;
             info.style.display = searching ? 'block' : 'none';
-            info.textContent = searching ? `عدد الفواتير المطابقة: ${count}` : '';
+            let text = `عدد الفواتير المطابقة: ${count}`;
+            if (shown !== undefined && shown < count) text += ` — يتم عرض أحدث ${shown} فقط، اكتب بحثاً أدق`;
+            info.textContent = searching ? text : '';
         }
 
         function toggleSalesDay(idx) {
@@ -2921,6 +3792,11 @@
             const arrow = document.getElementById('sales-day-arrow-' + idx);
             if (key === undefined || !body) return;
             const willOpen = body.style.display === 'none';
+            if (willOpen && body.dataset.lazy === '1') {
+                const group = salesDayGroups[idx];
+                if (group) body.innerHTML = group.items.map(x => renderSaleCard(x.s, saleTimeLabel(x.s))).join('');
+                body.dataset.lazy = '';
+            }
             body.style.display = willOpen ? 'block' : 'none';
             if (arrow) arrow.textContent = willOpen ? '▴' : '▾';
             salesDayToggled.set(key, willOpen);
@@ -2937,12 +3813,131 @@
                     const returnedAt = sale.returnedAt;
                     sales = sales.filter(s => String(s.id) !== id);
                     deletedSaleIds.add(id);
-                    safeSave(KEYS.SALES, sales);
+                    persistSaleRemoval(id);
                     safeSave(KEYS.DELETED_SALES, Array.from(deletedSaleIds));
                     queueCloudOperation({ id: 'sale-delete:' + id, type: 'saleDelete', payload: { id, returnedAt }, createdAt: Date.now() });
                     renderSales();
                 });
             });
+        }
+
+        /* ---------- Delete the whole sales history (v35, manager only) ----------
+           A full backup is downloaded first. The manager chooses: return all sold products to stock then delete,
+           or delete the history only (inventory stays as it is). The cloud is updated too (also later, if offline now). */
+        let deleteAllMode = null;
+        function startDeleteAllSales() {
+            promptManagerPassword(() => showDeleteAllChoice());
+        }
+        function showDeleteAllChoice() {
+            {
+                deleteAllMode = null;
+                const body = 'سيتم أولاً تحميل نسخة احتياطية كاملة تلقائياً، ثم حذف كل الفواتير من سجل المبيعات نهائياً (ومن السحابة أيضاً)، بما فيها الديون غير المسددة.\n\nاختر ماذا يحدث للمخزون:' +
+                    '<label class="del-all-option"><input type="radio" name="del-all-mode" onchange="deleteAllMode=\'return\'"><span>إرجاع كل المنتجات المباعة إلى المخزون ثم حذف السجل</span></label>' +
+                    '<label class="del-all-option"><input type="radio" name="del-all-mode" onchange="deleteAllMode=\'keep\'"><span>حذف السجل فقط وترك المخزون كما هو</span></label>';
+                const next = () => {
+                    const mode = deleteAllMode;
+                    if (!mode) {
+                        showModal('تنبيه', 'يرجى اختيار أحد الخيارين أولاً.', false, () => showDeleteAllChoice());
+                        return;
+                    }
+                    confirmDeleteAllSales(mode);
+                };
+                next.confirmLabel = 'متابعة';
+                showModal('حذف كل سجل المبيعات', body, false, next);
+            }
+        }
+        function confirmDeleteAllSales(mode) {
+            const what = mode === 'return'
+                ? 'سيتم إرجاع كل المنتجات المباعة إلى المخزون، ثم حذف كل الفواتير.'
+                : 'سيتم حذف كل الفواتير، والمخزون يبقى كما هو.';
+            const go = () => executeDeleteAllSales(mode);
+            go.confirmLabel = 'نعم، احذف الكل';
+            showModal('تأكيد نهائي', what + '\nلا يمكن التراجع إلا باستعادة النسخة الاحتياطية التي ستُحمَّل الآن.\nهل أنت متأكد؟', false, go);
+        }
+
+        async function executeDeleteAllSales(mode) {
+            const hold = () => {};
+            hold.nonDismissible = true;
+            showModal('جاري الحذف...', 'يرجى الانتظار وعدم إغلاق التطبيق.', false, hold);
+            try {
+                let all = sales.slice();
+                if (salesMode === 'idb') {
+                    await idbWriteChain;
+                    const map = new Map((await SalesStore.getAll()).map(x => [String(x.id), x]));
+                    sales.forEach(x => map.set(String(x.id), x));
+                    all = Array.from(map.values());
+                }
+                downloadBackupFile({ products, sales: sortSalesDesc(all.slice()), stockLogs, cashiers, managerPin }, { silent: true });
+
+                const clearedAt = Date.now();
+                const returnStock = mode === 'return';
+                let adjustment = [];
+                if (returnStock) {
+                    const byProduct = new Map();
+                    all.forEach(sale => {
+                        if (sale.returnedAt) return;
+                        (sale.inventoryDeltas || []).forEach(entry => {
+                            const key = String(entry.productId);
+                            const acc = byProduct.get(key) || {};
+                            Object.entries(entry.inventoryDelta || {}).forEach(([field, value]) => { acc[field] = (acc[field] || 0) - Number(value || 0); });
+                            byProduct.set(key, acc);
+                        });
+                    });
+                    adjustment = Array.from(byProduct.entries()).map(([productId, inventoryDelta]) => ({ productId, inventoryDelta }));
+                    applyInventoryDeltas(products, adjustment);
+                    safeSave(KEYS.PRODUCTS, products);
+                }
+
+                if (editingSaleId) clearCart();
+                sales = [];
+                salesDayToggled.clear();
+                historyLoadedFromMs = workingCutoffMs();
+                olderSalesExist = false;
+                if (salesMode === 'idb') {
+                    idbWriteChain = idbWriteChain.then(() => SalesStore.replaceAll([])).catch(err => { console.error('Error clearing sales', err); showStorageErrorBanner(); });
+                    await idbWriteChain;
+                } else {
+                    safeSave(KEYS.SALES, []);
+                }
+                salesClearedAt = clearedAt;
+                localStorage.setItem(SALES_CLEARED_KEY, String(clearedAt));
+                queueCloudOperation({ id: 'sales-clear:' + clearedAt, type: 'salesClearAll', payload: { clearedAt, returnStock, adjustment }, createdAt: Date.now() });
+
+                closeModal();
+                renderInventory();
+                renderSales();
+                showModal('تم الحذف', (returnStock ? 'تمت إعادة المنتجات إلى المخزون و' : '') + 'تم حذف كل سجل المبيعات.\nالنسخة الاحتياطية محفوظة في مجلد التنزيلات.', false, () => {});
+            } catch (e) {
+                console.error('Delete all sales failed', e);
+                closeModal();
+                showModal('تعذّر الحذف', 'حدث خطأ ولم يكتمل الحذف. إذا اختفى جزء من السجل استعد النسخة الاحتياطية التي تم تحميلها.', false, () => {});
+            }
+        }
+
+        /* Another device deleted the whole history: remove the same sales here (inventory comes from the cloud). */
+        function applyRemoteSalesClear(remoteValue) {
+            const remote = Number(remoteValue || 0) || 0;
+            if (remote === salesClearedAt) return;
+            if (cloudOutbox.some(op => op.type === 'salesClearAll' || op.type === 'fullRestore')) return;
+            if (remote < salesClearedAt) {
+                salesClearedAt = remote;
+                localStorage.setItem(SALES_CLEARED_KEY, String(remote));
+                return;
+            }
+            salesClearedAt = remote;
+            localStorage.setItem(SALES_CLEARED_KEY, String(remote));
+            sales = sales.filter(s => saleTimeMs(s) > remote);
+            olderSalesExist = false;
+            if (salesMode === 'idb') {
+                idbWriteChain = idbWriteChain.then(async () => {
+                    const allSaved = await SalesStore.getAll();
+                    const ids = allSaved.filter(x => (new Date(x.timestamp).getTime() || 0) <= remote).map(x => x.id);
+                    if (ids.length) await SalesStore.removeMany(ids);
+                }).catch(err => { console.error('Error clearing sales', err); showStorageErrorBanner(); });
+            } else {
+                safeSave(KEYS.SALES, sales);
+            }
+            renderSales();
         }
 
         function markSaleDebtPaid(saleId) {
@@ -2953,7 +3948,7 @@
             showModal('تأكيد السداد', `هل استلمت مبلغ الدين (${formatNum(bd.debtAmount)} د.ل) وتريد تسجيله كمسدد؟\nسيُضاف المبلغ إلى مبيعات وأرباح اليوم.`, false, () => {
                 sale.debtPaidAt = new Date().toISOString();
                 sale.debtPaidBy = activeCashier;
-                safeSave(KEYS.SALES, sales);
+                persistSales([sale]);
                 queueCloudOperation({ id: 'sale-debt-paid:' + sale.id, type: 'saleDebtPaid', payload: { id: String(sale.id), debtPaidAt: sale.debtPaidAt, debtPaidBy: sale.debtPaidBy }, createdAt: Date.now() });
                 renderSales();
             });
@@ -2961,12 +3956,15 @@
 
         function renderInventory() {
             const container = document.getElementById('inventory-list');
+            const countEl = document.getElementById('inventory-count');
             if (products.length === 0) {
+                if (countEl) countEl.textContent = 'عدد المنتجات: 0';
                 container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد منتجات بالمخزون</p>';
                 return;
             }
             const query = (document.getElementById('inventory-search')?.value || '').trim().toLocaleLowerCase();
             const visibleProducts = query ? products.filter(p => matchesSearch(p.name, query)) : products;
+            if (countEl) countEl.textContent = query ? `عدد المنتجات: ${products.length} — نتائج البحث: ${visibleProducts.length}` : `عدد المنتجات: ${products.length}`;
             if (visibleProducts.length === 0) {
                 container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد منتجات مطابقة</p>';
                 return;
@@ -3173,15 +4171,83 @@
             document.getElementById('stock-log-toggle').innerText = opening ? '▴' : '▾';
         }
 
-        function exportBackup() {
-            const data = { products, sales, stockLogs, cashiers, managerPin };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        function exportBackup(opts) {
+            if (salesMode === 'idb') { exportBackupFromIdb(opts); return; }
+            downloadBackupFile({ products, sales, stockLogs, cashiers, managerPin }, opts);
+        }
+
+        async function exportBackupFromIdb(opts) {
+            let all = [];
+            try {
+                await idbWriteChain;
+                all = await SalesStore.getAll();
+            } catch (e) { console.error('Could not read all sales for the backup', e); }
+            const map = new Map(all.map(x => [String(x.id), x]));
+            sales.forEach(x => map.set(String(x.id), x));
+            downloadBackupFile({ products, sales: sortSalesDesc(Array.from(map.values())), stockLogs, cashiers, managerPin }, opts);
+        }
+
+        let lastBackupBlob = null;
+        let lastBackupName = '';
+        let lastBackupForgetTimer = null;
+
+        /* After a backup is downloaded, offer to also save it in Google Drive through the phone's share menu. */
+        function canShareFiles() {
+            return typeof navigator !== 'undefined' && typeof navigator.share === 'function' && typeof navigator.canShare === 'function';
+        }
+
+        function offerBackupShare() {
+            if (!canShareFiles() || !lastBackupBlob || modalLocked) return;
+            const shareNow = () => { shareLastBackup(); };
+            shareNow.confirmLabel = 'حفظ في Google Drive';
+            shareNow.cancelLabel = 'لاحقاً';
+            showModal('تم تحميل النسخة الاحتياطية',
+                'تم حفظ الملف على جهازك في مجلد التنزيلات.\nلحمايته أكثر احفظ نسخة في Google Drive: اضغط الزر ثم اختر Drive من القائمة.\nملاحظة: الملف يحتوي على كلمات السر والمبيعات، فاحفظه في مكان خاص.',
+                false, shareNow);
+        }
+
+        async function shareLastBackup() {
+            if (!lastBackupBlob) return;
+            const jsonFile = new File([lastBackupBlob], lastBackupName, { type: 'application/json' });
+            let toShare = null;
+            let renamed = false;
+            try {
+                if (navigator.canShare({ files: [jsonFile] })) {
+                    toShare = jsonFile;
+                } else {
+                    const textFile = new File([lastBackupBlob], lastBackupName + '.txt', { type: 'text/plain' });
+                    if (navigator.canShare({ files: [textFile] })) { toShare = textFile; renamed = true; }
+                }
+            } catch (e) { toShare = null; }
+            if (!toShare) {
+                showModal('المشاركة غير متاحة', 'لا يدعم متصفحك مشاركة الملف مباشرة. افتح تطبيق Google Drive وارفع الملف من مجلد التنزيلات، أو استخدم تطبيقاً يزامن مجلد التنزيلات تلقائياً (مثل FolderSync).', false, () => {});
+                return;
+            }
+            try {
+                await navigator.share({ files: [toShare], title: 'نسخة احتياطية - نظام المبيعات' });
+                if (renamed) {
+                    showModal('تمت المشاركة', 'أُرسل الملف بامتداد .txt لأن متصفحك لا يسمح بمشاركة ملفات json. عند الاستعادة اختر الملف كما هو دون تغيير اسمه.', false, () => {});
+                }
+            } catch (e) {
+                if (e && e.name === 'AbortError') return;
+                showModal('تعذّرت المشاركة', 'لم تتم المشاركة. الملف محفوظ على جهازك في مجلد التنزيلات، ويمكنك رفعه إلى Google Drive يدوياً.', false, () => {});
+            }
+        }
+
+        function downloadBackupFile(data, opts) {
+            const blob = new Blob([JSON.stringify(data, null, (data.sales || []).length > 3000 ? 0 : 2)], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `POS_Backup_${new Date().toISOString().slice(0,10)}.json`;
+            const backupFileName = `POS_Backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.download = backupFileName;
             a.click();
             localStorage.setItem('pos_last_backup_at', String(Date.now()));
             localStorage.setItem('pos_last_reminder_at', String(Date.now()));
+            lastBackupBlob = blob;
+            lastBackupName = backupFileName;
+            clearTimeout(lastBackupForgetTimer);
+            lastBackupForgetTimer = setTimeout(() => { lastBackupBlob = null; }, 10 * 60 * 1000);
+            if (!(opts && opts.silent)) offerBackupShare();
         }
 
         function importBackup(event) {
@@ -3193,15 +4259,18 @@
                     const imported = JSON.parse(e.target.result);
                     if (imported && (imported.products || imported.sales)) {
                         products = imported.products || [];
-                        sales = imported.sales || [];
+                        const importedSales = imported.sales || [];
+                        sales = importedSales;
                         deletedSaleIds = new Set();
                         safeSave(KEYS.DELETED_SALES, []);
+                        salesClearedAt = 0;
+                        localStorage.setItem(SALES_CLEARED_KEY, '0');
                         stockLogs = imported.stockLogs || [];
                         cashiers = imported.cashiers || cashiers;
                         managerPin = imported.managerPin || managerPin;
 
                         safeSave(KEYS.PRODUCTS, products);
-                        safeSave(KEYS.SALES, sales);
+                        persistSalesAfterImport(importedSales);
                         safeSave(KEYS.LOGS, stockLogs);
                         safeSave(KEYS.CASHIERS, cashiers);
                         localStorage.setItem(KEYS.MANAGER_PIN, managerPin);
@@ -3262,7 +4331,7 @@
         }
 
         function persistCloudOutbox() {
-            localStorage.setItem(CLOUD_OUTBOX_KEY, JSON.stringify(cloudOutbox));
+            safeSave(CLOUD_OUTBOX_KEY, cloudOutbox);
         }
 
         function queueCloudOperation(operation) {
@@ -3380,7 +4449,7 @@
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                         schemaVersion: CLOUD_SCHEMA_VERSION
                     }, { merge: true });
-                    transaction.set(saleRef, sale);
+                    transaction.set(saleRef, { ...sale, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
                 });
                 return true;
             }
@@ -3396,7 +4465,7 @@
                     const remoteProducts = Array.isArray(state.products) ? state.products.map(x => ({ ...x })) : [];
                     applyInventoryDeltas(remoteProducts, p.adjustment || []);
                     transaction.set(cloudStateRef, { products: remoteProducts, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), schemaVersion: CLOUD_SCHEMA_VERSION }, { merge: true });
-                    transaction.set(saleRef, { returnedAt: p.returnedAt, returnedBy: p.returnedBy || '' }, { merge: true });
+                    transaction.set(saleRef, { returnedAt: p.returnedAt, returnedBy: p.returnedBy || '', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
                     transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'saleReturn' });
                 });
                 return true;
@@ -3414,7 +4483,7 @@
                     applyInventoryDeltas(remoteProducts, p.adjustment || []);
                     transaction.set(cloudStateRef, { products: remoteProducts, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), schemaVersion: CLOUD_SCHEMA_VERSION }, { merge: true });
                     const priorHistory = saleSnap.data().amendmentHistory || [];
-                    transaction.set(saleRef, { items: p.items || [], total: Number(p.total || 0), profit: Number(p.profit || 0), inventoryDeltas: p.inventoryDeltas || [], ...(p.globalDiscount !== undefined ? { globalDiscount: Number(p.globalDiscount || 0), cartDebt: !!p.cartDebt, customerName: p.customerName || '', debtorName: p.debtorName || '', note: p.note || '' } : {}), amendedAt: p.amendedAt, amendedBy: p.amendedBy || '', amendmentHistory: p.amendment ? [...priorHistory, p.amendment] : priorHistory }, { merge: true });
+                    transaction.set(saleRef, { updatedAt: firebase.firestore.FieldValue.serverTimestamp(), items: p.items || [], total: Number(p.total || 0), profit: Number(p.profit || 0), inventoryDeltas: p.inventoryDeltas || [], ...(p.globalDiscount !== undefined ? { globalDiscount: Number(p.globalDiscount || 0), cartDebt: !!p.cartDebt, customerName: p.customerName || '', debtorName: p.debtorName || '', note: p.note || '' } : {}), amendedAt: p.amendedAt, amendedBy: p.amendedBy || '', amendmentHistory: p.amendment ? [...priorHistory, p.amendment] : priorHistory }, { merge: true });
                     transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'saleAmendment' });
                 });
                 return true;
@@ -3426,8 +4495,41 @@
                     id: String(p.id),
                     deleted: true,
                     returnedAt: p.returnedAt || '',
-                    deletedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                return true;
+            }
+
+            if (op.type === 'salesClearAll') {
+                const p = op.payload || {};
+                const opRef = cloudInventoryOpsCol.doc(String(op.id));
+                await cloudDb.runTransaction(async transaction => {
+                    const [opSnap, stateSnap] = await Promise.all([transaction.get(opRef), transaction.get(cloudStateRef)]);
+                    if (opSnap.exists) return;
+                    const state = stateSnap.exists ? (stateSnap.data() || {}) : {};
+                    const update = {
+                        salesClearedAt: Math.max(Number(state.salesClearedAt || 0), Number(p.clearedAt || 0)),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        schemaVersion: CLOUD_SCHEMA_VERSION
+                    };
+                    if (p.returnStock) {
+                        const remoteProducts = Array.isArray(state.products) ? state.products.map(x => ({ ...x })) : [];
+                        applyInventoryDeltas(remoteProducts, p.adjustment || []);
+                        update.products = remoteProducts;
+                    }
+                    transaction.set(cloudStateRef, update, { merge: true });
+                    transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'salesClearAll' });
+                });
+                const limitIso = new Date(Number(p.clearedAt || 0)).toISOString();
+                for (;;) {
+                    const snap = await cloudSalesCol.where('timestamp', '<=', limitIso).limit(400).get();
+                    if (snap.empty) break;
+                    const batch = cloudDb.batch();
+                    snap.docs.forEach(d => batch.delete(d.ref));
+                    await batch.commit();
+                    if (snap.size < 400) break;
+                }
                 return true;
             }
 
@@ -3439,14 +4541,14 @@
                     if (!saleSnap.exists) return;
                     const data = saleSnap.data() || {};
                     if (data.deleted || data.debtPaidAt) return;
-                    transaction.set(saleRef, { debtPaidAt: p.debtPaidAt, debtPaidBy: p.debtPaidBy || '' }, { merge: true });
+                    transaction.set(saleRef, { debtPaidAt: p.debtPaidAt, debtPaidBy: p.debtPaidBy || '', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
                 });
                 return true;
             }
 
             if (op.type === 'saleUpdate') {
                 const p = op.payload || {};
-                await cloudSalesCol.doc(String(p.id)).set({ note: p.note || '', noteUpdatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                await cloudSalesCol.doc(String(p.id)).set({ note: p.note || '', noteUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
                 return true;
             }
 
@@ -3514,6 +4616,7 @@
                     managerPin: data.managerPin || '1234',
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     schemaVersion: CLOUD_SCHEMA_VERSION,
+                    salesClearedAt: 0,
                     restoredAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
                 const existingSales = await cloudSalesCol.get();
@@ -3550,7 +4653,58 @@
             }
         }
 
+        function stripCloudSaleFields(remote) {
+            const copy = { ...remote };
+            delete copy.updatedAt;
+            delete copy.noteUpdatedAt;
+            delete copy.deletedAt;
+            return copy;
+        }
+
+        async function mergeSalesFromCloudIdb(remoteSales) {
+            await idbWriteChain;
+            const memById = new Map(sales.map(x => [String(x.id), x]));
+            const idsToFetch = [];
+            remoteSales.forEach(r => {
+                const id = String(r.id);
+                if (!r.deleted && !memById.has(id) && !deletedSaleIds.has(id)) idsToFetch.push(id);
+            });
+            if (idsToFetch.length) {
+                try { (await SalesStore.getByIds(idsToFetch)).forEach(x => memById.set(String(x.id), x)); }
+                catch (e) { console.error('Could not read saved sales for the cloud merge', e); }
+            }
+            const changed = [];
+            const removedIds = [];
+            let deletedChanged = false;
+            remoteSales.forEach(remote => {
+                const id = String(remote.id);
+                if (remote.deleted) {
+                    memById.delete(id);
+                    removedIds.push(id);
+                    if (!deletedSaleIds.has(id)) { deletedSaleIds.add(id); deletedChanged = true; }
+                    return;
+                }
+                if (deletedSaleIds.has(id)) return;
+                const existing = memById.get(id);
+                const merged = existing ? { ...existing, ...remote } : remote;
+                memById.set(id, merged);
+                changed.push(merged);
+            });
+            deletedSaleIds.forEach(id => memById.delete(id));
+            if (deletedChanged) safeSave(KEYS.DELETED_SALES, Array.from(deletedSaleIds));
+            sales = sortSalesDesc(Array.from(memById.values()));
+            const writes = idbWriteChain.then(async () => {
+                if (changed.length) await SalesStore.putMany(changed);
+                if (removedIds.length) await SalesStore.removeMany(removedIds);
+            }).catch(err => { console.error('Error saving cloud sales', err); showStorageErrorBanner(); });
+            idbWriteChain = writes;
+            return writes;
+        }
+
         function mergeSalesFromCloud(remoteSales) {
+            remoteSales = (remoteSales || []).map(stripCloudSaleFields);
+            if (salesClearedAt) remoteSales = remoteSales.filter(r => r.deleted || (new Date(r.timestamp).getTime() || 0) > salesClearedAt);
+            if (salesMode === 'idb') return mergeSalesFromCloudIdb(remoteSales);
             const byId = new Map(sales.map(s => [String(s.id), s]));
             let deletedChanged = false;
             (remoteSales || []).forEach(remote => {
@@ -3568,7 +4722,7 @@
             deletedSaleIds.forEach(id => byId.delete(id));
             if (deletedChanged) safeSave(KEYS.DELETED_SALES, Array.from(deletedSaleIds));
             sales = Array.from(byId.values()).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-            localStorage.setItem(KEYS.SALES, JSON.stringify(sales));
+            safeSave(KEYS.SALES, sales);
         }
 
         function mergeLogsFromCloud(remoteLogs) {
@@ -3579,7 +4733,15 @@
                 byId.set(String(id), { ...remote, id });
             });
             stockLogs = Array.from(byId.values()).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-            localStorage.setItem(KEYS.LOGS, JSON.stringify(stockLogs));
+            safeSave(KEYS.LOGS, stockLogs);
+        }
+
+        async function getAllSalesForCloudSeed() {
+            if (salesMode !== 'idb') return sales;
+            const map = new Map();
+            try { await idbWriteChain; (await SalesStore.getAll()).forEach(x => map.set(String(x.id), x)); } catch (e) { /* use memory only */ }
+            sales.forEach(x => map.set(String(x.id), x));
+            return Array.from(map.values());
         }
 
         async function migrateLegacyCloudIfNeeded() {
@@ -3600,7 +4762,7 @@
 
             const salesMap = new Map();
             (Array.isArray(legacy.sales) ? legacy.sales : []).forEach(s => salesMap.set(String(s.id), s));
-            sales.forEach(s => salesMap.set(String(s.id), s));
+            (await getAllSalesForCloudSeed()).forEach(s => salesMap.set(String(s.id), s));
             const initialSales = Array.from(salesMap.values());
 
             const logMap = new Map();
@@ -3651,13 +4813,25 @@
             if (count) await batch.commit();
         }
 
+        /* In database mode the cloud is asked only for sales created or changed in the last days (a few reads),
+           not for the whole history (thousands of reads every time the app opens). */
+        const CLOUD_SALES_WINDOW_DAYS = 2;
+        function cloudSalesQueries() {
+            if (salesMode !== 'idb') return [cloudSalesCol];
+            const cutoff = new Date(Date.now() - CLOUD_SALES_WINDOW_DAYS * 86400000);
+            return [
+                cloudSalesCol.where('timestamp', '>=', cutoff.toISOString()),
+                cloudSalesCol.where('updatedAt', '>=', firebase.firestore.Timestamp.fromDate(cutoff))
+            ];
+        }
+
         async function pullCloudStateAndRecords() {
             if (!cloudStateRef) return;
             cloudApplyingRemote = true;
             try {
                 const [stateSnap, salesSnap, logsSnap] = await Promise.all([
                     cloudStateRef.get(),
-                    cloudSalesCol.get(),
+                    salesMode === 'idb' ? Promise.resolve(null) : cloudSalesCol.get(),
                     cloudLogsCol.get()
                 ]);
 
@@ -3665,19 +4839,20 @@
                     const data = stateSnap.data() || {};
                     if (Array.isArray(data.products)) {
                         products = data.products;
-                        localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(products));
+                        safeSave(KEYS.PRODUCTS, products);
                     }
                     if (Array.isArray(data.cashiers)) {
                         cashiers = data.cashiers;
-                        localStorage.setItem(KEYS.CASHIERS, JSON.stringify(cashiers));
+                        safeSave(KEYS.CASHIERS, cashiers);
                     }
                     if (data.managerPin) {
                         managerPin = data.managerPin;
                         localStorage.setItem(KEYS.MANAGER_PIN, managerPin);
                     }
+                    applyRemoteSalesClear(data.salesClearedAt);
                 }
 
-                mergeSalesFromCloud(salesSnap.docs.map(d => d.data()));
+                if (salesSnap) await mergeSalesFromCloud(salesSnap.docs.map(d => d.data()));
                 mergeLogsFromCloud(logsSnap.docs.map(d => d.data()));
                 renderInventory();
                 renderSales();
@@ -3698,27 +4873,27 @@
                 try {
                     if (Array.isArray(data.products)) {
                         products = data.products;
-                        localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(products));
+                        safeSave(KEYS.PRODUCTS, products);
                     }
                     if (Array.isArray(data.cashiers)) {
                         cashiers = data.cashiers;
-                        localStorage.setItem(KEYS.CASHIERS, JSON.stringify(cashiers));
+                        safeSave(KEYS.CASHIERS, cashiers);
                     }
                     if (data.managerPin) {
                         managerPin = data.managerPin;
                         localStorage.setItem(KEYS.MANAGER_PIN, managerPin);
                     }
+                    applyRemoteSalesClear(data.salesClearedAt);
                     renderInventory();
                 } finally {
                     cloudApplyingRemote = false;
                 }
             }, err => console.error('Cloud state listen error', err));
 
-            cloudSalesCol.onSnapshot(snapshot => {
+            cloudSalesQueries().forEach(query => query.onSnapshot(snapshot => {
                 if (cloudBootstrapping) return;
-                mergeSalesFromCloud(snapshot.docs.map(d => d.data()));
-                renderSales();
-            }, err => console.error('Cloud sales listen error', err));
+                Promise.resolve(mergeSalesFromCloud(snapshot.docs.map(d => d.data()))).then(() => renderSales());
+            }, err => console.error('Cloud sales listen error', err)));
 
             cloudLogsCol.onSnapshot(snapshot => {
                 if (cloudBootstrapping) return;
@@ -3875,7 +5050,8 @@
                 var t = e.target && e.target.closest ? e.target.closest('button, .btn, .mode-btn, .qty-btn, .nav-item, .item-row[onclick], .day-group-header, a[onclick]') : null;
                 if (!t || t.disabled) return;
                 try {
-                    if (navigator.vibrate) navigator.vibrate(40);
+                    var vibMs = (typeof window.getVibrationMs === 'function') ? window.getVibrationMs() : 30;
+                    if (vibMs && navigator.vibrate) navigator.vibrate(vibMs);
                 } catch (err) {}
                 try {
                     if (getComputedStyle(t).position === 'static') t.style.position = 'relative';
