@@ -676,7 +676,12 @@
         }
 
         /* v35: Statistics page */
-        .stats-chips { display: flex; gap: 5px; margin-bottom: 10px; }
+        .stats-chips { display: flex; gap: 5px; margin-bottom: 10px; position: relative; }
+        .stats-chips .chip-more { flex: 0 0 38px; padding: 8px 0; display: flex; align-items: center; justify-content: center; }
+        .stats-chips .chip-more svg { width: 16px; height: 16px; }
+        .stats-more-menu { position: absolute; top: calc(100% + 4px); left: 0; z-index: 30; background: #ffffff; border: 1px solid #e7eef3; border-radius: 14px; box-shadow: 0 8px 24px rgba(18, 40, 58, 0.16); padding: 6px; min-width: 170px; }
+        .stats-more-menu button { display: block; width: 100%; text-align: right; background: transparent; border: none; border-radius: 10px; padding: 11px 12px; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--navy); cursor: pointer; }
+        .stats-more-menu button:active { background: #e6f2f2; }
         .stats-chips .chip-btn { padding: 8px 2px; font-size: 12px; white-space: nowrap; }
         .stats-day-picker { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
         .stats-day-label { position: relative; flex: 1; text-align: center; background: #ffffff; border: 1.5px solid var(--teal-primary); border-radius: 14px; padding: 9px 6px; font-weight: 700; color: var(--navy); font-size: 14px; }
@@ -911,6 +916,16 @@
                 <button class="chip-btn" id="stats-chip-day" onclick="setStatsPeriod('day')">📅 اختر يوم</button>
                 <button class="chip-btn" id="stats-chip-7" onclick="setStatsPeriod('7')">آخر 7 أيام</button>
                 <button class="chip-btn" id="stats-chip-30" onclick="setStatsPeriod('30')">آخر 30 يوم</button>
+                <button class="chip-btn chip-more" id="stats-chip-more" onclick="toggleStatsMoreMenu(event)" aria-label="خيارات أخرى"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5.5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="18.5" r="1.7"/></svg></button>
+                <div id="stats-more-menu" class="stats-more-menu" style="display:none;" onclick="event.stopPropagation()">
+                    <button onclick="chooseStatsMore('month')">📅 اختر شهر</button>
+                    <button onclick="chooseStatsMore('all')">♾️ المبيعات الكلية</button>
+                </div>
+            </div>
+            <div id="stats-month-picker" class="stats-day-picker" style="display:none;">
+                <button class="qty-btn" onclick="shiftStatsMonth(-1)" aria-label="الشهر السابق">›</button>
+                <label class="stats-day-label"><span id="stats-month-text"></span><select id="stats-month-select" onchange="onStatsMonthPicked(this.value)" style="position:absolute; inset:0; width:100%; height:100%; opacity:0; border:none; margin:0; padding:0;"></select></label>
+                <button class="qty-btn" id="stats-month-next" onclick="shiftStatsMonth(1)" aria-label="الشهر التالي">‹</button>
             </div>
             <div id="stats-day-picker" class="stats-day-picker" style="display:none;">
                 <button class="qty-btn" onclick="shiftStatsDay(-1)" aria-label="اليوم السابق">›</button>
@@ -926,7 +941,7 @@
                     <div class="stat-tile"><div class="stat-ic stat-ic-green">✅</div><div class="stat-t">ديون سُددت (محسوبة ضمن المبيعات)</div><div class="stat-v"><span id="stat-today-debt-paid">0</span> <small>د.ل</small></div></div>
                 </div>
                 <div id="stats-chart" class="stats-chart" style="display:none;">
-                    <div class="stats-chart-title">المبيعات يوماً بيوم <span id="stats-chart-pick"></span></div>
+                    <div class="stats-chart-title"><span id="stats-chart-title-text">المبيعات يوماً بيوم</span> <span id="stats-chart-pick"></span></div>
                     <div id="stats-bars" class="stats-bars"></div>
                     <div id="stats-bar-days" class="stats-bar-days"></div>
                 </div>
@@ -1648,9 +1663,11 @@
             input.focus();
             showSearchDropdown();
             setTimeout(() => {
+                /* keyboard did not open (no resize): fall back to showing the search card at the top */
+                if (document.body.classList.contains('kb-open')) { positionSearchAboveKeyboard(); return; }
                 const card = input.closest('.card');
                 (card || input).scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 60);
+            }, 500);
         }
 
         function showSearchDropdown() {
@@ -1660,6 +1677,27 @@
             } else {
                 filterProducts();
             }
+            setTimeout(positionSearchAboveKeyboard, 350);
+        }
+
+        /* With the keyboard open and the search box focused, scroll so that the card holding the product list
+           ends just above the keyboard, while the card's title ("بيع جديد") and the search box stay visible. */
+        function positionSearchAboveKeyboard() {
+            if (!document.body.classList.contains('kb-open')) return;
+            const input = document.getElementById('pos-search');
+            const panel = document.getElementById('selected-product-panel');
+            if (!input || document.activeElement !== input) return;
+            if (panel && panel.style.display !== 'none') return;
+            const card = input.closest('.card');
+            const dropdown = document.getElementById('product-dropdown');
+            if (!card || !dropdown || !dropdown.firstElementChild) return;
+            const visibleH = window.innerHeight;
+            document.body.style.paddingBottom = visibleH + 'px';
+            const bottom = dropdown.getBoundingClientRect().bottom + 10;
+            let delta = bottom - (visibleH - 6);
+            const maxUp = card.getBoundingClientRect().top - 8;
+            if (delta > maxUp) delta = maxUp;
+            if (Math.abs(delta) > 1) window.scrollBy({ top: delta, behavior: 'smooth' });
         }
 
         function filterProducts() {
@@ -3008,6 +3046,9 @@
         let statsDayMs = null;      // start of the chosen day (for "pick a day")
         let statsRenderToken = 0;
         let statsSeries = [];
+        let statsMonthMs = null;    // start of the chosen month (for "choose a month")
+        let statsAllFromMs = null;  // first day with a sale (for "lifetime")
+        let statsMonthly = false;   // chart shows one bar per month
 
         function dayStartMs(ms) { const d = new Date(ms); d.setHours(0, 0, 0, 0); return d.getTime(); }
         function addDaysMs(ms, n) { const d = new Date(ms); d.setDate(d.getDate() + n); d.setHours(0, 0, 0, 0); return d.getTime(); }
@@ -3018,6 +3059,16 @@
             if (statsPeriod === 'day') { const from = statsDayMs || today; return { from, to: addDaysMs(from, 1), days: 1 }; }
             if (statsPeriod === '7') return { from: addDaysMs(today, -6), to: addDaysMs(today, 1), days: 7 };
             if (statsPeriod === '30') return { from: addDaysMs(today, -29), to: addDaysMs(today, 1), days: 30 };
+            if (statsPeriod === 'month') {
+                const m = new Date(statsMonthMs || today); m.setDate(1); m.setHours(0, 0, 0, 0);
+                const next = new Date(m.getFullYear(), m.getMonth() + 1, 1).getTime();
+                return { from: m.getTime(), to: next, days: Math.round((next - m.getTime()) / 86400000) };
+            }
+            if (statsPeriod === 'all') {
+                const from = statsAllFromMs || today;
+                const to = addDaysMs(today, 1);
+                return { from, to, days: Math.max(1, Math.round((to - from) / 86400000)), monthly: true };
+            }
             return { from: today, to: addDaysMs(today, 1), days: 1 };
         }
 
@@ -3081,6 +3132,29 @@
                 const btn = document.getElementById('stats-chip-' + k);
                 if (btn) btn.classList.toggle('active', k === statsPeriod);
             });
+            const moreBtn = document.getElementById('stats-chip-more');
+            if (moreBtn) moreBtn.classList.toggle('active', statsPeriod === 'month' || statsPeriod === 'all');
+            const mPicker = document.getElementById('stats-month-picker');
+            if (mPicker) mPicker.style.display = statsPeriod === 'month' ? 'flex' : 'none';
+            if (statsPeriod === 'month') {
+                const cur = new Date(); const curM = new Date(cur.getFullYear(), cur.getMonth(), 1).getTime();
+                const ms = statsMonthMs || curM;
+                document.getElementById('stats-month-text').textContent = new Date(ms).toLocaleDateString('ar-LY', { year: 'numeric', month: 'long' });
+                const sel = document.getElementById('stats-month-select');
+                if (sel) {
+                    let html = '';
+                    const chosen = new Date(ms);
+                    const monthsBack = Math.max(36, (cur.getFullYear() - chosen.getFullYear()) * 12 + cur.getMonth() - chosen.getMonth());
+                    for (let i = 0; i <= monthsBack; i++) {
+                        const d = new Date(cur.getFullYear(), cur.getMonth() - i, 1);
+                        html += `<option value="${d.getTime()}">${d.toLocaleDateString('ar-LY', { year: 'numeric', month: 'long' })}</option>`;
+                    }
+                    sel.innerHTML = html;
+                    sel.value = String(ms);
+                }
+                const nextBtn = document.getElementById('stats-month-next');
+                if (nextBtn) nextBtn.disabled = ms >= curM;
+            }
             const picker = document.getElementById('stats-day-picker');
             if (picker) picker.style.display = statsPeriod === 'day' ? 'flex' : 'none';
             const today = dayStartMs(Date.now());
@@ -3096,8 +3170,8 @@
             const r = statsRange();
             const label = document.getElementById('stats-period-label');
             if (label) {
-                label.style.display = statsPeriod === 'day' ? 'none' : 'block';
-                const fmt = ms => new Date(ms).toLocaleDateString('ar-LY', { day: 'numeric', month: 'long' });
+                label.style.display = (statsPeriod === 'day' || statsPeriod === 'month') ? 'none' : 'block';
+                const fmt = ms => new Date(ms).toLocaleDateString('ar-LY', statsPeriod === 'all' ? { day: 'numeric', month: 'long', year: 'numeric' } : { day: 'numeric', month: 'long' });
                 label.textContent = r.days === 1 ? new Date(r.from).toLocaleDateString('ar-LY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : `من ${fmt(r.from)} إلى ${fmt(r.to - 1)}`;
             }
         }
@@ -3105,9 +3179,21 @@
         async function refreshStats() {
             const token = ++statsRenderToken;
             updateStatsControls();
-            const r = statsRange();
-            const list = await getSalesForStats(r.from, r.to);
-            if (token !== statsRenderToken) return;
+            let r = statsRange();
+            let list;
+            if (statsPeriod === 'all') {
+                /* lifetime: everything stored on this device, from the first sale until today */
+                list = await getSalesForStats(0, addDaysMs(dayStartMs(Date.now()), 1));
+                if (token !== statsRenderToken) return;
+                let first = Infinity;
+                list.forEach(x => { if (x.returnedAt) return; const t = saleTimeMs(x); if (t > 0 && t < first) first = t; });
+                statsAllFromMs = first === Infinity ? dayStartMs(Date.now()) : dayStartMs(first);
+                r = statsRange();
+                updateStatsControls();
+            } else {
+                list = await getSalesForStats(r.from, r.to);
+                if (token !== statsRenderToken) return;
+            }
             const st = computeStats(list, r.from, r.to, r.days);
             document.getElementById('stat-today-sales').innerText = formatNum(st.rev);
             document.getElementById('stat-today-profit').innerText = formatNum(st.profit);
@@ -3124,16 +3210,36 @@
             if (!box) return;
             if (r.days === 1) { box.style.display = 'none'; statsSeries = []; return; }
             box.style.display = 'block';
-            statsSeries = perDay.map((v, i) => ({ ms: addDaysMs(r.from, i), v }));
-            const max = Math.max(...perDay, 0);
-            const thin = r.days > 10;
+            statsMonthly = !!r.monthly;
+            const titleText = document.getElementById('stats-chart-title-text');
+            if (titleText) titleText.textContent = statsMonthly ? 'المبيعات شهراً بشهر' : 'المبيعات يوماً بيوم';
+            if (statsMonthly) {
+                const byMonth = new Map();
+                perDay.forEach((v, i) => {
+                    const d = new Date(addDaysMs(r.from, i));
+                    const key = d.getFullYear() * 12 + d.getMonth();
+                    const cur = byMonth.get(key) || { ms: new Date(d.getFullYear(), d.getMonth(), 1).getTime(), v: 0 };
+                    cur.v += v;
+                    byMonth.set(key, cur);
+                });
+                statsSeries = Array.from(byMonth.values());
+            } else {
+                statsSeries = perDay.map((v, i) => ({ ms: addDaysMs(r.from, i), v }));
+            }
+            const max = Math.max(...statsSeries.map(x => x.v), 0);
+            const thin = statsMonthly ? statsSeries.length > 10 : r.days > 10;
             const bars = document.getElementById('stats-bars');
             const days = document.getElementById('stats-bar-days');
             bars.classList.toggle('thin', thin);
             days.classList.toggle('thin', thin);
             const last = statsSeries.length - 1;
             bars.innerHTML = statsSeries.map((d, i) => `<div class="${i === last ? 'sel' : ''}" style="height:${max > 0 ? Math.max(2, Math.round(d.v / max * 100)) : 2}%" onclick="pickStatsBar(${i})"></div>`).join('');
-            days.innerHTML = statsSeries.map((d, i) => `<span>${(!thin || i % 5 === 0 || i === last) ? new Date(d.ms).getDate() : ''}</span>`).join('');
+            const step = statsMonthly ? 3 : 5;
+            days.innerHTML = statsSeries.map((d, i) => {
+                const dt = new Date(d.ms);
+                const text = statsMonthly ? (dt.getMonth() + 1) : dt.getDate();
+                return `<span>${(!thin || i % step === 0 || i === last) ? text : ''}</span>`;
+            }).join('');
             pickStatsBar(last);
         }
 
@@ -3142,10 +3248,43 @@
             if (!d) return;
             document.querySelectorAll('#stats-bars div').forEach((el, n) => el.classList.toggle('sel', n === i));
             const pick = document.getElementById('stats-chart-pick');
-            if (pick) pick.textContent = `— ${new Date(d.ms).toLocaleDateString('ar-LY', { weekday: 'short', day: 'numeric', month: 'short' })}: ${formatNum(d.v)} د.ل`;
+            const fmtOpts = statsMonthly ? { month: 'long', year: 'numeric' } : { weekday: 'short', day: 'numeric', month: 'short' };
+            if (pick) pick.textContent = `— ${new Date(d.ms).toLocaleDateString('ar-LY', fmtOpts)}: ${formatNum(d.v)} د.ل`;
+        }
+
+        function closeStatsMoreMenu() { const m = document.getElementById('stats-more-menu'); if (m) m.style.display = 'none'; }
+        function toggleStatsMoreMenu(e) {
+            if (e) e.stopPropagation();
+            const m = document.getElementById('stats-more-menu');
+            if (m) m.style.display = m.style.display === 'none' ? 'block' : 'none';
+        }
+        document.addEventListener('click', closeStatsMoreMenu);
+
+        function chooseStatsMore(kind) {
+            closeStatsMoreMenu();
+            statsPeriod = kind;
+            if (kind === 'month' && !statsMonthMs) { const n = new Date(); statsMonthMs = new Date(n.getFullYear(), n.getMonth(), 1).getTime(); }
+            refreshStats();
+        }
+
+        function shiftStatsMonth(n) {
+            const n0 = new Date(); const curM = new Date(n0.getFullYear(), n0.getMonth(), 1).getTime();
+            const base = new Date(statsMonthMs || curM);
+            const next = new Date(base.getFullYear(), base.getMonth() + n, 1).getTime();
+            if (next > curM) return;
+            statsMonthMs = next;
+            refreshStats();
+        }
+
+        function onStatsMonthPicked(value) {
+            const ms = Number(value);
+            if (!ms) return;
+            statsMonthMs = ms;
+            refreshStats();
         }
 
         function setStatsPeriod(period) {
+            closeStatsMoreMenu();
             statsPeriod = period;
             if (period === 'day' && !statsDayMs) statsDayMs = addDaysMs(Date.now(), -1);
             refreshStats();
@@ -3169,6 +3308,7 @@
 
         function renderStatsAndShow(tab, element) {
             statsPeriod = 'today';
+            closeStatsMoreMenu();
             refreshStats();
             showTab(tab, element);
         }
@@ -5030,6 +5170,9 @@
 
                 if (keyboardOpen) {
                     const panel = document.getElementById('selected-product-panel');
+                    if ((!panel || panel.style.display === 'none') && typeof positionSearchAboveKeyboard === 'function') {
+                        requestAnimationFrame(positionSearchAboveKeyboard);
+                    }
                     if (panel && panel.style.display !== 'none') {
                         document.body.style.paddingBottom = h + 'px';
                         requestAnimationFrame(() => {
