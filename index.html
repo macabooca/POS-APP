@@ -653,20 +653,22 @@
         /* v35: Quick sale button (right side, a little above the checkout bar) */
         .quick-sale-btn {
             position: fixed;
-            right: 34px;
-            bottom: calc(176px + env(safe-area-inset-bottom, 0px));
-            width: 72px; height: 72px;
-            border: none; border-radius: 50%;
-            background: linear-gradient(135deg, #ea8a2a, #f19f3e);
-            color: #ffffff;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            box-shadow: 0 5px 14px rgba(234, 138, 42, 0.38);
+            right: 23px;
+            bottom: calc(187px + env(safe-area-inset-bottom, 0px));
+            height: 40px;
+            border: 1.6px solid #e2923f; border-radius: 21px;
+            background: #fdf0e1;
+            color: #d9801f;
+            display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 6px;
+            padding: 0 16px;
+            box-shadow: none;
+            opacity: 0.9;
             z-index: 101;
-            padding: 0;
             cursor: pointer;
+            font-family: inherit; font-size: 13px; font-weight: 800;
         }
-        .quick-sale-btn b { font-size: 30px; line-height: 22px; font-weight: 900; }
-        .quick-sale-btn small { font-size: 12px; font-weight: 700; }
+        .quick-sale-btn svg { width: 18px; height: 18px; display: block; }
+        html[data-theme="dark"] .quick-sale-btn { background: #3a2c1a; color: #ffb15c; border-color: #b9742a; }
         body.panel-open .quick-sale-btn,
         body.kb-open .quick-sale-btn { display: none !important; }
         body.pos-active { padding-bottom: 250px; }
@@ -1066,7 +1068,7 @@
             </div>
         </div>
 
-        <button type="button" id="quick-sale-btn" class="quick-sale-btn" onclick="openQuickSale(event)" aria-label="بيع سريع"><b>+</b><small>بيع</small></button>
+        <button type="button" id="quick-sale-btn" class="quick-sale-btn" onclick="openQuickSale(event)" aria-label="بيع سريع"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>بيع سريع</span></button>
         <div class="fixed-checkout-bar">
             <h4 dir="rtl">الإجمالي: <span id="cart-total" style="color:var(--teal-primary);">0</span> د.ل</h4>
 
