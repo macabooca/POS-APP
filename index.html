@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<script>
+(function () {
+    try {
+        var t = localStorage.getItem('pos_theme');
+        if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    } catch (e) {}
+})();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
     <title>نظام إدارة المبيعات والمخزون</title>
@@ -690,11 +698,12 @@
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .stat-tile { background: #ffffff; border: 1px solid #e7eef3; border-radius: 16px; padding: 10px 8px; text-align: center; box-shadow: 0 2px 10px rgba(18, 40, 58, 0.06); }
         .stat-ic { width: 34px; height: 34px; border-radius: 50%; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
-        .stat-ic-teal { background: #e3f4f2; } .stat-ic-green { background: #e6f4e7; } .stat-ic-orange { background: #fdeedd; }
+        .stat-ic svg { width: 19px; height: 19px; display: block; }
+        .stat-ic-teal { background: #e3f4f2; color: #137e84; } .stat-ic-green { background: #e6f4e7; color: #2e7d32; } .stat-ic-orange { background: #fdeedd; color: #d9730d; }
         .stat-t { font-size: 12px; color: var(--muted); line-height: 1.4; }
         .stat-v { font-size: 19px; font-weight: 800; color: var(--navy); margin-top: 2px; }
         .stat-v small { font-size: 11px; font-weight: 600; color: var(--muted); }
-        .stat-sm .stat-v { font-size: 15px; } .stat-sm .stat-ic { width: 28px; height: 28px; font-size: 14px; }
+        .stat-sm .stat-v { font-size: 15px; } .stat-sm .stat-ic { width: 28px; height: 28px; font-size: 14px; } .stat-sm .stat-ic svg { width: 16px; height: 16px; }
         .stats-debt-alert { display: flex; justify-content: space-between; align-items: center; background: #fbe9e9; border: 1px solid #f2bcbc; border-radius: 14px; padding: 10px 12px; margin-bottom: 10px; color: var(--navy); }
         .stats-debt-alert b { color: #d32f2f; }
         .stats-debt-value { font-size: 17px; white-space: nowrap; }
@@ -715,7 +724,141 @@
         /* v35: More page */
         .vibe-levels { display: flex; gap: 5px; }
         .vibe-levels .chip-btn { padding: 8px 2px; }
-    </style>
+    
+        /* Expiry date picker (Arabic, numbers only) */
+        .date-pick-btn { display: block; width: 100%; box-sizing: border-box; margin: 0 0 10px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border-color); background: #f8fbfc; color: var(--navy); font: inherit; font-size: 15px; text-align: right; cursor: pointer; direction: rtl; }
+        .date-pick-btn.empty { color: #98a4b3; }
+        .dp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10050; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .dp-box { background: #fff; border-radius: 20px; width: 100%; max-width: 360px; padding: 16px; box-shadow: 0 12px 40px rgba(18,40,58,0.25); direction: rtl; }
+        .dp-title { text-align: center; font-weight: 800; color: var(--navy); margin-bottom: 10px; font-size: 15px; }
+        .dp-nav { display: flex; align-items: center; justify-content: space-between; gap: 6px; direction: ltr; margin-bottom: 12px; }
+        .dp-nav button { width: 38px; height: 38px; border-radius: 12px; border: none; background: #e3f4f2; color: var(--teal-primary); font-size: 18px; font-weight: 800; cursor: pointer; line-height: 1; padding: 0; }
+        .dp-nav button:active { transform: scale(0.94); }
+        .dp-label { flex: 1; text-align: center; font-size: 18px; font-weight: 800; color: var(--navy); font-variant-numeric: lining-nums; }
+        .dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; direction: ltr; }
+        .dp-day { aspect-ratio: 1 / 1; border-radius: 12px; border: 1px solid #e7eef3; background: #f8fbfc; color: var(--navy); font-size: 15px; font-weight: 700; cursor: pointer; padding: 0; font-family: inherit; }
+        .dp-day.sel { background: var(--teal-primary); color: #fff; border-color: var(--teal-primary); }
+        .dp-day.today { border-color: var(--orange-accent); }
+        .dp-foot { display: flex; gap: 8px; margin-top: 14px; }
+        .dp-foot button { flex: 1; padding: 11px 6px; border-radius: 12px; border: none; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+        .mini-ic { width: 15px; height: 15px; vertical-align: -3px; margin-left: 4px; }
+        /* Clear (X) button inside every search box - one standard size */
+        .search-wrap { position: relative; display: block; width: 100%; }
+        .search-wrap > input { margin-bottom: 0 !important; }
+        #pos-search, #inventory-search, #sales-search { padding-left: 48px; }
+        input[type="search"]::-webkit-search-cancel-button, input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+        .search-x { position: absolute; left: 8px; top: 0; bottom: 0; margin: auto 0; width: 34px; height: 34px; padding: 0; border: none; border-radius: 50%; background: #e6edf2; color: #5b6b7a; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 2; }
+        .search-x.show { display: flex; }
+        .search-x svg { width: 20px; height: 20px; display: block; pointer-events: none; }
+        .search-x:active { background: #d5dee6; transform: scale(0.92); }
+
+        /* Faint drawings in the empty space under the cart (behind everything, never clickable) */
+        #pos-decor { position: fixed; left: 0; right: 0; bottom: calc(176px + env(safe-area-inset-bottom, 0px)); height: 250px; display: flex; justify-content: center; align-items: flex-end; pointer-events: none; z-index: -1; opacity: 0.2; }
+        #pos-decor svg { width: min(340px, 86vw); height: auto; }
+        body.kb-open #pos-decor, body.panel-open #pos-decor { display: none; }
+
+        .stat-tap { cursor: pointer; } .stat-tap:active { transform: scale(0.98); }
+        .stat-hint { font-size: 10.5px; color: var(--teal-primary); opacity: 0.75; margin-top: 3px; }
+        .split-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 13px 4px; border-bottom: 1px solid #edf2f6; font-size: 15px; color: var(--navy); }
+        .split-row b { font-size: 18px; color: var(--teal-primary); white-space: nowrap; } .split-row small { font-size: 11px; color: var(--muted); font-weight: 600; }
+        .split-total { border-bottom: none; font-weight: 800; } .split-total b { color: var(--navy); }
+
+        /* selection mode (sales history + inventory) */
+        .select-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .select-tools { flex: 1; flex-wrap: wrap; align-items: center; gap: 6px; }
+        .select-del-btn { padding: 7px 12px !important; font-size: 13px !important; margin-right: auto; }
+        .sel-months { flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+        .sel-month-chip { display: inline-flex; align-items: center; gap: 6px; background: #fdecec; color: #b3261e; border-radius: 999px; padding: 5px 6px 5px 12px; font-size: 13px; font-weight: 700; }
+        .sel-month-chip button { border: none; background: #f6c9c7; color: #b3261e; width: 22px; height: 22px; border-radius: 50%; font-size: 12px; padding: 0; line-height: 1; }
+        .sale-card.sel-mode { position: relative; padding-left: 46px; }
+        .sel-box { position: absolute; left: 10px; top: 12px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
+        .sel-box input, .sel-day input, .inv-sel input { width: 22px; height: 22px; margin: 0; accent-color: var(--red-alert); }
+        .sel-day { display: inline-flex; vertical-align: middle; margin-left: 10px; }
+        .month-list { max-height: 50vh; overflow-y: auto; }
+        .month-row { display: flex; align-items: center; gap: 12px; padding: 12px 6px; border-bottom: 1px solid #edf2f6; font-size: 16px; color: var(--navy); font-weight: 700; }
+        .month-row input { width: 22px; height: 22px; margin: 0; accent-color: var(--red-alert); }
+        .month-row small { margin-right: auto; color: var(--muted); font-weight: 600; font-size: 13px; }
+        .inv-sel { display: inline-flex; align-items: center; margin-left: 10px; }
+
+        .edit-entry { background: #fff; border: 1px solid #e7eef3; border-radius: 14px; padding: 10px 12px; margin: 8px 0; box-shadow: 0 1px 6px rgba(18,40,58,0.05); }
+        .edit-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+        .edit-head strong { font-size: 15.5px; color: var(--navy); }
+        .edit-head small { margin-right: auto; color: var(--muted); font-size: 12px; }
+        .edit-tag { background: #e3f4f2; color: var(--teal-primary); font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+        .edit-line { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; padding: 3px 0; color: #4a5a6a; }
+        .edit-line b { color: var(--navy); direction: rtl; }
+
+        /* Fast-scroll handle: only on the sales history and inventory pages, only while scrolling */
+        #fast-scroll { position: fixed; right: 2px; top: 84px; bottom: 112px; width: 30px; z-index: 60; pointer-events: none; opacity: 0; transition: opacity 0.25s ease; touch-action: none; }
+        #fast-scroll.show { opacity: 1; pointer-events: auto; }
+        #fast-scroll .fs-thumb { position: absolute; right: 4px; top: 0; width: 7px; height: 56px; border-radius: 6px; background: rgba(19, 126, 132, 0.6); transition: width 0.12s ease, background 0.12s ease; }
+        #fast-scroll.drag .fs-thumb { width: 11px; background: rgba(19, 126, 132, 0.85); }
+        body.kb-open #fast-scroll { display: none; }
+
+        .theme-choice { display: flex; gap: 8px; }
+        #brightness-range { direction: ltr; width: 100%; padding: 0; margin: 0; border: none; background: transparent; accent-color: var(--teal-primary); height: 32px; }
+        #dim-overlay { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 100000; }
+
+        /* ================= DARK MODE ================= */
+        html[data-theme="dark"] { color-scheme: dark; --bg-color: #0e1822; --card-bg: #16232f; --text-color: #e6eef5; --navy: #e6eef5; --muted: #93a6b8; --border-color: #2b3d4c; --teal-soft: #1b3a3e; --teal-primary: #22a0a7; --teal-hover: #1b8a90; }
+        html[data-theme="dark"] body { background-color: var(--bg-color); color: var(--text-color); }
+        html[data-theme="dark"] .card, html[data-theme="dark"] .stat-tile, html[data-theme="dark"] .stats-chart, html[data-theme="dark"] .sale-card,
+        html[data-theme="dark"] .edit-entry, html[data-theme="dark"] .stats-more-menu, html[data-theme="dark"] .stats-day-label, html[data-theme="dark"] .dp-box,
+        html[data-theme="dark"] .modal-box, html[data-theme="dark"] .bottom-nav, html[data-theme="dark"] .fixed-checkout-bar, html[data-theme="dark"] .chip-btn { background-color: #16232f; }
+        html[data-theme="dark"] .sale-card.sale-returned { background-color: #1d2832; border-color: #34444f; }
+        html[data-theme="dark"] .stat-tile, html[data-theme="dark"] .stats-chart, html[data-theme="dark"] .sale-card, html[data-theme="dark"] .edit-entry,
+        html[data-theme="dark"] .item-row, html[data-theme="dark"] .stats-more-menu { border-color: #2b3d4c; }
+        html[data-theme="dark"] .item-row { border-bottom-color: #25343f; }
+        html[data-theme="dark"] input, html[data-theme="dark"] select, html[data-theme="dark"] textarea,
+        html[data-theme="dark"] #pos-search, html[data-theme="dark"] #inventory-search, html[data-theme="dark"] .date-pick-btn, html[data-theme="dark"] .dp-day,
+        html[data-theme="dark"] .cashier-item, html[data-theme="dark"] .del-all-option { background-color: #1c2d3a; border-color: #2e4150; color: #e6eef5; }
+        html[data-theme="dark"] input:focus, html[data-theme="dark"] select:focus, html[data-theme="dark"] textarea:focus { background-color: #213445; border-color: var(--teal-primary); box-shadow: 0 0 0 3px rgba(34,160,167,0.25); }
+        html[data-theme="dark"] input::placeholder { color: #6f8294; }
+        html[data-theme="dark"] .dp-day.sel { background: var(--teal-primary); color: #fff; }
+        html[data-theme="dark"] .modal-title, html[data-theme="dark"] #modal-body, html[data-theme="dark"] .dp-title, html[data-theme="dark"] .dp-label { color: #e6eef5; }
+        html[data-theme="dark"] .modal-box { border: 1px solid #2b3d4c; }
+        html[data-theme="dark"] .modal-box #modal-cancel-btn, html[data-theme="dark"] .nav-item.active, html[data-theme="dark"] .qty-btn,
+        html[data-theme="dark"] .dp-nav button, html[data-theme="dark"] .stat-ic-teal, html[data-theme="dark"] .edit-tag, html[data-theme="dark"] .title-icon,
+        html[data-theme="dark"] .mode-btn { background-color: #1f3b40; }
+        html[data-theme="dark"] .mode-btn.active, html[data-theme="dark"] .chip-btn.active { background-color: var(--teal-primary); color: #fff; }
+        html[data-theme="dark"] .chip-btn { border-color: #2e4a50; }
+        html[data-theme="dark"] .stat-ic-green { background: #1c3524; } html[data-theme="dark"] .stat-ic-orange { background: #3a2c1a; }
+        html[data-theme="dark"] .stats-debt-alert { background: #3a1f23; border-color: #6b3037; }
+        html[data-theme="dark"] .sel-month-chip { background: #3a1f23; color: #ff9a96; } html[data-theme="dark"] .sel-month-chip button { background: #5a2b30; color: #ff9a96; }
+        html[data-theme="dark"] .search-x { background: #2a3d4c; color: #b5c5d3; }
+        html[data-theme="dark"] .day-group-header { background-color: #1b3a3e; color: #e6eef5; }
+        html[data-theme="dark"] .selection-box { background-color: #1a2a36; border-color: #2e4150; }
+        html[data-theme="dark"] #pos-decor { opacity: 0.22; }
+        html[data-theme="dark"] .split-row, html[data-theme="dark"] .month-row { border-bottom-color: #25343f; }
+        html[data-theme="dark"] hr { border-color: #25343f !important; }
+        html[data-theme="dark"] .stat-ic svg, html[data-theme="dark"] .title-icon svg { color: inherit; }
+        html[data-theme="dark"] .stat-ic-teal { color: #4fc3ca; } html[data-theme="dark"] .stat-ic-green { color: #6fcf76; } html[data-theme="dark"] .stat-ic-orange { color: #ffa94d; }
+        html[data-theme="dark"] .edit-line { color: #aebdcb; } html[data-theme="dark"] #modal-body { color: #cdd9e4; }
+        /* inline colors written in the page code */
+        html[data-theme="dark"] [style*="color:#888"], html[data-theme="dark"] [style*="color: #888"], html[data-theme="dark"] [style*="color:#666"], html[data-theme="dark"] [style*="color: #666"], html[data-theme="dark"] [style*="color:#777"], html[data-theme="dark"] [style*="color:#555"] { color: #9fb0c0 !important; }
+        html[data-theme="dark"] [style*="color:#aaa"] { color: #7d90a2 !important; }
+        html[data-theme="dark"] [style*="#eee"] { border-color: #25343f !important; }
+        html[data-theme="dark"] [style*="background:#f9f9f9"], html[data-theme="dark"] [style*="background:#fff9f0"], html[data-theme="dark"] [style*="background:#fff4e5"], html[data-theme="dark"] [style*="background:#eef2f5"] { background: #1f2c36 !important; color: #e6eef5 !important; }
+        html[data-theme="dark"] [style*="color:#d32f2f"] { color: #ff8a85 !important; } html[data-theme="dark"] [style*="color:#2e7d32"] { color: #7bd88a !important; }
+        html[data-theme="dark"] [style*="color:#e65100"] { color: #ffa270 !important; } html[data-theme="dark"] [style*="color:#6a1b9a"] { color: #cf9cf0 !important; }
+        html[data-theme="dark"] [style*="color:#ff8c00"], html[data-theme="dark"] [style*="color:#b45f06"], html[data-theme="dark"] [style*="color:#7a5a2a"] { color: #ffb15c !important; }
+        html[data-theme="dark"] [style*="color:#1565c0"] { color: #7db8f5 !important; }
+        html[data-theme="dark"] [style*="color:var(--navy)"] { color: #e6eef5 !important; }
+
+        html[data-theme="dark"] .card { border-color: #2b3d4c; box-shadow: none; }
+        html[data-theme="dark"] #inventory-list .item-row, html[data-theme="dark"] #sales-list .item-row, html[data-theme="dark"] #inventory-log-list .item-row { background-color: #16232f; border-color: #2b3d4c; }
+        html[data-theme="dark"] .item-row strong { color: #e6eef5; }
+        html[data-theme="dark"] .header-pill, html[data-theme="dark"] header .pill { }
+
+        .select-bar > .chip-btn { flex: 0 0 auto; padding: 9px 18px; }
+        .select-tools { flex: 1 1 100%; }
+        .select-tools .chip-btn { flex: 0 0 auto; padding: 9px 14px; }
+
+        .sel-day, .inv-sel, .sel-box { background: transparent !important; padding: 0 !important; border: none !important; box-shadow: none !important; }
+
+        .sel-day input, .sel-box input, .inv-sel input, .month-row input { padding: 0 !important; background-color: transparent; border: none; box-shadow: none !important; }
+</style>
 </head>
 <body onclick="handleGlobalClick(event)">
 
@@ -745,6 +888,53 @@
 
     <!-- MAIN VIEW / POS -->
     <div id="view-pos" class="view-page">
+        <div id="pos-decor" aria-hidden="true"><svg viewBox="0 0 340 250" fill="none" stroke="#137e84" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <!-- cash register -->
+  <g transform="translate(112 52)">
+    <rect x="6" y="46" width="108" height="56" rx="10"/>
+    <path d="M20 46l8-30h64l8 30"/>
+    <rect x="36" y="22" width="48" height="16" rx="4"/>
+    <path d="M44 30h32"/>
+    <path d="M22 66h20M52 66h20M82 66h16M22 82h20M52 82h20M82 82h16"/>
+    <path d="M6 102v8h108v-8"/>
+  </g>
+  <!-- paw print (left) -->
+  <g transform="translate(26 60)" stroke-width="2">
+    <ellipse cx="22" cy="40" rx="13" ry="11"/>
+    <ellipse cx="6" cy="22" rx="5" ry="7"/><ellipse cx="18" cy="14" rx="5" ry="7"/><ellipse cx="30" cy="14" rx="5" ry="7"/><ellipse cx="41" cy="23" rx="5" ry="7"/>
+  </g>
+  <!-- bone (top right) -->
+  <g transform="translate(250 40) rotate(-20)">
+    <path d="M8 14a7 7 0 1 1 6-10h32a7 7 0 1 1 6 10 7 7 0 1 1-6 10H14a7 7 0 1 1-6-10z" transform="translate(0 6)"/>
+  </g>
+  <!-- bag of food (right) -->
+  <g transform="translate(262 108)">
+    <path d="M8 10h40l6 12v50a8 8 0 0 1-8 8H10a8 8 0 0 1-8-8V22z"/>
+    <path d="M2 22h52"/>
+    <path d="M28 40l6 12h-12z"/>
+  </g>
+  <!-- bar chart (bottom left) -->
+  <g transform="translate(30 150)">
+    <path d="M2 4v52h60"/>
+    <rect x="12" y="32" width="9" height="24" rx="2"/><rect x="28" y="20" width="9" height="36" rx="2"/><rect x="44" y="8" width="9" height="48" rx="2"/>
+  </g>
+  <!-- barcode -->
+  <g transform="translate(126 178)" stroke-width="2.6">
+    <path d="M0 0v34M7 0v34M12 0v34M21 0v34M27 0v34M36 0v34M42 0v34M51 0v34M58 0v34M66 0v34"/>
+  </g>
+  <!-- coins -->
+  <g transform="translate(214 186)">
+    <circle cx="16" cy="16" r="15"/><circle cx="16" cy="16" r="9"/>
+    <circle cx="40" cy="26" r="11"/><circle cx="40" cy="26" r="6"/>
+  </g>
+  <!-- small paws -->
+  <g transform="translate(298 214) scale(.5)" stroke-width="3">
+    <ellipse cx="22" cy="40" rx="13" ry="11"/><ellipse cx="6" cy="22" rx="5" ry="7"/><ellipse cx="18" cy="14" rx="5" ry="7"/><ellipse cx="30" cy="14" rx="5" ry="7"/><ellipse cx="41" cy="23" rx="5" ry="7"/>
+  </g>
+  <g transform="translate(150 12) scale(.42)" stroke-width="3.2">
+    <ellipse cx="22" cy="40" rx="13" ry="11"/><ellipse cx="6" cy="22" rx="5" ry="7"/><ellipse cx="18" cy="14" rx="5" ry="7"/><ellipse cx="30" cy="14" rx="5" ry="7"/><ellipse cx="41" cy="23" rx="5" ry="7"/>
+  </g>
+</svg></div>
         <div class="card" style="position: relative;">
             <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M3 4h2.4l2.1 11h10.2l1.8-8H6.2"/></svg></span>بيع جديد</h3>
             
@@ -809,7 +999,7 @@
                 </div>
 
                 <div style="display:flex; gap:8px;">
-                    <div style="flex:1;">
+                    <div style="flex:1; display:none;" id="sel-discount-cell">
                         <span class="form-label">خصم على المنتج (د.ل)</span>
                         <input type="number" id="sel-discount" placeholder="" onfocus="handlePosInputFocus(this)" oninput="calculateSelTotal()" style="margin:0;">
                     </div>
@@ -827,6 +1017,10 @@
                     <label class="checkbox-container" style="margin-top:0;">
                         <input type="checkbox" id="sel-debt" onchange="onSelFreeDebtChange('debt')">
                         <span>جعل المنتج دين</span>
+                    </label>
+                    <label class="checkbox-container" style="margin-top:0;">
+                        <input type="checkbox" id="sel-discount-check" onchange="onSelDiscountCheck()">
+                        <span>خصم على المنتج</span>
                     </label>
                 </div>
 
@@ -850,8 +1044,21 @@
             <div id="cart-container"></div>
 
             <div id="cart-options" style="display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
-                <input type="text" id="cart-customer" placeholder="اسم العميل (اختياري)">
-                <input type="number" id="cart-discount" placeholder="أدخل مبلغ الخصم على الفاتورة (د.ل)" oninput="renderCart()">
+                <label class="checkbox-container" style="margin-top:2px;">
+                    <input type="checkbox" id="cart-buyer-check" onchange="onCartFieldCheck('buyer')">
+                    <span>اسم المشتري</span>
+                </label>
+                <input type="text" id="cart-customer" placeholder="اكتب اسم المشتري" style="display:none;">
+                <label class="checkbox-container" style="margin-top:2px;">
+                    <input type="checkbox" id="cart-discount-check" onchange="onCartFieldCheck('discount')">
+                    <span>خصم على الفاتورة كلها</span>
+                </label>
+                <input type="number" id="cart-discount" placeholder="أدخل مبلغ الخصم على الفاتورة (د.ل)" oninput="renderCart()" style="display:none;">
+                <label class="checkbox-container" style="margin-top:2px;">
+                    <input type="checkbox" id="cart-note-check" onchange="onCartFieldCheck('note')">
+                    <span>ملاحظة على الفاتورة كلها</span>
+                </label>
+                <input type="text" id="cart-note" placeholder="اكتب الملاحظة" style="display:none;">
                 <label class="checkbox-container" style="margin-top:2px;">
                     <input type="checkbox" id="cart-debt" onchange="onCartDebtChange(this)">
                     <span>جعل الفاتورة كلها دين</span>
@@ -875,7 +1082,7 @@
         <div class="card">
             <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V12M10 20V6M15 20V10M20 20V15"/></svg></span>سجل المبيعات التفصيلي</h3>
             <div id="sales-search-area">
-            <input type="search" id="sales-search" placeholder="ابحث: عميل، مدين، ملاحظة، خصم، منتج" oninput="renderSales()" onfocus="showSalesFilters()" style="margin-bottom:8px;">
+            <input type="search" id="sales-search" placeholder="ابحث: مشتري، مدين، ملاحظة، خصم، منتج" oninput="renderSales()" onfocus="showSalesFilters()" style="margin-bottom:8px;">
             <div id="sales-filter-row" style="display:none; gap:6px; margin-bottom:8px;">
                 <button class="chip-btn active" id="sales-filter-all" onclick="setSalesFilter('all')">الكل</button>
                 <button class="chip-btn" id="sales-filter-unpaid" onclick="setSalesFilter('unpaid')">ديون غير مسددة</button>
@@ -883,6 +1090,15 @@
             </div>
             </div>
             <div id="sales-search-info" style="display:none; font-size:12px; color:var(--muted); margin-bottom:8px;"></div>
+            <div id="sales-select-bar" class="select-bar">
+                <button class="chip-btn" id="sales-select-toggle" onclick="toggleSalesSelectMode()">تحديد للحذف</button>
+                <div id="sales-select-tools" class="select-tools" style="display:none;">
+                    <button class="chip-btn" onclick="openSalesMonthPicker()">اختيار شهر</button>
+                    <button class="chip-btn" onclick="selectShownSales()">تحديد المعروض</button>
+                    <button class="btn btn-red select-del-btn" onclick="startDeleteSelectedSales()">حذف المحدد (<span id="sales-sel-count">0</span>)</button>
+                </div>
+            </div>
+            <div id="sales-sel-months" class="sel-months" style="display:none;"></div>
             <div id="sales-list"></div>
             <button class="btn btn-teal" id="sales-load-older" style="display:none; width:100%; margin-top:10px;" onclick="loadOlderSales()">تحميل أيام أقدم</button>
             <button class="btn btn-red" id="sales-delete-all" style="width:100%; margin-top:14px;" onclick="startDeleteAllSales()">🗑️ حذف كل سجل المبيعات (للمدير)</button>
@@ -897,6 +1113,13 @@
                 <button class="btn btn-teal btn-add-new-product" onclick="requireManagerPass(() => showProductFormModal())">+ إضافة منتج جديد</button>
             </div>
             <input id="inventory-search" type="search" placeholder="ابحث عن منتج في المخزون..." oninput="renderInventory()" style="margin-bottom:8px;">
+            <div class="select-bar">
+                <button class="chip-btn" id="inv-select-toggle" onclick="toggleInvSelectMode()">تحديد للحذف</button>
+                <div id="inv-select-tools" class="select-tools" style="display:none;">
+                    <button class="chip-btn" onclick="selectShownProducts()">تحديد المعروض</button>
+                    <button class="btn btn-red select-del-btn" onclick="deleteSelectedProducts()">حذف المحدد (<span id="inv-sel-count">0</span>)</button>
+                </div>
+            </div>
             <div id="inventory-count" style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;"></div>
             <div id="inventory-list"></div>
         </div>
@@ -904,6 +1127,20 @@
         <div class="card">
             <button class="btn btn-teal" style="width:100%; text-align:right;" onclick="toggleStockLogs()">سجل توريد المخزون <span id="stock-log-toggle">▾</span></button>
             <div id="inventory-log-list" style="display:none; margin-top:10px;"></div>
+        </div>
+
+        <div class="card">
+            <button class="btn btn-teal" style="width:100%; text-align:right;" onclick="toggleInventoryEdits()">تعديلات المخزون <span id="edits-count"></span> <span id="edits-toggle">▾</span></button>
+            <div id="edits-body" style="display:none; margin-top:10px;">
+                <div class="select-bar">
+                    <button class="chip-btn" id="edits-select-toggle" onclick="toggleEditsSelectMode()">تحديد للحذف</button>
+                    <div id="edits-select-tools" class="select-tools" style="display:none;">
+                        <button class="chip-btn" onclick="openEditsMonthPicker()">اختيار شهر</button>
+                        <button class="btn btn-red select-del-btn" onclick="deleteSelectedEdits()">حذف المحدد (<span id="edits-sel-count">0</span>)</button>
+                    </div>
+                </div>
+                <div id="edits-list"></div>
+            </div>
         </div>
     </div>
 
@@ -913,13 +1150,13 @@
             <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 1 0 8.5 8.5H12z"/><path d="M15 3.8A8.5 8.5 0 0 1 20.2 9H15z"/></svg></span>إحصائيات المبيعات والأرباح (خاص بالمدير)</h3>
             <div class="stats-chips">
                 <button class="chip-btn active" id="stats-chip-today" onclick="setStatsPeriod('today')">اليوم</button>
-                <button class="chip-btn" id="stats-chip-day" onclick="setStatsPeriod('day')">📅 اختر يوم</button>
+                <button class="chip-btn" id="stats-chip-day" onclick="setStatsPeriod('day')"><svg class="mini-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg> اختر يوم</button>
                 <button class="chip-btn" id="stats-chip-7" onclick="setStatsPeriod('7')">آخر 7 أيام</button>
                 <button class="chip-btn" id="stats-chip-30" onclick="setStatsPeriod('30')">آخر 30 يوم</button>
                 <button class="chip-btn chip-more" id="stats-chip-more" onclick="toggleStatsMoreMenu(event)" aria-label="خيارات أخرى"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5.5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="18.5" r="1.7"/></svg></button>
                 <div id="stats-more-menu" class="stats-more-menu" style="display:none;" onclick="event.stopPropagation()">
-                    <button onclick="chooseStatsMore('month')">📅 اختر شهر</button>
-                    <button onclick="chooseStatsMore('all')">♾️ المبيعات الكلية</button>
+                    <button onclick="chooseStatsMore('month')"><svg class="mini-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg> اختر شهر</button>
+                    <button onclick="chooseStatsMore('all')"><svg class="mini-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12c-1.6-2.2-3-3.5-4.8-3.5a3.5 3.5 0 0 0 0 7c1.8 0 3.2-1.3 4.8-3.5s3-3.5 4.8-3.5a3.5 3.5 0 0 1 0 7c-1.8 0-3.2-1.3-4.8-3.5z"/></svg> المبيعات الكلية</button>
                 </div>
             </div>
             <div id="stats-month-picker" class="stats-day-picker" style="display:none;">
@@ -935,10 +1172,16 @@
             <div id="stats-period-label" class="stats-period-label"></div>
             <div id="stats-content">
                 <div class="stats-grid">
-                    <div class="stat-tile"><div class="stat-ic stat-ic-teal">🛒</div><div class="stat-t">المبيعات</div><div class="stat-v"><span id="stat-today-sales">0</span> <small>د.ل</small></div></div>
-                    <div class="stat-tile"><div class="stat-ic stat-ic-green">📈</div><div class="stat-t">الأرباح</div><div class="stat-v" style="color:#2e7d32;"><span id="stat-today-profit">0</span> <small>د.ل</small></div></div>
-                    <div class="stat-tile"><div class="stat-ic stat-ic-teal">👥</div><div class="stat-t">عدد العملاء</div><div class="stat-v"><span id="stat-today-customers">0</span></div></div>
-                    <div class="stat-tile"><div class="stat-ic stat-ic-green">✅</div><div class="stat-t">ديون سُددت (محسوبة ضمن المبيعات)</div><div class="stat-v"><span id="stat-today-debt-paid">0</span> <small>د.ل</small></div></div>
+                    <div class="stat-tile stat-tap" onclick="showStatsSplit('sales')"><div class="stat-ic stat-ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M3 4h2.5l2.2 10.2a1.5 1.5 0 0 0 1.5 1.2h8.4a1.5 1.5 0 0 0 1.5-1.1L21 8H6.2"/></svg></div><div class="stat-t">المبيعات</div><div class="stat-v"><span id="stat-today-sales">0</span> <small>د.ل</small></div><div class="stat-hint">اضغط للتفاصيل</div></div>
+                    <div class="stat-tile stat-tap" onclick="showStatsSplit('profit')"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div><div class="stat-t">الأرباح</div><div class="stat-v" style="color:#2e7d32;"><span id="stat-today-profit">0</span> <small>د.ل</small></div><div class="stat-hint">اضغط للتفاصيل</div></div>
+                    <div class="stat-tile"><div class="stat-ic stat-ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3.2 3.2 0 0 1 0 5.6"/><path d="M18 14.4c1.8.8 3 2.6 3 5.6"/></svg></div><div class="stat-t">عدد المشترين</div><div class="stat-v"><span id="stat-today-customers">0</span></div></div>
+                    <div class="stat-tile"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/></svg></div><div class="stat-t">ديون سُددت (محسوبة ضمن المبيعات)</div><div class="stat-v"><span id="stat-today-debt-paid">0</span> <small>د.ل</small></div></div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="9" width="17" height="11" rx="2"/><path d="M12 9v11M3.5 13h17"/><path d="M12 9c-1.5-4-5.5-4-5.5-1.6C6.5 9 9 9 12 9zM12 9c1.5-4 5.5-4 5.5-1.6C17.5 9 15 9 12 9z"/></svg></div><div class="stat-t">منتجات مجانية (قيمتها)</div><div class="stat-v"><span id="stat-today-free">0</span> <small>د.ل</small></div></div>
+                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18"/><circle cx="7.5" cy="7.5" r="2.3"/><circle cx="16.5" cy="16.5" r="2.3"/></svg></div><div class="stat-t">الخصومات (على المنتجات والفواتير)</div><div class="stat-v"><span id="stat-today-discounts">0</span> <small>د.ل</small></div></div>
+                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div><div class="stat-t">الربح قبل خصم المجاني والخصومات</div><div class="stat-v" style="color:#2e7d32;"><span id="stat-profit-before">0</span> <small>د.ل</small></div></div>
+                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/></svg></div><div class="stat-t">الربح بعد خصم المجاني والخصومات</div><div class="stat-v" style="color:#2e7d32;"><span id="stat-profit-after">0</span> <small>د.ل</small></div></div>
                 </div>
                 <div id="stats-chart" class="stats-chart" style="display:none;">
                     <div class="stats-chart-title"><span id="stats-chart-title-text">المبيعات يوماً بيوم</span> <span id="stats-chart-pick"></span></div>
@@ -950,8 +1193,8 @@
                     <b class="stats-debt-value"><span id="stat-debt-owed">0</span> د.ل</b>
                 </div>
                 <div class="stats-grid">
-                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-orange">🪙</div><div class="stat-t">قروش إضافية (غير محسوبة في المبيعات)</div><div class="stat-v"><span id="stat-today-extra-gurush">0</span> <small>د.ل</small></div></div>
-                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-orange">⚖️</div><div class="stat-t">جرامات إضافية</div><div class="stat-v"><span id="stat-today-extra-grams">0</span> <small>جرام</small></div></div>
+                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.2"/><path d="M12 9.8v4.4"/></svg></div><div class="stat-t">قروش إضافية (غير محسوبة في المبيعات)</div><div class="stat-v"><span id="stat-today-extra-gurush">0</span> <small>د.ل</small></div></div>
+                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16"/><path d="M7 20h10"/><path d="M5 7h14"/><path d="M5 7l-3 7a3.5 3.5 0 0 0 6 0L5 7z"/><path d="M19 7l-3 7a3.5 3.5 0 0 0 6 0L19 7z"/></svg></div><div class="stat-t">جرامات إضافية</div><div class="stat-v"><span id="stat-today-extra-grams">0</span> <small>جرام</small></div></div>
                 </div>
             </div>
         </div>
@@ -961,6 +1204,16 @@
     <div id="view-more" class="view-page" style="display: none;">
         <div class="card">
             <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18.5" cy="12" r="1.3"/></svg></span>الإعدادات (خاص بالمدير)</h3>
+            <div style="font-weight:700; margin-bottom:6px;">مظهر التطبيق</div>
+            <div class="theme-choice">
+                <button class="chip-btn" id="theme-btn-light" onclick="setTheme('light')">فاتح</button>
+                <button class="chip-btn" id="theme-btn-dark" onclick="setTheme('dark')">داكن</button>
+            </div>
+            <div style="font-weight:700; margin:14px 0 6px;">سطوع التطبيق: <span id="brightness-text">100%</span></div>
+            <input type="range" id="brightness-range" min="30" max="100" step="5" value="100" oninput="setBrightness(this.value)">
+            <div style="font-size:12px; color:var(--muted); margin:4px 0 14px;">يخفّف إضاءة شاشة التطبيق فقط (لا يغيّر سطوع الهاتف نفسه).</div>
+
+            <hr style="margin: 15px 0; border-color: #eee;">
             <div style="font-weight:700; margin-bottom:6px;">قوة الاهتزاز عند الضغط: <span id="vibration-level-text"></span></div>
             <div class="vibe-levels" id="vibe-levels">
                 <button class="chip-btn" onclick="setVibrationLevel(0)">إيقاف</button>
@@ -1138,6 +1391,21 @@
             replaceAll(list) { return this.run('readwrite', st => { st.clear(); list.forEach(s => st.put(this.toRecord(s))); }); },
             getAll() { return this.run('readonly', st => { const r = st.getAll(); return () => r.result.map(x => x.data); }); },
             getByIds(ids) { return this.run('readonly', st => { const reqs = ids.map(id => st.get(String(id))); return () => reqs.map(r => r.result).filter(Boolean).map(x => x.data); }); },
+            monthCounts() {
+                return this.run('readonly', st => {
+                    const map = new Map();
+                    const req = st.index('ts').openKeyCursor();
+                    req.onsuccess = () => {
+                        const c = req.result;
+                        if (!c) return;
+                        const d = new Date(Number(c.key) || 0);
+                        const key = d.getFullYear() + '-' + d.getMonth();
+                        map.set(key, (map.get(key) || 0) + 1);
+                        c.continue();
+                    };
+                    return () => map;
+                });
+            },
             countBefore(ms) { return this.run('readonly', st => { const r = st.index('ts').count(IDBKeyRange.upperBound(ms, true)); return () => r.result; }); },
             summary() {
                 return this.run('readonly', st => {
@@ -1399,6 +1667,8 @@
         let products = safeLoad(KEYS.PRODUCTS, []);
         let sales = safeLoad(KEYS.SALES, []);
         let stockLogs = safeLoad(KEYS.LOGS, []);
+        const EDITS_KEY = 'pos_inventory_edits';
+        let inventoryEdits = safeLoad(EDITS_KEY, []);
         let cashiers = safeLoad(KEYS.CASHIERS, [
             { id: 1, name: 'كاشير 1', pin: '1111' },
             { id: 2, name: 'كاشير 2', pin: '2222' }
@@ -1707,7 +1977,7 @@
                 return;
             }
 
-            const matches = products.filter(p => matchesSearch(p.name, query));
+            const matches = sortBySoldRank(products.filter(p => matchesSearch(p.name, query)));
             renderProductDropdown(matches, 'نتائج البحث');
         }
 
@@ -1747,6 +2017,7 @@
 
             document.getElementById('sel-product-name').innerText = prod.name;
             document.getElementById('sel-discount').value = '';
+            syncSelDiscountBox();
             document.getElementById('sel-note').value = '';
             document.getElementById('sel-free').checked = false;
             document.getElementById('sel-free').disabled = false;
@@ -1771,6 +2042,11 @@
             document.getElementById('selected-product-panel').style.display = 'block';
             document.body.classList.add('panel-open');
             placeProductPanelAtDefault();
+            /* Weight products: open the amount (dinar) box and the keyboard at once, inside the same tap. */
+            if (prod.unitType === 'weight') {
+                const priceBox = document.getElementById('sel-price-input');
+                if (priceBox) { try { priceBox.focus({ preventScroll: true }); } catch (e) { priceBox.focus(); } }
+            }
         }
 
         /* Cost of one whole bag = the bag cost entered for the product.
@@ -1930,6 +2206,22 @@
             calculateSelTotal();
         }
 
+        /* Product discount: the amount box shows only while the checkbox is ticked; the confirmation comes after the amount, when adding to the cart. */
+        function onSelDiscountCheck() {
+            const check = document.getElementById('sel-discount-check');
+            const cell = document.getElementById('sel-discount-cell');
+            const input = document.getElementById('sel-discount');
+            cell.style.display = check.checked ? 'block' : 'none';
+            if (check.checked) { try { input.focus(); } catch (e) {} }
+            else { input.value = ''; calculateSelTotal(); }
+        }
+        function syncSelDiscountBox() {
+            const input = document.getElementById('sel-discount');
+            const has = String(input.value || '').trim() !== '' && (parseFloat(input.value) || 0) > 0;
+            document.getElementById('sel-discount-check').checked = has;
+            document.getElementById('sel-discount-cell').style.display = has ? 'block' : 'none';
+        }
+
         function onSelFreeDebtChange(which) {
             const box = document.getElementById(which === 'free' ? 'sel-free' : 'sel-debt');
             if (box.checked) {
@@ -1952,6 +2244,32 @@
             }
             if (which === 'debt') selDebtorName = '';
             applyFreeDebtState(which);
+        }
+
+        /* Buyer name / whole-cart discount / whole-cart note: each box appears only while its checkbox is ticked. */
+        const CART_FIELDS = {
+            buyer: { check: 'cart-buyer-check', input: 'cart-customer' },
+            discount: { check: 'cart-discount-check', input: 'cart-discount' },
+            note: { check: 'cart-note-check', input: 'cart-note' }
+        };
+        function onCartFieldCheck(kind) {
+            const f = CART_FIELDS[kind];
+            const check = document.getElementById(f.check);
+            const input = document.getElementById(f.input);
+            input.style.display = check.checked ? 'block' : 'none';
+            if (check.checked) { try { input.focus(); } catch (e) {} }
+            else { input.value = ''; if (kind === 'discount') renderCart(); }
+        }
+        /* After the boxes are filled from code (editing an old sale) or cleared: show a box only if it holds something. */
+        function syncCartFieldChecks() {
+            Object.keys(CART_FIELDS).forEach(kind => {
+                const f = CART_FIELDS[kind];
+                const check = document.getElementById(f.check);
+                const input = document.getElementById(f.input);
+                const has = String(input.value || '').trim() !== '';
+                check.checked = has;
+                input.style.display = has ? 'block' : 'none';
+            });
         }
 
         function onCartDebtChange(box) {
@@ -2010,6 +2328,18 @@
         }
 
         function confirmAddToCart() {
+            if (!activeSelection || !activeProductObj) return;
+            const disc = parseFloat(document.getElementById('sel-discount').value) || 0;
+            const isFreeNow = document.getElementById('sel-free').checked;
+            if (disc > 0 && !isFreeNow && (activeSelection.qty || 0) > 0) {
+                const afterDisc = Math.max(0, (activeSelection.qty * activeSelection.price) - disc);
+                showModal('تأكيد الخصم', `هل تريد إضافة خصم ${formatNum(disc)} د.ل على هذا المنتج؟\nالمبلغ بعد الخصم: ${formatNum(afterDisc)} د.ل`, false, () => { addToCartChecked(); });
+                return;
+            }
+            addToCartChecked();
+        }
+
+        function addToCartChecked() {
             if (!activeSelection || !activeProductObj) return;
 
             const qty = activeSelection.qty || 0;
@@ -2171,6 +2501,7 @@
                 document.getElementById('sel-unit-qty-input').value = item.qty;
             }
             document.getElementById('sel-discount').value = item.discount > 0 ? item.discount : '';
+            syncSelDiscountBox();
             document.getElementById('sel-note').value = item.note || '';
             const freeBox = document.getElementById('sel-free');
             const debtBox = document.getElementById('sel-debt');
@@ -2213,24 +2544,24 @@
             container.innerHTML = cart.map((item, idx) => `
                 <div style="border-bottom: 1px solid #eee; padding: 10px 0; cursor:pointer;" onclick="editCartItem(${idx})">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                        <strong>${item.name}</strong>
+                        <strong style="font-size:17px;">${item.name}</strong>
                         <span style="display:flex; gap:6px; flex:none;">
                             <button class="btn btn-teal" style="padding:2px 8px; font-size:12px;" onclick="event.stopPropagation(); editCartItem(${idx})">✏️ تعديل</button>
                             <button class="btn btn-red" style="padding:2px 8px; font-size:12px;" onclick="event.stopPropagation(); removeFromCart(${idx})">✕</button>
                         </span>
                     </div>
 
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:13px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:15px;">
                         <span>الكمية: ${formatNum(item.qty)} ${item.unitType === 'weight' ? 'كجم' : (item.unitType === 'unit' ? 'قطعة' : 'شكارة')}</span>
                         <span>المبلغ: <strong style="color:var(--teal-primary);">${item.isFree ? '<span style="color:#2e7d32;">مجاني</span>' : `${formatNum(item.total)} د.ل`}</strong></span>
                     </div>
 
-                    ${item.isNegativeSale ? `<div style="font-size:12px; color:#d32f2f; margin-top:2px; font-weight:bold;">[بيع بالسالب - مخزون غير متوفر]</div>` : ''}
-                    ${item.isDebt ? `<div style="font-size:12px; color:#e65100; margin-top:2px; font-weight:bold;">[دين${item.debtorName ? ': ' + escapeHtml(item.debtorName) : ''}]</div>` : ''}
-                    ${item.halfSource === 'open' ? `<div style="font-size:12px; color:#6a1b9a; margin-top:2px;">[من الوزن المفتوح]</div>` : ''}
-                    ${item.extraKg > 0 ? `<div style="font-size:12px; color:#6a1b9a; margin-top:2px;">[إضافة غير محسوبة: ${formatNum(item.extraKg * 1000)} جرام (${formatNum(item.extraKg * item.price)} د.ل)]</div>` : ''}
-                    ${item.discount > 0 ? `<div style="font-size:12px; color:#d32f2f; margin-top:2px;">[خصم على المنتج: ${formatNum(item.discount)} د.ل]</div>` : ''}
-                    ${item.note ? `<div style="font-size:12px; color:#ff8c00; margin-top:2px;">[ملاحظة: ${item.note}]</div>` : ''}
+                    ${item.isNegativeSale ? `<div style="font-size:14px; color:#d32f2f; margin-top:2px; font-weight:bold;">[بيع بالسالب - مخزون غير متوفر]</div>` : ''}
+                    ${item.isDebt ? `<div style="font-size:14px; color:#e65100; margin-top:2px; font-weight:bold;">[دين${item.debtorName ? ': ' + escapeHtml(item.debtorName) : ''}]</div>` : ''}
+                    ${item.halfSource === 'open' ? `<div style="font-size:14px; color:#6a1b9a; margin-top:2px;">[من الوزن المفتوح]</div>` : ''}
+                    ${item.extraKg > 0 ? `<div style="font-size:14px; color:#6a1b9a; margin-top:2px;">[إضافة غير محسوبة: ${formatNum(item.extraKg * 1000)} جرام (${formatNum(item.extraKg * item.price)} د.ل)]</div>` : ''}
+                    ${item.discount > 0 ? `<div style="font-size:14px; color:#d32f2f; margin-top:2px;">[خصم على المنتج: ${formatNum(item.discount)} د.ل]</div>` : ''}
+                    ${item.note ? `<div style="font-size:14px; color:#ff8c00; margin-top:2px;">[ملاحظة: ${item.note}]</div>` : ''}
                 </div>
             `).join('');
 
@@ -2246,6 +2577,8 @@
             document.getElementById('cart-discount').value = '';
             document.getElementById('cart-debt').checked = false;
             document.getElementById('cart-customer').value = '';
+            document.getElementById('cart-note').value = '';
+            syncCartFieldChecks();
             cartDebtorName = '';
             editingSaleId = null;
             updateEditSaleUI();
@@ -2289,6 +2622,7 @@
                 profit: 0,
                 cartDebt: cartDebt,
                 customerName: (document.getElementById('cart-customer').value || '').trim(),
+                cartNote: (document.getElementById('cart-note').value || '').trim(),
                 debtorName: cartDebt ? cartDebtorName : '',
                 note: invoiceNote,
                 inventoryDeltas: []
@@ -2452,7 +2786,7 @@
                     <input type="number" id="pb-price" placeholder="" value="${p.kgPrice || ''}">
 
                     <label class="form-label">تاريخ انتهاء الصلاحية</label>
-                    <input type="date" id="pb-expiry" value="${p.expiryDate || ''}">
+                    ${expiryFieldHtml('pb-expiry', p.expiryDate)}
 
                     <label class="form-label">ملاحظة التوريد</label>
                     <input type="text" id="pb-notes" placeholder="" value="${p.notes || ''}">
@@ -2546,7 +2880,7 @@
                     <input type="number" id="p-cost" placeholder="" value="${p.cost !== undefined ? p.cost : ''}">
 
                     <label class="form-label">تاريخ انتهاء الصلاحية</label>
-                    <input type="date" id="p-expiry" value="${p.expiryDate || ''}">
+                    ${expiryFieldHtml('p-expiry', p.expiryDate)}
 
                     <label class="form-label">ملاحظات إضافية</label>
                     <input type="text" id="p-notes" placeholder="" value="${p.notes || ''}">
@@ -2768,10 +3102,216 @@
                     bioBtn.type = 'button';
                     bioBtn.style.cssText = 'display:flex; align-items:center; justify-content:center; gap:8px; margin:12px auto 0; padding:10px 22px; border-radius:999px; border:1px solid rgba(15,118,122,0.25); background:#e6f2f2; color:var(--teal-primary); font-family:inherit; font-size:14px; font-weight:700; cursor:pointer;';
                     bioBtn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/></svg><span>الدخول بالبصمة</span>';
+                    prepareBiometricOptions();
+                    /* fire on finger-up (pointerup) so the fingerprint sheet opens without waiting for the click event */
+                    bioBtn.addEventListener('pointerup', (e) => { if (e.button === 0 || e.pointerType === 'touch') runManagerBiometric(action); });
                     bioBtn.onclick = () => runManagerBiometric(action);
                     container.appendChild(bioBtn);
                 }
             }
+        }
+
+
+
+
+
+        /* ---------- Appearance: light / dark and a software brightness dimmer ---------- */
+        function applyTheme(t) {
+            if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+            else document.documentElement.removeAttribute('data-theme');
+            const l = document.getElementById('theme-btn-light'), d = document.getElementById('theme-btn-dark');
+            if (l) l.classList.toggle('active', t !== 'dark');
+            if (d) d.classList.toggle('active', t === 'dark');
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', t === 'dark' ? '#0e1822' : '#117c83');
+        }
+        function setTheme(t) {
+            try { localStorage.setItem('pos_theme', t); } catch (e) {}
+            applyTheme(t);
+        }
+        function applyBrightness(v) {
+            v = Math.min(100, Math.max(30, Number(v) || 100));
+            let dim = document.getElementById('dim-overlay');
+            if (!dim) {
+                dim = document.createElement('div');
+                dim.id = 'dim-overlay';
+                document.body.appendChild(dim);
+            }
+            dim.style.opacity = String((100 - v) / 100);
+            const r = document.getElementById('brightness-range'); if (r && String(r.value) !== String(v)) r.value = v;
+            const tx = document.getElementById('brightness-text'); if (tx) tx.textContent = v + '%';
+        }
+        function setBrightness(v) {
+            try { localStorage.setItem('pos_brightness', String(v)); } catch (e) {}
+            applyBrightness(v);
+        }
+        (function initAppearance() {
+            let t = 'light', b = 100;
+            try { t = localStorage.getItem('pos_theme') === 'dark' ? 'dark' : 'light'; b = Number(localStorage.getItem('pos_brightness')) || 100; } catch (e) {}
+            applyTheme(t);
+            applyBrightness(b);
+        })();
+
+        /* ---------- Fast-scroll handle ---------- */
+        (function () {
+            const bar = document.createElement('div');
+            bar.id = 'fast-scroll';
+            bar.innerHTML = '<div class="fs-thumb"></div>';
+            document.body.appendChild(bar);
+            const thumb = bar.firstChild;
+            let hideT = null, dragging = false, raf = 0, grabY = 0;
+            const activeView = () => {
+                const a = document.getElementById('view-sales'), b = document.getElementById('view-inventory');
+                return (a && a.style.display !== 'none') || (b && b.style.display !== 'none');
+            };
+            const metrics = () => {
+                const doc = document.documentElement;
+                const vh = window.innerHeight;
+                const max = Math.max(0, doc.scrollHeight - vh);
+                const trackH = bar.clientHeight;
+                const thumbH = Math.max(52, Math.min(trackH, trackH * (vh / Math.max(doc.scrollHeight, 1))));
+                return { max, trackH, thumbH };
+            };
+            const update = () => {
+                raf = 0;
+                const m = metrics();
+                if (m.max < 200) { bar.classList.remove('show'); return; }
+                thumb.style.height = m.thumbH + 'px';
+                thumb.style.transform = 'translateY(' + Math.round((window.scrollY / m.max) * (m.trackH - m.thumbH)) + 'px)';
+            };
+            const showBar = () => {
+                bar.classList.add('show');
+                clearTimeout(hideT);
+                hideT = setTimeout(() => { if (!dragging) bar.classList.remove('show'); }, 700);
+            };
+            window.addEventListener('scroll', () => {
+                if (!activeView()) return;
+                if (!raf) raf = requestAnimationFrame(update);
+                if (metrics().max >= 200) showBar();
+            }, { passive: true });
+            const moveTo = (clientY) => {
+                const m = metrics();
+                const rect = bar.getBoundingClientRect();
+                const y = clientY - rect.top - grabY;
+                const ratio = Math.min(1, Math.max(0, y / Math.max(1, m.trackH - m.thumbH)));
+                window.scrollTo(0, ratio * m.max);
+            };
+            bar.addEventListener('pointerdown', (e) => {
+                dragging = true;
+                bar.classList.add('drag');
+                try { bar.setPointerCapture(e.pointerId); } catch (err) {}
+                const tr = thumb.getBoundingClientRect();
+                grabY = (e.clientY >= tr.top && e.clientY <= tr.bottom) ? (e.clientY - tr.top) : tr.height / 2;
+                moveTo(e.clientY);
+                e.preventDefault();
+            });
+            bar.addEventListener('pointermove', (e) => { if (dragging) { moveTo(e.clientY); e.preventDefault(); } });
+            const end = () => { if (!dragging) return; dragging = false; bar.classList.remove('drag'); showBar(); };
+            bar.addEventListener('pointerup', end);
+            bar.addEventListener('pointercancel', end);
+        })();
+
+        /* ---------- X (clear) button for every search box ---------- */
+        function installSearchClearButtons() {
+            const valueDesc = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+            ['pos-search', 'sales-search', 'inventory-search'].forEach(id => {
+                const input = document.getElementById(id);
+                if (!input || input.dataset.clearInstalled) return;
+                input.dataset.clearInstalled = '1';
+                const wrap = document.createElement('div');
+                wrap.className = 'search-wrap';
+                const cs = getComputedStyle(input);
+                wrap.style.marginBottom = cs.marginBottom;
+                wrap.style.marginTop = cs.marginTop;
+                input.parentNode.insertBefore(wrap, input);
+                wrap.appendChild(input);
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'search-x';
+                btn.setAttribute('aria-label', 'مسح');
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+                wrap.appendChild(btn);
+                const update = () => btn.classList.toggle('show', valueDesc.get.call(input) !== '');
+                Object.defineProperty(input, 'value', {
+                    configurable: true,
+                    get() { return valueDesc.get.call(this); },
+                    set(v) { valueDesc.set.call(this, v); update(); }
+                });
+                input.addEventListener('input', update);
+                /* keep focus (and the keyboard) in the box while tapping X */
+                btn.addEventListener('mousedown', e => e.preventDefault());
+                btn.addEventListener('click', e => {
+                    e.stopPropagation();
+                    input.value = '';
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    try { input.focus({ preventScroll: true }); } catch (err) { input.focus(); }
+                });
+                update();
+            });
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installSearchClearButtons);
+        else installSearchClearButtons();
+
+        /* ---------- Expiry date picker: list of all days of the month as numbers, with month/year arrows ---------- */
+        function expiryButtonLabel(v) {
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || '');
+            return m ? (m[3] + ' / ' + m[2] + ' / ' + m[1]) : 'اختر التاريخ';
+        }
+        function expiryFieldHtml(id, value) {
+            const v = /^\d{4}-\d{2}-\d{2}$/.test(value || '') ? value : '';
+            return `<input type="hidden" id="${id}" value="${v}"><button type="button" class="date-pick-btn${v ? '' : ' empty'}" id="${id}-btn" onclick="openExpiryPicker('${id}')">${expiryButtonLabel(v)}</button>`;
+        }
+        function openExpiryPicker(id) {
+            const hidden = document.getElementById(id);
+            const btn = document.getElementById(id + '-btn');
+            if (!hidden) return;
+            const now = new Date();
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(hidden.value || '');
+            let selY = m ? +m[1] : null, selM = m ? +m[2] : null, selD = m ? +m[3] : null;
+            let viewY = m ? +m[1] : now.getFullYear(), viewM = m ? +m[2] : now.getMonth() + 1;
+            const pad = n => String(n).padStart(2, '0');
+            const overlay = document.createElement('div');
+            overlay.className = 'dp-overlay';
+            overlay.innerHTML = '<div class="dp-box"><div class="dp-title">تاريخ انتهاء الصلاحية</div>' +
+                '<div class="dp-nav"><button type="button" data-a="py" aria-label="السنة السابقة">«</button><button type="button" data-a="pm" aria-label="الشهر السابق">‹</button>' +
+                '<div class="dp-label"></div>' +
+                '<button type="button" data-a="nm" aria-label="الشهر التالي">›</button><button type="button" data-a="ny" aria-label="السنة التالية">»</button></div>' +
+                '<div class="dp-grid"></div>' +
+                '<div class="dp-foot"><button type="button" data-a="clear" style="background:#eef2f5;color:var(--navy);">مسح التاريخ</button><button type="button" data-a="close" style="background:var(--red-alert);color:#fff;">إغلاق</button></div></div>';
+            const label = overlay.querySelector('.dp-label');
+            const grid = overlay.querySelector('.dp-grid');
+            function draw() {
+                label.textContent = viewY + ' / ' + pad(viewM);
+                const days = new Date(viewY, viewM, 0).getDate();
+                let h = '';
+                for (let d = 1; d <= days; d++) {
+                    const sel = (selY === viewY && selM === viewM && selD === d) ? ' sel' : '';
+                    const today = (now.getFullYear() === viewY && now.getMonth() + 1 === viewM && now.getDate() === d) ? ' today' : '';
+                    h += `<button type="button" class="dp-day${sel}${today}" data-d="${d}">${d}</button>`;
+                }
+                grid.innerHTML = h;
+            }
+            function setValue(v) {
+                hidden.value = v;
+                if (btn) { btn.textContent = expiryButtonLabel(v); btn.classList.toggle('empty', !v); }
+                overlay.remove();
+            }
+            overlay.addEventListener('click', e => {
+                if (e.target === overlay) { overlay.remove(); return; }
+                const t = e.target.closest('button');
+                if (!t) return;
+                e.stopPropagation();
+                const a = t.getAttribute('data-a');
+                if (t.hasAttribute('data-d')) { setValue(viewY + '-' + pad(viewM) + '-' + pad(+t.getAttribute('data-d'))); return; }
+                if (a === 'py') viewY--; else if (a === 'ny') viewY++;
+                else if (a === 'pm') { viewM--; if (viewM < 1) { viewM = 12; viewY--; } }
+                else if (a === 'nm') { viewM++; if (viewM > 12) { viewM = 1; viewY++; } }
+                else if (a === 'clear') { setValue(''); return; }
+                else if (a === 'close') { overlay.remove(); return; }
+                draw();
+            });
+            draw();
+            document.body.appendChild(overlay);
         }
 
         /* ---------- Manager fingerprint (v35): uses the phone's own fingerprint check (WebAuthn). The password always works too. ---------- */
@@ -2785,16 +3325,28 @@
         function b64ToBuf(b64) { const bin = atob(b64); const out = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i); return out.buffer; }
         function randomBytes(n) { const a = new Uint8Array(n); crypto.getRandomValues(a); return a; }
 
-        async function runManagerBiometric(action, silent) {
-            if (bioBusy || !isManagerBiometricEnabled()) return;
-            bioBusy = true;
+        /* The request is prepared ahead of the tap, so the tap itself only has to call the phone. */
+        let bioOptions = null;
+        function prepareBiometricOptions() {
             try {
-                await navigator.credentials.get({ publicKey: {
+                bioOptions = { publicKey: {
                     challenge: randomBytes(32),
                     allowCredentials: [{ type: 'public-key', id: b64ToBuf(localStorage.getItem(BIO_CRED_KEY)), transports: ['internal'] }],
                     userVerification: 'required',
                     timeout: 60000
-                } });
+                } };
+            } catch (e) { bioOptions = null; }
+        }
+
+        async function runManagerBiometric(action, silent) {
+            if (bioBusy || !bioOptions) { if (!bioOptions && !bioBusy && isManagerBiometricEnabled()) prepareBiometricOptions(); if (bioBusy || !bioOptions) return; }
+            bioBusy = true;
+            const opts = bioOptions;
+            bioOptions = null;
+            try {
+                const request = navigator.credentials.get(opts);
+                prepareBiometricOptions();
+                await request;
                 bioBusy = false;
                 if (isManagerRole) managerUnlocked = true;
                 closeModal();
@@ -3085,18 +3637,56 @@
             return Array.from(map.values());
         }
 
+        /* Per-item money of one sale, using the same rules as getSaleBreakdown (the global discount is shared by item total). */
+        function getItemMoney(sale) {
+            const items = Array.isArray(sale && sale.items) ? sale.items : [];
+            const rawTotal = items.reduce((acc, i) => acc + Number(i.total || 0), 0);
+            const D = Math.min(Math.max(Number((sale && sale.globalDiscount) || 0), 0), rawTotal);
+            return items.map(i => {
+                const t = Number(i.total || 0);
+                const qty = Number(i.qty || 0);
+                const cost = Number(i.cost || 0);
+                const share = rawTotal > 0 ? D * (t / rawTotal) : 0;
+                const amount = t - share;
+                const profit = cost > 0 ? amount - qty * cost : 0;
+                const isBag = i.sellMode === 'fullbag' || i.sellMode === 'halfbag' || i.unitType === 'fullbag' || i.unitType === 'halfbag';
+                const free = !!i.isFree;
+                const price = Number(i.price || 0);
+                const itemDisc = free ? 0 : Math.min(Number(i.discount || 0), qty * price);
+                return {
+                    item: i, isBag, amount, profit, costed: cost > 0,
+                    freeValue: free ? qty * price : 0,
+                    freeProfitImpact: (free && cost > 0) ? qty * price : 0,
+                    discount: itemDisc + share,
+                    discountProfitImpact: cost > 0 ? itemDisc + share : 0
+                };
+            });
+        }
+
         function computeStats(list, fromMs, toMs, days) {
-            const out = { rev: 0, profit: 0, customers: 0, paid: 0, extraKg: 0, extraValue: 0, perDay: new Array(days).fill(0) };
+            const out = {
+                rev: 0, profit: 0, customers: 0, paid: 0, extraKg: 0, extraValue: 0, perDay: new Array(days).fill(0),
+                bagRev: 0, otherRev: 0, bagProfit: 0, otherProfit: 0, freeValue: 0, discountValue: 0, profitBefore: 0
+            };
             const dayIndex = ms => { const idx = Math.round((dayStartMs(ms) - fromMs) / 86400000); return Math.min(Math.max(idx, 0), days - 1); };
+            const addItem = (m) => {
+                out.rev += m.amount;
+                out.profit += m.profit;
+                if (m.isBag) { out.bagRev += m.amount; out.bagProfit += m.profit; }
+                else { out.otherRev += m.amount; out.otherProfit += m.profit; }
+                out.freeValue += m.freeValue;
+                out.discountValue += m.discount;
+                out.profitBefore += m.profit + m.freeProfitImpact + m.discountProfitImpact;
+            };
             list.forEach(s => {
                 if (s.returnedAt) return;
                 const bd = getSaleBreakdown(s);
                 const t = saleTimeMs(s);
+                const money = getItemMoney(s);
                 if (t >= fromMs && t < toMs) {
-                    out.rev += bd.cashAmount;
-                    out.profit += bd.cashProfit;
                     out.customers++;
                     out.perDay[dayIndex(t)] += bd.cashAmount;
+                    money.forEach(m => { if (!m.item.isDebt || m.freeValue > 0) addItem(m); });
                     (s.items || []).forEach(i => {
                         if (Number(i.extraKg || 0) > 0 && Number(i.qty || 0) > 0) {
                             out.extraKg += Number(i.extraKg);
@@ -3107,10 +3697,9 @@
                 if (bd.debtAmount > 1e-7 && s.debtPaidAt) {
                     const pt = new Date(s.debtPaidAt).getTime() || 0;
                     if (pt >= fromMs && pt < toMs) {
-                        out.rev += bd.debtAmount;
-                        out.profit += bd.debtProfit;
                         out.paid += bd.debtAmount;
                         out.perDay[dayIndex(pt)] += bd.debtAmount;
+                        money.forEach(m => { if (m.item.isDebt && !(m.freeValue > 0)) addItem(m); });
                     }
                 }
             });
@@ -3176,6 +3765,26 @@
             }
         }
 
+        let statsSplit = null;
+        /* Tap the sales or profit card: show whole/half bags and all other products separately. */
+        function showStatsSplit(kind) {
+            const st = statsSplit;
+            if (!st) return;
+            const isProfit = kind === 'profit';
+            const bag = isProfit ? st.bagProfit : st.bagRev;
+            const other = isProfit ? st.otherProfit : st.otherRev;
+            const total = isProfit ? st.profit : st.rev;
+            const ov = document.createElement('div');
+            ov.className = 'dp-overlay';
+            ov.innerHTML = `<div class="dp-box"><div class="dp-title">${isProfit ? 'الأرباح' : 'المبيعات'} — التفاصيل</div>
+                <div class="split-row"><span>الشكائر الكاملة ونصف الشكائر</span><b>${formatNum(bag)} <small>د.ل</small></b></div>
+                <div class="split-row"><span>باقي المنتجات</span><b>${formatNum(other)} <small>د.ل</small></b></div>
+                <div class="split-row split-total"><span>المجموع</span><b>${formatNum(total)} <small>د.ل</small></b></div>
+                <div class="dp-foot"><button type="button" style="background:var(--red-alert);color:#fff;">إغلاق</button></div></div>`;
+            ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('button')) ov.remove(); });
+            document.body.appendChild(ov);
+        }
+
         async function refreshStats() {
             const token = ++statsRenderToken;
             updateStatsControls();
@@ -3197,6 +3806,11 @@
             const st = computeStats(list, r.from, r.to, r.days);
             document.getElementById('stat-today-sales').innerText = formatNum(st.rev);
             document.getElementById('stat-today-profit').innerText = formatNum(st.profit);
+            statsSplit = st;
+            document.getElementById('stat-today-free').innerText = formatNum(st.freeValue);
+            document.getElementById('stat-today-discounts').innerText = formatNum(st.discountValue);
+            document.getElementById('stat-profit-before').innerText = formatNum(st.profitBefore);
+            document.getElementById('stat-profit-after').innerText = formatNum(st.profit);
             document.getElementById('stat-today-customers').innerText = st.customers;
             document.getElementById('stat-today-extra-gurush').innerText = formatNum(st.extraValue);
             document.getElementById('stat-today-extra-grams').innerText = formatNum(st.extraKg * 1000);
@@ -3588,6 +4202,8 @@
             });
             document.getElementById('cart-discount').value = Number(sale.globalDiscount || 0) > 0 ? sale.globalDiscount : '';
             document.getElementById('cart-customer').value = sale.customerName || '';
+            document.getElementById('cart-note').value = sale.cartNote || '';
+            syncCartFieldChecks();
             document.getElementById('cart-debt').checked = !!sale.cartDebt;
             cartDebtorName = sale.debtorName || '';
             updateEditSaleUI();
@@ -3630,16 +4246,17 @@
 
             const cartDebt = !!document.getElementById('cart-debt').checked;
             const customerName = (document.getElementById('cart-customer').value || '').trim();
+            const cartNote = (document.getElementById('cart-note').value || '').trim();
             const globalDiscount = parseFloat(document.getElementById('cart-discount').value) || 0;
             const debtorName = cartDebt ? cartDebtorName : '';
             const editedItems = cart.map(item => (cartDebt && !item.isFree) ? { ...item, isDebt: true } : { ...item });
             const total = Math.max(0, editedItems.reduce((sum, item) => sum + Number(item.total || 0), 0) - globalDiscount);
 
-            const signature = (items, discount, debt, customer, debtor) => JSON.stringify([
+            const signature = (items, discount, debt, customer, debtor, cnote) => JSON.stringify([
                 items.map(i => [i.id, i.sellMode, i.qty, i.price, i.total, i.discount, i.note || '', !!i.isFree, !!i.isDebt, i.debtorName || '', i.extraKg || 0, i.halfSource || '']),
-                Number(discount || 0), !!debt, customer || '', debtor || ''
+                Number(discount || 0), !!debt, customer || '', debtor || '', cnote || ''
             ]);
-            if (signature(editedItems, globalDiscount, cartDebt, customerName, debtorName) === signature(sale.items || [], sale.globalDiscount, sale.cartDebt, sale.customerName, sale.debtorName)) {
+            if (signature(editedItems, globalDiscount, cartDebt, customerName, debtorName, cartNote) === signature(sale.items || [], sale.globalDiscount, sale.cartDebt, sale.customerName, sale.debtorName, sale.cartNote)) {
                 showModal('لا يوجد تغيير', 'لم يتم تغيير أي شيء في هذه الفاتورة.', false, () => {});
                 return;
             }
@@ -3678,7 +4295,7 @@
                 const note = itemNotes || sale.note || '';
                 const amendment = { at: amendedAt, by: activeCashier, changes };
                 Object.assign(sale, {
-                    items: editedItems, globalDiscount, total, profit, cartDebt, customerName, debtorName, note,
+                    items: editedItems, globalDiscount, total, profit, cartDebt, customerName, cartNote, debtorName, note,
                     inventoryDeltas: calculation.newDeltas, amendedAt, amendedBy: activeCashier,
                     amendmentHistory: [...(sale.amendmentHistory || []), amendment]
                 });
@@ -3687,7 +4304,7 @@
                 queueCloudOperation({
                     id: 'sale-amend:' + sale.id + ':' + Date.now(), type: 'saleAmendment',
                     payload: { id: sale.id, items: sale.items, total: sale.total, profit: sale.profit, inventoryDeltas: sale.inventoryDeltas, adjustment: calculation.adjustment,
-                        amendedAt, amendedBy: sale.amendedBy, amendment, globalDiscount, cartDebt, customerName, debtorName, note },
+                        amendedAt, amendedBy: sale.amendedBy, amendment, globalDiscount, cartDebt, customerName, cartNote, debtorName, note },
                     createdAt: Date.now()
                 });
                 clearCart();
@@ -3761,18 +4378,25 @@
                 }
             }
 
+            const selBox = salesSelectMode ? (() => {
+                const byMonth = isSaleMonthSelected(s);
+                const on = byMonth || selSaleIds.has(String(s.id));
+                return `<label class="sel-box"><input type="checkbox" ${on ? 'checked' : ''} ${byMonth ? 'disabled' : ''} onchange='toggleSaleSel(${JSON.stringify(String(s.id))}, this.checked)'></label>`;
+            })() : '';
             return `
-                    <div class="${cardClass}">
+                    <div class="${cardClass}${salesSelectMode ? ' sel-mode' : ''}">
+                        ${selBox}
                         <div style="display:flex; justify-content:space-between; color:#666; font-size:12px;">
                             <span>الوقت: ${timeStr}</span>
                             <span>الكاشير: ${s.cashier}</span>
                         </div>
-                        ${s.customerName ? `<div style="font-size:13px; color:var(--navy); font-weight:700; margin-top:3px;">👤 العميل: ${escapeHtml(s.customerName)}</div>` : ''}
+                        ${s.customerName ? `<div style="font-size:13px; color:var(--navy); font-weight:700; margin-top:3px;">👤 المشتري: ${escapeHtml(s.customerName)}</div>` : ''}
+                        ${s.cartNote ? `<div style="font-size:13px; color:#ff8c00; font-weight:700; margin-top:3px;">📝 ملاحظة السلة: ${escapeHtml(s.cartNote)}</div>` : ''}
                         <div style="margin: 4px 0;">
                             ${s.items.map(i => `
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
                                     <div>
-                                        • ${i.name} × ${formatNum(i.qty)} ${i.unitType === 'weight' ? 'كجم' : (i.unitType === 'unit' ? 'قطعة' : 'شكارة')} 
+                                        • <strong style="font-size:15.5px;">${i.name}</strong> × ${formatNum(i.qty)} ${i.unitType === 'weight' ? 'كجم' : (i.unitType === 'unit' ? 'قطعة' : 'شكارة')} 
                                         ${i.isNegativeSale ? '<span style="color:#d32f2f; font-weight:bold;">[مبيعات بالسالب]</span>' : ''} 
                                         ${i.isFree ? '<span style="color:#2e7d32;">[مجاني]</span>' : ''} 
                                         ${i.isDebt ? `<span style="color:#e65100; font-weight:bold;">[دين${i.debtorName ? ': ' + escapeHtml(i.debtorName) : ''}]</span>` : ''} 
@@ -3781,7 +4405,7 @@
                                         ${i.discount > 0 ? `<span style="color:#d32f2f;">[خصم: ${formatNum(i.discount)} د.ل]</span>` : ''} 
                                         ${i.note ? `<span style="color:#ff8c00;">[${i.note}]</span>` : ''}
                                     </div>
-                                    <strong style="color:var(--teal-primary); font-size:13px; margin-left:6px;">${i.isFree ? '0 د.ل' : `${formatNum(i.total)} د.ل`}</strong>
+                                    <strong style="color:var(--teal-primary); font-size:15px; margin-left:6px; white-space:nowrap;">${i.isFree ? '0 د.ل' : `${formatNum(i.total)} د.ل`}</strong>
                                 </div>
                             `).join('')}
                         </div>
@@ -3799,7 +4423,7 @@
                                 <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick='editSaleNote(${JSON.stringify(s.id)})'>✏️ ملاحظة</button>
                                 ${s.returnedAt ? `<span style="font-size:11px; color:#d32f2f;">تم الإرجاع</span><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='deleteSale(${JSON.stringify(s.id)})'>حذف البيع</button>` : `<button class="btn btn-green" style="padding:2px 8px; font-size:11px;" onclick='editSale(${JSON.stringify(s.id)})'>تعديل البيع</button><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='returnSale(${JSON.stringify(s.id)})'>إرجاع البيع</button>`}
                             </div>
-                            <span>الإجمالي: <strong style="color:var(--teal-primary); font-size:15px;">${formatNum(s.total)} د.ل</strong></span>
+                            <span style="font-size:15px;">الإجمالي: <strong style="color:var(--teal-primary); font-size:19px;">${formatNum(s.total)} د.ل</strong></span>
                         </div>
                     </div>
                 `;
@@ -3870,7 +4494,7 @@
                 const open = searching ? true : (salesDayToggled.has(g.key) ? salesDayToggled.get(g.key) : g.isToday);
                 return `
                     <div class="day-group-header" onclick="toggleSalesDay(${idx})">
-                        <span>${g.key}</span>
+                        <span>${salesSelectMode ? `<label class="sel-day" onclick="event.stopPropagation()"><input type="checkbox" ${g.items.every(x => isSaleMonthSelected(x.s) || selSaleIds.has(String(x.s.id))) ? 'checked' : ''} onchange="toggleDaySel(${idx}, this.checked)"></label>` : ''}${g.key}</span>
                         <span class="day-arrow" id="sales-day-arrow-${idx}">${open ? '▴' : '▾'}</span>
                     </div>
                     <div id="sales-day-body-${idx}" data-lazy="${open ? '' : '1'}" style="display:${open ? 'block' : 'none'};">${open ? g.items.map(x => renderSaleCard(x.s, saleTimeLabel(x.s))).join('') : ''}</div>
@@ -3883,7 +4507,7 @@
         function saleSearchText(sale) {
             const parts = [];
             const bd = getSaleBreakdown(sale);
-            parts.push(sale.customerName, sale.debtorName, getSaleDebtorNames(sale), sale.cashier, sale.note, sale.dayName,
+            parts.push(sale.customerName, sale.cartNote, sale.debtorName, getSaleDebtorNames(sale), sale.cashier, sale.note, sale.dayName,
                 new Date(sale.timestamp).toLocaleDateString('ar-LY'), formatNum(sale.total));
             if (Number(sale.globalDiscount || 0) > 0) parts.push('خصم', 'خصم على الفاتورة', formatNum(sale.globalDiscount));
             (sale.items || []).forEach(i => {
@@ -3977,6 +4601,404 @@
             });
         }
 
+
+        /* ---------- Select sales to delete (days, months, single sales) ---------- */
+        let salesSelectMode = false;
+        const selSaleIds = new Set();
+        const selMonths = new Map(); /* key 'YYYY-M' -> { from, to, label, count } */
+
+        function monthKeyOf(ms) { const d = new Date(ms); return d.getFullYear() + '-' + d.getMonth(); }
+        function isSaleMonthSelected(sale) { return selMonths.size > 0 && selMonths.has(monthKeyOf(saleTimeMs(sale))); }
+
+        function toggleSalesSelectMode() {
+            salesSelectMode = !salesSelectMode;
+            if (!salesSelectMode) { selSaleIds.clear(); selMonths.clear(); }
+            updateSalesSelectUI();
+            renderSalesNow();
+        }
+        function updateSalesSelectUI() {
+            const btn = document.getElementById('sales-select-toggle');
+            const tools = document.getElementById('sales-select-tools');
+            const monthsBox = document.getElementById('sales-sel-months');
+            if (btn) { btn.textContent = salesSelectMode ? 'إلغاء التحديد' : 'تحديد للحذف'; btn.classList.toggle('active', salesSelectMode); }
+            if (tools) tools.style.display = salesSelectMode ? 'flex' : 'none';
+            if (monthsBox) {
+                monthsBox.style.display = (salesSelectMode && selMonths.size) ? 'flex' : 'none';
+                monthsBox.innerHTML = Array.from(selMonths.entries()).map(([k, m]) => `<span class="sel-month-chip">${m.label} (${m.count})<button type="button" onclick="removeSelMonth('${k}')" aria-label="إزالة">✕</button></span>`).join('');
+            }
+            updateSalesSelCount();
+        }
+        function selectedSalesCount() {
+            let n = 0;
+            selMonths.forEach(m => { n += m.count; });
+            if (selMonths.size) {
+                const byId = new Map(sales.map(x => [String(x.id), x]));
+                selSaleIds.forEach(id => { const sale = byId.get(id); if (!(sale && isSaleMonthSelected(sale))) n++; });
+            } else n += selSaleIds.size;
+            return n;
+        }
+        function updateSalesSelCount() {
+            const el = document.getElementById('sales-sel-count');
+            if (!el) return;
+            el.textContent = selectedSalesCount();
+        }
+        function toggleSaleSel(id, on) {
+            if (on) selSaleIds.add(String(id)); else selSaleIds.delete(String(id));
+            updateSalesSelCount();
+        }
+        function toggleDaySel(idx, on) {
+            const g = salesDayGroups[idx];
+            if (!g) return;
+            g.items.forEach(x => { if (on) selSaleIds.add(String(x.s.id)); else selSaleIds.delete(String(x.s.id)); });
+            updateSalesSelCount();
+            const body = document.getElementById('sales-day-body-' + idx);
+            if (body && body.style.display !== 'none') body.innerHTML = g.items.map(x => renderSaleCard(x.s, saleTimeLabel(x.s))).join('');
+        }
+        function selectShownSales() {
+            (salesDayGroups || []).forEach(g => g.items.forEach(x => selSaleIds.add(String(x.s.id))));
+            updateSalesSelCount();
+            renderSalesNow();
+        }
+        function removeSelMonth(key) {
+            selMonths.delete(key);
+            updateSalesSelectUI();
+            renderSalesNow();
+        }
+
+        async function openSalesMonthPicker() {
+            let counts = new Map();
+            try {
+                if (salesMode === 'idb') { await idbWriteChain; counts = await SalesStore.monthCounts(); }
+                else sales.forEach(s => { const k = monthKeyOf(saleTimeMs(s)); counts.set(k, (counts.get(k) || 0) + 1); });
+            } catch (e) { console.error('Could not list months', e); }
+            const keys = Array.from(counts.keys()).sort((a, b) => {
+                const [ya, ma] = a.split('-').map(Number), [yb, mb] = b.split('-').map(Number);
+                return (yb * 12 + mb) - (ya * 12 + ma);
+            });
+            const ov = document.createElement('div');
+            ov.className = 'dp-overlay';
+            const rows = keys.map(k => {
+                const [y, m] = k.split('-').map(Number);
+                const label = y + ' / ' + String(m + 1).padStart(2, '0');
+                return `<label class="month-row"><input type="checkbox" data-k="${k}" data-label="${label}" data-count="${counts.get(k)}" ${selMonths.has(k) ? 'checked' : ''}><span>${label}</span><small>${counts.get(k)} فاتورة</small></label>`;
+            }).join('') || '<div style="padding:16px; text-align:center; color:#888;">لا توجد مبيعات</div>';
+            ov.innerHTML = `<div class="dp-box"><div class="dp-title">اختيار الأشهر للحذف</div><div class="month-list">${rows}</div>
+                <div class="dp-foot"><button type="button" data-a="ok" style="background:var(--teal-primary);color:#fff;">تم</button></div></div>`;
+            ov.addEventListener('click', e => {
+                if (e.target === ov) { ov.remove(); return; }
+                const btn = e.target.closest('button');
+                if (btn) {
+                    ov.querySelectorAll('input[data-k]').forEach(inp => {
+                        const k = inp.dataset.k;
+                        if (inp.checked) {
+                            const [y, m] = k.split('-').map(Number);
+                            selMonths.set(k, { from: new Date(y, m, 1).getTime(), to: new Date(y, m + 1, 1).getTime(), label: inp.dataset.label, count: Number(inp.dataset.count) });
+                        } else selMonths.delete(k);
+                    });
+                    ov.remove();
+                    updateSalesSelectUI();
+                    renderSalesNow();
+                }
+            });
+            document.body.appendChild(ov);
+        }
+
+        /* All sales picked: single ones, whole days, and whole months (months are read from the device database too). */
+        async function collectSelectedSales() {
+            const map = new Map();
+            const ids = new Set(selSaleIds);
+            sales.forEach(x => { if (ids.has(String(x.id)) || isSaleMonthSelected(x)) map.set(String(x.id), x); });
+            if (salesMode === 'idb') {
+                await idbWriteChain;
+                const missing = Array.from(ids).filter(id => !map.has(id));
+                if (missing.length) (await SalesStore.getByIds(missing)).forEach(x => map.set(String(x.id), x));
+                for (const m of selMonths.values()) {
+                    (await SalesStore.loadRange(m.from, m.to)).forEach(x => { if (!deletedSaleIds.has(String(x.id))) map.set(String(x.id), x); });
+                }
+            }
+            return Array.from(map.values());
+        }
+
+        function startDeleteSelectedSales() {
+            const n = selectedSalesCount();
+            if (n === 0) { showModal('تنبيه', 'لم يتم تحديد أي فاتورة أو يوم أو شهر للحذف.', false, () => {}); return; }
+            promptManagerPassword(() => showDeleteSelectedChoice());
+        }
+        function showDeleteSelectedChoice() {
+            deleteAllMode = null;
+            const body = 'سيتم أولاً تحميل نسخة احتياطية كاملة تلقائياً، ثم حذف الفواتير المحددة من سجل المبيعات نهائياً (ومن السحابة أيضاً).\nاختر ما يحدث للمخزون:<br>' +
+                '<label class="del-all-option"><input type="radio" name="del-all-mode" onchange="deleteAllMode=\'return\'"><span>إرجاع المنتجات المباعة في هذه الفواتير إلى المخزون ثم الحذف</span></label>' +
+                '<label class="del-all-option"><input type="radio" name="del-all-mode" onchange="deleteAllMode=\'keep\'"><span>حذف السجل فقط وترك المخزون كما هو</span></label>';
+            const next = async () => {
+                const mode = deleteAllMode;
+                if (!mode) { showModal('تنبيه', 'يرجى اختيار أحد الخيارين أولاً.', false, () => showDeleteSelectedChoice()); return; }
+                const list = await collectSelectedSales();
+                const what = (mode === 'return' ? 'سيتم إرجاع المنتجات إلى المخزون، ثم حذف ' : 'سيتم حذف ') + list.length + ' فاتورة محددة' + (mode === 'return' ? '.' : '، والمخزون يبقى كما هو.');
+                const go = () => executeDeleteSelectedSales(mode, list);
+                go.confirmLabel = 'نعم، احذف المحدد';
+                showModal('تأكيد نهائي', what + '\nلا يمكن التراجع إلا باستعادة النسخة الاحتياطية التي ستُحمَّل الآن.\nهل أنت متأكد؟', false, go);
+            };
+            next.confirmLabel = 'متابعة';
+            showModal('حذف الفواتير المحددة', body, false, next);
+        }
+
+        async function executeDeleteSelectedSales(mode, targets) {
+            const hold = () => {};
+            hold.nonDismissible = true;
+            showModal('جاري الحذف...', 'يرجى الانتظار وعدم إغلاق التطبيق.', false, hold);
+            try {
+                let all = sales.slice();
+                if (salesMode === 'idb') {
+                    await idbWriteChain;
+                    const map = new Map((await SalesStore.getAll()).map(x => [String(x.id), x]));
+                    sales.forEach(x => map.set(String(x.id), x));
+                    all = Array.from(map.values());
+                }
+                downloadBackupFile({ products, sales: sortSalesDesc(all.slice()), stockLogs, cashiers, managerPin, inventoryEdits }, { silent: true });
+
+                const returnStock = mode === 'return';
+                const ids = new Set(targets.map(x => String(x.id)));
+                const adjustById = new Map();
+                targets.forEach(sale => {
+                    const byProduct = {};
+                    if (returnStock && !sale.returnedAt) {
+                        (sale.inventoryDeltas || []).forEach(entry => {
+                            const key = String(entry.productId);
+                            const acc = byProduct[key] || (byProduct[key] = {});
+                            Object.entries(entry.inventoryDelta || {}).forEach(([field, value]) => { acc[field] = (acc[field] || 0) - Number(value || 0); });
+                        });
+                    }
+                    adjustById.set(String(sale.id), byProduct);
+                });
+                if (returnStock) {
+                    const total = {};
+                    adjustById.forEach(bp => Object.entries(bp).forEach(([pid, d]) => {
+                        const acc = total[pid] || (total[pid] = {});
+                        Object.entries(d).forEach(([f, v]) => { acc[f] = (acc[f] || 0) + v; });
+                    }));
+                    const adjustment = Object.entries(total).map(([productId, inventoryDelta]) => ({ productId, inventoryDelta }));
+                    if (adjustment.length) { applyInventoryDeltas(products, adjustment); safeSave(KEYS.PRODUCTS, products); }
+                }
+
+                if (editingSaleId && ids.has(String(editingSaleId))) clearCart();
+                sales = sales.filter(x => !ids.has(String(x.id)));
+                ids.forEach(id => deletedSaleIds.add(id));
+                safeSave(KEYS.DELETED_SALES, Array.from(deletedSaleIds));
+                if (salesMode === 'idb') {
+                    idbWriteChain = idbWriteChain.then(() => SalesStore.removeMany(Array.from(ids))).catch(err => { console.error('Error removing sales', err); showStorageErrorBanner(); });
+                    await idbWriteChain;
+                    olderSalesExist = (await SalesStore.countBefore(historyLoadedFromMs)) > 0;
+                } else {
+                    safeSave(KEYS.SALES, sales);
+                }
+                /* cloud: removals in chunks, each chunk carrying its own share of the stock return */
+                const CH = 300;
+                for (let i = 0; i < targets.length; i += CH) {
+                    const chunk = targets.slice(i, i + CH);
+                    const tot = {};
+                    chunk.forEach(sale => Object.entries(adjustById.get(String(sale.id)) || {}).forEach(([pid, d]) => {
+                        const acc = tot[pid] || (tot[pid] = {});
+                        Object.entries(d).forEach(([f, v]) => { acc[f] = (acc[f] || 0) + v; });
+                    }));
+                    const adjustment = Object.entries(tot).map(([productId, inventoryDelta]) => ({ productId, inventoryDelta }));
+                    queueCloudOperation({ id: 'sales-del-many:' + cloudUuid(), type: 'salesDeleteMany', payload: { ids: chunk.map(x => String(x.id)), returnStock, adjustment }, createdAt: Date.now() });
+                }
+
+                salesSelectMode = false; selSaleIds.clear(); selMonths.clear();
+                updateSalesSelectUI();
+                closeModal();
+                renderInventory();
+                renderSales();
+                showModal('تم الحذف', (returnStock ? 'تمت إعادة المنتجات إلى المخزون و' : '') + 'تم حذف ' + targets.length + ' فاتورة.\nالنسخة الاحتياطية محفوظة في مجلد التنزيلات.', false, () => {});
+            } catch (e) {
+                console.error('Delete selected sales failed', e);
+                closeModal();
+                showModal('تعذّر الحذف', 'حدث خطأ ولم يكتمل الحذف. إذا اختفى جزء من السجل استعد النسخة الاحتياطية التي تم تحميلها.', false, () => {});
+            }
+        }
+
+
+        /* ---------- Inventory edit history (who changed what, when) ---------- */
+        const EDIT_FIELDS = [
+            ['name', 'الاسم'], ['price', 'سعر البيع'], ['wholesaleUnitPrice', 'سعر الجملة'], ['cost', 'سعر التكلفة'],
+            ['kgPrice', 'سعر الكيلو'], ['fullBagPrice', 'سعر الشكارة الكاملة'], ['halfBagPrice', 'سعر نصف الشكارة'], ['bagCost', 'تكلفة الشكارة'],
+            ['bagWeightKg', 'وزن الشكارة (كجم)'], ['qty', 'الكمية'], ['bagsCount', 'عدد الشكائر'], ['openBagKg', 'الوزن المفتوح (كجم)'],
+            ['expiryDate', 'تاريخ الانتهاء'], ['notes', 'ملاحظات']
+        ];
+        const EDIT_ACTIONS = { edit: 'تعديل', create: 'إضافة منتج', delete: 'حذف منتج', open_bag: 'فتح شكارة', partial: 'إضافة جزء مفتوح' };
+        function editValueText(v) {
+            if (v === undefined || v === null || v === '') return 'فارغ';
+            if (typeof v === 'number' || (v !== '' && !isNaN(Number(v)) && String(v).trim() !== '')) return formatNum(Number(v));
+            return String(v);
+        }
+        function logInventoryEdit(action, before, after) {
+            try {
+                const changes = [];
+                if (action !== 'delete' && action !== 'create') {
+                    EDIT_FIELDS.forEach(([f, label]) => {
+                        const a = before ? before[f] : undefined, b = after ? after[f] : undefined;
+                        const textField = (f === 'name' || f === 'expiryDate' || f === 'notes');
+                        const norm = v => textField ? String(v === undefined || v === null ? '' : v).trim() : (Number(v) || 0);
+                        if (norm(a) !== norm(b)) changes.push({ f: label, from: textField ? editValueText(a) : formatNum(Number(a) || 0), to: textField ? editValueText(b) : formatNum(Number(b) || 0) });
+                    });
+                    if (!changes.length) return;
+                }
+                const prod = after || before || {};
+                inventoryEdits.unshift({ id: cloudUuid(), ts: Date.now(), productId: String(prod.id || ''), name: prod.name || '', action, changes, by: activeCashier });
+                safeSave(EDITS_KEY, inventoryEdits);
+                renderInventoryEdits();
+            } catch (e) { console.error('Could not log the inventory edit', e); }
+        }
+
+        let editsOpen = false, editsSelectMode = false;
+        const editsDayOpen = new Map();
+        const selEditDays = new Set();
+        const selEditMonths = new Map();
+        function editDayKey(ts) { const d = new Date(ts); return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); }
+        function toggleInventoryEdits() {
+            editsOpen = !editsOpen;
+            document.getElementById('edits-body').style.display = editsOpen ? 'block' : 'none';
+            document.getElementById('edits-toggle').textContent = editsOpen ? '▴' : '▾';
+            if (editsOpen) renderInventoryEdits();
+        }
+        function renderInventoryEdits() {
+            const box = document.getElementById('edits-list');
+            if (!box || !editsOpen) return;
+            const count = document.getElementById('edits-count');
+            if (count) count.textContent = inventoryEdits.length ? '(' + inventoryEdits.length + ')' : '';
+            if (!inventoryEdits.length) { box.innerHTML = '<p style="color:#888; text-align:center;">لا توجد تعديلات مسجلة بعد</p>'; return; }
+            const groups = new Map();
+            inventoryEdits.slice().sort((a, b) => b.ts - a.ts).forEach(e => {
+                const k = editDayKey(e.ts);
+                if (!groups.has(k)) groups.set(k, []);
+                groups.get(k).push(e);
+            });
+            const todayKey = editDayKey(Date.now());
+            box.innerHTML = Array.from(groups.entries()).map(([k, list]) => {
+                const d = new Date(list[0].ts);
+                const title = d.toLocaleDateString('ar-LY', { weekday: 'long' }) + ' - ' + d.toLocaleDateString('ar-LY');
+                const open = editsDayOpen.has(k) ? editsDayOpen.get(k) : (k === todayKey);
+                const checked = selEditDays.has(k) || selEditMonths.has(monthKeyOf(list[0].ts));
+                const dis = selEditMonths.has(monthKeyOf(list[0].ts));
+                const body = open ? list.map(e => {
+                    const t = new Date(e.ts).toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' });
+                    const lines = (e.changes || []).map(c => `<div class="edit-line"><span>${escapeHtml(c.f)}</span><b>${escapeHtml(c.from)} ← ${escapeHtml(c.to)}</b></div>`).join('');
+                    return `<div class="edit-entry"><div class="edit-head"><strong>${escapeHtml(e.name)}</strong><span class="edit-tag">${EDIT_ACTIONS[e.action] || 'تعديل'}</span><small>${t}${e.by ? ' — ' + escapeHtml(e.by) : ''}</small></div>${lines}</div>`;
+                }).join('') : '';
+                return `<div class="day-group-header" onclick="toggleEditsDay('${k}')"><span>${editsSelectMode ? `<label class="sel-day" onclick="event.stopPropagation()"><input type="checkbox" ${checked ? 'checked' : ''} ${dis ? 'disabled' : ''} onchange="toggleEditDaySel('${k}', this.checked)"></label>` : ''}${title} <small style="opacity:.7;">(${list.length})</small></span><span class="day-arrow">${open ? '▴' : '▾'}</span></div><div style="display:${open ? 'block' : 'none'};">${body}</div>`;
+            }).join('');
+            updateEditsSelUI();
+        }
+        function toggleEditsDay(k) {
+            const todayKey = editDayKey(Date.now());
+            const cur = editsDayOpen.has(k) ? editsDayOpen.get(k) : (k === todayKey);
+            editsDayOpen.set(k, !cur);
+            renderInventoryEdits();
+        }
+        function toggleEditsSelectMode() {
+            editsSelectMode = !editsSelectMode;
+            if (!editsSelectMode) { selEditDays.clear(); selEditMonths.clear(); }
+            renderInventoryEdits();
+        }
+        function toggleEditDaySel(k, on) { if (on) selEditDays.add(k); else selEditDays.delete(k); updateEditsSelUI(); }
+        function editsMatchCount() {
+            return inventoryEdits.filter(e => selEditDays.has(editDayKey(e.ts)) || selEditMonths.has(monthKeyOf(e.ts))).length;
+        }
+        function updateEditsSelUI() {
+            const t = document.getElementById('edits-select-toggle');
+            const tools = document.getElementById('edits-select-tools');
+            if (t) { t.textContent = editsSelectMode ? 'إلغاء التحديد' : 'تحديد للحذف'; t.classList.toggle('active', editsSelectMode); }
+            if (tools) tools.style.display = editsSelectMode ? 'flex' : 'none';
+            const c = document.getElementById('edits-sel-count');
+            if (c) c.textContent = editsMatchCount();
+        }
+        function openEditsMonthPicker() {
+            const counts = new Map();
+            inventoryEdits.forEach(e => { const k = monthKeyOf(e.ts); counts.set(k, (counts.get(k) || 0) + 1); });
+            const keys = Array.from(counts.keys()).sort((a, b) => { const [ya, ma] = a.split('-').map(Number), [yb, mb] = b.split('-').map(Number); return (yb * 12 + mb) - (ya * 12 + ma); });
+            const ov = document.createElement('div');
+            ov.className = 'dp-overlay';
+            const rows = keys.map(k => { const [y, m] = k.split('-').map(Number); const label = y + ' / ' + String(m + 1).padStart(2, '0'); return `<label class="month-row"><input type="checkbox" data-k="${k}" ${selEditMonths.has(k) ? 'checked' : ''}><span>${label}</span><small>${counts.get(k)} تعديل</small></label>`; }).join('') || '<div style="padding:16px; text-align:center; color:#888;">لا توجد تعديلات</div>';
+            ov.innerHTML = `<div class="dp-box"><div class="dp-title">اختيار الأشهر للحذف</div><div class="month-list">${rows}</div><div class="dp-foot"><button type="button" style="background:var(--teal-primary);color:#fff;">تم</button></div></div>`;
+            ov.addEventListener('click', e => {
+                if (e.target === ov) { ov.remove(); return; }
+                if (e.target.closest('button')) {
+                    ov.querySelectorAll('input[data-k]').forEach(inp => { if (inp.checked) selEditMonths.set(inp.dataset.k, true); else selEditMonths.delete(inp.dataset.k); });
+                    ov.remove(); renderInventoryEdits();
+                }
+            });
+            document.body.appendChild(ov);
+        }
+        function deleteSelectedEdits() {
+            const n = editsMatchCount();
+            if (!n) { showModal('تنبيه', 'لم يتم تحديد أي يوم أو شهر للحذف.', false, () => {}); return; }
+            requireManagerPass(() => {
+                showModal('تأكيد الحذف', `سيتم حذف ${n} تعديل من سجل تعديلات المخزون نهائياً. لا يتغير أي منتج ولا أي مبيعات. هل تريد المتابعة؟`, false, () => {
+                    inventoryEdits = inventoryEdits.filter(e => !(selEditDays.has(editDayKey(e.ts)) || selEditMonths.has(monthKeyOf(e.ts))));
+                    safeSave(EDITS_KEY, inventoryEdits);
+                    editsSelectMode = false; selEditDays.clear(); selEditMonths.clear();
+                    renderInventoryEdits();
+                });
+            });
+        }
+
+        /* ---------- Select products to delete (inventory) ---------- */
+        let invSelectMode = false;
+        const selProductIds = new Set();
+        let shownProductIds = [];
+        function toggleInvSelectMode() {
+            invSelectMode = !invSelectMode;
+            if (!invSelectMode) selProductIds.clear();
+            updateInvSelectUI();
+            renderInventory();
+        }
+        function updateInvSelectUI() {
+            const t = document.getElementById('inv-select-toggle');
+            const tools = document.getElementById('inv-select-tools');
+            if (t) { t.textContent = invSelectMode ? 'إلغاء التحديد' : 'تحديد للحذف'; t.classList.toggle('active', invSelectMode); }
+            if (tools) tools.style.display = invSelectMode ? 'flex' : 'none';
+            const c = document.getElementById('inv-sel-count');
+            if (c) c.textContent = selProductIds.size;
+        }
+        function toggleProductSel(id, on) { if (on) selProductIds.add(String(id)); else selProductIds.delete(String(id)); updateInvSelectUI(); }
+        function selectShownProducts() { shownProductIds.forEach(id => selProductIds.add(id)); updateInvSelectUI(); renderInventory(); }
+        function deleteSelectedProducts() {
+            if (!selProductIds.size) { showModal('تنبيه', 'لم يتم تحديد أي منتج للحذف.', false, () => {}); return; }
+            requireManagerPass(() => {
+                const list = products.filter(p => selProductIds.has(String(p.id)));
+                const names = list.slice(0, 8).map(p => '• ' + p.name).join('\n') + (list.length > 8 ? '\n... و' + (list.length - 8) + ' منتج آخر' : '');
+                const go = () => {
+                    list.forEach(before => {
+                        queueInventoryMutation(before.id, before, before, {}, { deleteProduct: true });
+                        logInventoryEdit('delete', before, null);
+                    });
+                    const ids = new Set(list.map(p => String(p.id)));
+                    products = products.filter(p => !ids.has(String(p.id)));
+                    safeSave(KEYS.PRODUCTS, products);
+                    invSelectMode = false; selProductIds.clear();
+                    updateInvSelectUI();
+                    renderInventory();
+                };
+                go.confirmLabel = 'نعم، احذف';
+                showModal('تأكيد حذف المنتجات', `سيتم حذف ${list.length} منتج نهائياً:\n${names}\nهل أنت متأكد؟`, false, go);
+            });
+        }
+
+        /* ---------- Search results: most sold first ---------- */
+        let soldRankCache = { key: '', map: null };
+        function getSoldRank() {
+            const key = sales.length + ':' + (sales[0] ? sales[0].id : '') + ':' + (sales[sales.length - 1] ? sales[sales.length - 1].id : '');
+            if (soldRankCache.key === key && soldRankCache.map) return soldRankCache.map;
+            const map = new Map();
+            sales.forEach(sale => { if (sale.returnedAt) return; (sale.items || []).forEach(i => { const k = String(i.id); map.set(k, (map.get(k) || 0) + 1); }); });
+            soldRankCache = { key, map };
+            return map;
+        }
+        function sortBySoldRank(list) {
+            const rank = getSoldRank();
+            return list.map((p, i) => ({ p, i, c: rank.get(String(p.id)) || 0 })).sort((a, b) => (b.c - a.c) || (a.i - b.i)).map(x => x.p);
+        }
+
         /* ---------- Delete the whole sales history (v35, manager only) ----------
            A full backup is downloaded first. The manager chooses: return all sold products to stock then delete,
            or delete the history only (inventory stays as it is). The cloud is updated too (also later, if offline now). */
@@ -4023,7 +5045,7 @@
                     sales.forEach(x => map.set(String(x.id), x));
                     all = Array.from(map.values());
                 }
-                downloadBackupFile({ products, sales: sortSalesDesc(all.slice()), stockLogs, cashiers, managerPin }, { silent: true });
+                downloadBackupFile({ products, sales: sortSalesDesc(all.slice()), stockLogs, cashiers, managerPin, inventoryEdits }, { silent: true });
 
                 const clearedAt = Date.now();
                 const returnStock = mode === 'return';
@@ -4119,7 +5141,8 @@
                 return;
             }
             const query = (document.getElementById('inventory-search')?.value || '').trim().toLocaleLowerCase();
-            const visibleProducts = query ? products.filter(p => matchesSearch(p.name, query)) : products;
+            const visibleProducts = query ? sortBySoldRank(products.filter(p => matchesSearch(p.name, query))) : products;
+            shownProductIds = visibleProducts.map(p => String(p.id));
             if (countEl) countEl.textContent = query ? `عدد المنتجات: ${products.length} — نتائج البحث: ${visibleProducts.length}` : `عدد المنتجات: ${products.length}`;
             if (visibleProducts.length === 0) {
                 container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد منتجات مطابقة</p>';
@@ -4140,7 +5163,7 @@
                 return `
                     <div class="item-row">
                         <div>
-                            <strong>${p.name}</strong> (${isWeight ? 'بالوزن' : 'بالقطعة'})
+                            ${invSelectMode ? `<label class="inv-sel"><input type="checkbox" ${selProductIds.has(String(p.id)) ? 'checked' : ''} onchange='toggleProductSel(${JSON.stringify(String(p.id))}, this.checked)'></label>` : ''}<strong>${p.name}</strong> (${isWeight ? 'بالوزن' : 'بالقطعة'})
                             <div style="font-size:12px; color:#666;">
                                 ${isWeight ? `الكيلو: ${formatNum(p.kgPrice)} د.ل | الشكارة: ${formatNum(p.fullBagPrice)} د.ل` : `السعر: ${formatNum(p.price)} د.ل | الجملة: ${formatNum(p.wholesaleUnitPrice)} د.ل`}
                                 <br><span style="color:var(--teal-primary); font-weight:bold;">${stockDisplayText}</span>
@@ -4172,10 +5195,12 @@
             const bagCapacity = prod.bagWeightKg || 15;
             showModal('تأكيد فتح شكارة', `هل أنت تأكد من رغبتك في فتح شكارة جديدة من "${prod.name}" (وزنها ${bagCapacity} كجم)؟`, false, () => {
                 const before = { qty: prod.qty || 0, bagsCount: prod.bagsCount || 0, openBagKg: prod.openBagKg || 0 };
+                const editBefore = { ...prod };
                 prod.bagsCount -= 1;
                 prod.openBagKg = (prod.openBagKg || 0) + bagCapacity;
                 safeSave(KEYS.PRODUCTS, products);
                 queueInventoryMutation(prod.id, before, prod, {});
+                logInventoryEdit('open_bag', editBefore, prod);
                 renderInventory();
                 showModal('نجاح', `تم فتح الشكارة بنجاح وإضافة ${bagCapacity} كجم إلى الوزن المتاح!`, false, () => {});
             });
@@ -4188,6 +5213,7 @@
             const callback = (data) => {
                 if (data && data.addedKg > 0) {
                     const before = { qty: prod.qty || 0, bagsCount: prod.bagsCount || 0, openBagKg: prod.openBagKg || 0 };
+                    const editBefore = { ...prod };
                     prod.openBagKg = (prod.openBagKg || 0) + data.addedKg;
                     if (data.price) prod.kgPrice = data.price;
                     if (data.expiryDate) prod.expiryDate = data.expiryDate;
@@ -4199,6 +5225,7 @@
                     safeSave(KEYS.PRODUCTS, products);
                     safeSave(KEYS.LOGS, stockLogs);
                     queueInventoryMutation(prod.id, before, prod, { kgPrice: prod.kgPrice, expiryDate: prod.expiryDate, notes: prod.notes });
+                    logInventoryEdit('partial', editBefore, prod);
                     queueStockLogForCloud(log);
                     renderInventory();
                     renderStockLogs();
@@ -4236,10 +5263,12 @@
                     const commitProduct = () => {
                     if (existing) {
                         const before = { ...existing };
+                        const editBefore = { ...existing };
                         const oldTotalWeight = ((existing.bagsCount || 0) * (existing.bagWeightKg || 0)) + (existing.openBagKg || 0) + (existing.qty || 0);
                         const newTotalWeight = ((data.bagsCount || 0) * (data.bagWeightKg || 0)) + (data.openBagKg || 0) + (data.qty || 0);
                         const addedQty = newTotalWeight - oldTotalWeight;
                         Object.assign(existing, data);
+                        logInventoryEdit('edit', editBefore, existing);
 
                         if (addedQty > 0) {
                             const log = { id: cloudUuid(), timestamp: new Date().toISOString(), name: data.name, qty: addedQty, note: data.supplyNote || '' };
@@ -4260,6 +5289,7 @@
                             queueStockLogForCloud(log);
                         }
                         queueInventoryMutation(newProd.id, {}, newProd, {}, { createProduct: { ...newProd } });
+                        logInventoryEdit('create', null, newProd);
                     }
                     safeSave(KEYS.PRODUCTS, products);
                     safeSave(KEYS.LOGS, stockLogs);
@@ -4278,7 +5308,10 @@
                     if (existing) {
                         const confirmEdit = () => commitProduct();
                         confirmEdit.onCancel = () => showProductFormModal(existing.id, data);
-                        showModal('تأكيد التعديل', `هل تريد حفظ التعديلات على المنتج "${data.name}"؟`, false, confirmEdit);
+                        const priceFields = ['price', 'wholesaleUnitPrice', 'kgPrice', 'fullBagPrice', 'halfBagPrice', 'cost', 'bagCost'];
+                        const priceChanged = priceFields.some(f => data[f] !== undefined && (Number(data[f]) || 0) !== (Number(existing[f]) || 0));
+                        const warn = priceChanged ? '\n\nتنبيه: تغيير السعر أو التكلفة يؤثر فقط على المبيعات الجديدة بعد هذا التعديل، ولا يغيّر المبيعات السابقة ولا إحصائياتها.' : '';
+                        showModal('تأكيد التعديل', `هل تريد حفظ التعديلات على المنتج "${data.name}"؟` + warn, false, confirmEdit);
                     } else {
                         commitProduct();
                     }
@@ -4297,7 +5330,7 @@
                 const before = products.find(p => String(p.id) === String(id));
                 products = products.filter(p => String(p.id) !== String(id));
                 safeSave(KEYS.PRODUCTS, products);
-                if (before) queueInventoryMutation(id, before, before, {}, { deleteProduct: true });
+                if (before) { queueInventoryMutation(id, before, before, {}, { deleteProduct: true }); logInventoryEdit('delete', before, null); }
                 renderInventory();
             });
         }
@@ -4329,7 +5362,7 @@
 
         function exportBackup(opts) {
             if (salesMode === 'idb') { exportBackupFromIdb(opts); return; }
-            downloadBackupFile({ products, sales, stockLogs, cashiers, managerPin }, opts);
+            downloadBackupFile({ products, sales, stockLogs, cashiers, managerPin, inventoryEdits }, opts);
         }
 
         async function exportBackupFromIdb(opts) {
@@ -4340,54 +5373,7 @@
             } catch (e) { console.error('Could not read all sales for the backup', e); }
             const map = new Map(all.map(x => [String(x.id), x]));
             sales.forEach(x => map.set(String(x.id), x));
-            downloadBackupFile({ products, sales: sortSalesDesc(Array.from(map.values())), stockLogs, cashiers, managerPin }, opts);
-        }
-
-        let lastBackupBlob = null;
-        let lastBackupName = '';
-        let lastBackupForgetTimer = null;
-
-        /* After a backup is downloaded, offer to also save it in Google Drive through the phone's share menu. */
-        function canShareFiles() {
-            return typeof navigator !== 'undefined' && typeof navigator.share === 'function' && typeof navigator.canShare === 'function';
-        }
-
-        function offerBackupShare() {
-            if (!canShareFiles() || !lastBackupBlob || modalLocked) return;
-            const shareNow = () => { shareLastBackup(); };
-            shareNow.confirmLabel = 'حفظ في Google Drive';
-            shareNow.cancelLabel = 'لاحقاً';
-            showModal('تم تحميل النسخة الاحتياطية',
-                'تم حفظ الملف على جهازك في مجلد التنزيلات.\nلحمايته أكثر احفظ نسخة في Google Drive: اضغط الزر ثم اختر Drive من القائمة.\nملاحظة: الملف يحتوي على كلمات السر والمبيعات، فاحفظه في مكان خاص.',
-                false, shareNow);
-        }
-
-        async function shareLastBackup() {
-            if (!lastBackupBlob) return;
-            const jsonFile = new File([lastBackupBlob], lastBackupName, { type: 'application/json' });
-            let toShare = null;
-            let renamed = false;
-            try {
-                if (navigator.canShare({ files: [jsonFile] })) {
-                    toShare = jsonFile;
-                } else {
-                    const textFile = new File([lastBackupBlob], lastBackupName + '.txt', { type: 'text/plain' });
-                    if (navigator.canShare({ files: [textFile] })) { toShare = textFile; renamed = true; }
-                }
-            } catch (e) { toShare = null; }
-            if (!toShare) {
-                showModal('المشاركة غير متاحة', 'لا يدعم متصفحك مشاركة الملف مباشرة. افتح تطبيق Google Drive وارفع الملف من مجلد التنزيلات، أو استخدم تطبيقاً يزامن مجلد التنزيلات تلقائياً (مثل FolderSync).', false, () => {});
-                return;
-            }
-            try {
-                await navigator.share({ files: [toShare], title: 'نسخة احتياطية - نظام المبيعات' });
-                if (renamed) {
-                    showModal('تمت المشاركة', 'أُرسل الملف بامتداد .txt لأن متصفحك لا يسمح بمشاركة ملفات json. عند الاستعادة اختر الملف كما هو دون تغيير اسمه.', false, () => {});
-                }
-            } catch (e) {
-                if (e && e.name === 'AbortError') return;
-                showModal('تعذّرت المشاركة', 'لم تتم المشاركة. الملف محفوظ على جهازك في مجلد التنزيلات، ويمكنك رفعه إلى Google Drive يدوياً.', false, () => {});
-            }
+            downloadBackupFile({ products, sales: sortSalesDesc(Array.from(map.values())), stockLogs, cashiers, managerPin, inventoryEdits }, opts);
         }
 
         function downloadBackupFile(data, opts) {
@@ -4399,11 +5385,6 @@
             a.click();
             localStorage.setItem('pos_last_backup_at', String(Date.now()));
             localStorage.setItem('pos_last_reminder_at', String(Date.now()));
-            lastBackupBlob = blob;
-            lastBackupName = backupFileName;
-            clearTimeout(lastBackupForgetTimer);
-            lastBackupForgetTimer = setTimeout(() => { lastBackupBlob = null; }, 10 * 60 * 1000);
-            if (!(opts && opts.silent)) offerBackupShare();
         }
 
         function importBackup(event) {
@@ -4422,6 +5403,7 @@
                         salesClearedAt = 0;
                         localStorage.setItem(SALES_CLEARED_KEY, '0');
                         stockLogs = imported.stockLogs || [];
+                        if (Array.isArray(imported.inventoryEdits)) { inventoryEdits = imported.inventoryEdits; safeSave(EDITS_KEY, inventoryEdits); renderInventoryEdits(); }
                         cashiers = imported.cashiers || cashiers;
                         managerPin = imported.managerPin || managerPin;
 
@@ -4639,7 +5621,7 @@
                     applyInventoryDeltas(remoteProducts, p.adjustment || []);
                     transaction.set(cloudStateRef, { products: remoteProducts, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), schemaVersion: CLOUD_SCHEMA_VERSION }, { merge: true });
                     const priorHistory = saleSnap.data().amendmentHistory || [];
-                    transaction.set(saleRef, { updatedAt: firebase.firestore.FieldValue.serverTimestamp(), items: p.items || [], total: Number(p.total || 0), profit: Number(p.profit || 0), inventoryDeltas: p.inventoryDeltas || [], ...(p.globalDiscount !== undefined ? { globalDiscount: Number(p.globalDiscount || 0), cartDebt: !!p.cartDebt, customerName: p.customerName || '', debtorName: p.debtorName || '', note: p.note || '' } : {}), amendedAt: p.amendedAt, amendedBy: p.amendedBy || '', amendmentHistory: p.amendment ? [...priorHistory, p.amendment] : priorHistory }, { merge: true });
+                    transaction.set(saleRef, { updatedAt: firebase.firestore.FieldValue.serverTimestamp(), items: p.items || [], total: Number(p.total || 0), profit: Number(p.profit || 0), inventoryDeltas: p.inventoryDeltas || [], ...(p.globalDiscount !== undefined ? { globalDiscount: Number(p.globalDiscount || 0), cartDebt: !!p.cartDebt, customerName: p.customerName || '', cartNote: p.cartNote || '', debtorName: p.debtorName || '', note: p.note || '' } : {}), amendedAt: p.amendedAt, amendedBy: p.amendedBy || '', amendmentHistory: p.amendment ? [...priorHistory, p.amendment] : priorHistory }, { merge: true });
                     transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'saleAmendment' });
                 });
                 return true;
@@ -4654,6 +5636,31 @@
                     deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                return true;
+            }
+
+            if (op.type === 'salesDeleteMany') {
+                const p = op.payload || {};
+                const opRef = cloudInventoryOpsCol.doc(String(op.id));
+                await cloudDb.runTransaction(async transaction => {
+                    const [opSnap, stateSnap] = await Promise.all([transaction.get(opRef), transaction.get(cloudStateRef)]);
+                    if (opSnap.exists) return;
+                    if (p.returnStock && (p.adjustment || []).length) {
+                        const state = stateSnap.exists ? (stateSnap.data() || {}) : {};
+                        const remoteProducts = Array.isArray(state.products) ? state.products.map(x => ({ ...x })) : [];
+                        applyInventoryDeltas(remoteProducts, p.adjustment || []);
+                        transaction.set(cloudStateRef, { products: remoteProducts, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), schemaVersion: CLOUD_SCHEMA_VERSION }, { merge: true });
+                    }
+                    transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'salesDeleteMany' });
+                });
+                const idList = (p.ids || []).map(String);
+                for (let i = 0; i < idList.length; i += 400) {
+                    const batch = cloudDb.batch();
+                    idList.slice(i, i + 400).forEach(id => {
+                        batch.set(cloudSalesCol.doc(id), { id, deleted: true, returnedAt: '', deletedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                    });
+                    await batch.commit();
+                }
                 return true;
             }
 
