@@ -907,6 +907,8 @@
         .cart-line-main { display: flex; align-items: baseline; gap: 9px; min-width: 0; flex: 1; }
         .cart-line-amt { font-size: 20px; font-weight: 800; color: #000000; white-space: nowrap; flex: none; }
         html[data-theme="dark"] .cart-line-amt, html[data-theme="dark"] .hist-amt { color: #ffffff; }
+        .cart-line-amt .cur { font-size: 14px; font-weight: 800; }
+        .hist-amt .cur { font-size: 12px; font-weight: 800; }
         .cart-line-amt.free, html[data-theme="dark"] .cart-line-amt.free { color: #2e7d32; }
         .cart-line-name { font-size: 16px; font-weight: 700; overflow-wrap: anywhere; }
         .btn.cart-edit-btn { background-color: #8e979f; color: #ffffff; opacity: 0.4; padding: 2px 9px; font-size: 12px; }
@@ -954,6 +956,14 @@
             border: 1.6px solid #e2923f; border-radius: 999px; background: #fdf0e1; color: #d9801f;
             font-size: 13px; font-weight: 800; white-space: nowrap;
         }
+        .qs-hint {
+            position: fixed; z-index: 10040; pointer-events: none; display: flex; align-items: center; gap: 5px;
+            background: rgba(30,41,54,.92); color: #fff; font-size: 13px; font-weight: 700; padding: 6px 11px; border-radius: 12px;
+            opacity: 0; transform: translateY(6px); transition: opacity .16s ease, transform .16s ease; white-space: nowrap;
+        }
+        .qs-hint.show { opacity: 1; transform: translateY(0); }
+        .qs-hint svg { width: 15px; height: 15px; animation: qsHintUp 1s ease-in-out infinite; }
+        @keyframes qsHintUp { 0%,100% { transform: translateY(1px); } 50% { transform: translateY(-3px); } }
         .fly-dot.orange { background: #f28c28; border-color: #f28c28; color: #ffffff; }
         .drop-dot {
             position: fixed; left: 0; top: 0; z-index: 10050; pointer-events: none;
@@ -2075,7 +2085,7 @@
                 /* keyboard did not open (no resize): fall back to showing the search card at the top */
                 if (document.body.classList.contains('kb-open')) { positionSearchAboveKeyboard(); return; }
                 const card = input.closest('.card');
-                (card || input).scrollIntoView({ behavior: 'smooth', block: 'start' });
+                (card || input).scrollIntoView({ behavior: 'instant', block: 'start' });
             }, 500);
         }
 
@@ -2106,7 +2116,7 @@
             let delta = bottom - (visibleH - 6);
             const maxUp = card.getBoundingClientRect().top - 8;
             if (delta > maxUp) delta = maxUp;
-            if (Math.abs(delta) > 1) window.scrollBy({ top: delta, behavior: 'smooth' });
+            if (Math.abs(delta) > 1) window.scrollBy({ top: delta, behavior: 'instant' });
         }
 
         function filterProducts() {
@@ -2396,8 +2406,26 @@
             const check = document.getElementById(f.check);
             const input = document.getElementById(f.input);
             input.style.display = check.checked ? 'block' : 'none';
-            if (check.checked) { try { input.focus(); } catch (e) {} }
+            if (check.checked) {
+                /* focus without the browser's own scroll; then one calm move straight to the box (down only, and only if needed) */
+                try { input.focus({ preventScroll: true }); } catch (e) { try { input.focus(); } catch (e2) {} }
+                revealCartInput(input);
+                setTimeout(() => revealCartInput(input), 380);
+            }
             else { input.value = ''; if (kind === 'discount') renderCart(); }
+        }
+        function revealCartInput(input) {
+            if (!input || input.style.display === 'none') return;
+            requestAnimationFrame(() => {
+                const r = input.getBoundingClientRect();
+                let limit = window.innerHeight - 12;
+                if (!document.body.classList.contains('kb-open')) {
+                    const bar = document.querySelector('.fixed-checkout-bar');
+                    if (bar && bar.getBoundingClientRect().height) limit = Math.min(limit, bar.getBoundingClientRect().top - 8);
+                }
+                const delta = r.bottom - limit;
+                if (delta > 2) window.scrollBy({ top: delta, behavior: 'instant' });
+            });
         }
         /* After the boxes are filled from code (editing an old sale) or cleared: show a box only if it holds something. */
         function syncCartFieldChecks() {
@@ -2691,7 +2719,7 @@
                 <div style="border-bottom: 1px solid #eee; padding: 10px 0; cursor:pointer;" onclick="editCartItem(${idx})">
                     <div class="cart-line-top">
                         <div class="cart-line-main">
-                            ${item.isFree ? '<span class="cart-line-amt free">مجاني</span>' : `<span class="cart-line-amt">${formatNum(item.total)} د.ل</span>`}
+                            ${item.isFree ? '<span class="cart-line-amt free">مجاني</span>' : `<span class="cart-line-amt">${formatNum(item.total)} <small class="cur">د.ل</small></span>`}
                             <strong class="cart-line-name">${item.name}</strong>
                         </div>
                         <span style="display:flex; gap:6px; flex:none;">
@@ -4545,7 +4573,7 @@
                         <div style="margin: 8px 0 4px 0;">
                             ${s.items.map(i => `
                                 <div class="hist-line">
-                                    <strong class="hist-amt">${i.isFree ? '0 د.ل' : `${formatNum(i.total)} د.ل`}</strong>
+                                    <strong class="hist-amt">${i.isFree ? '0 <small class="cur">د.ل</small>' : `${formatNum(i.total)} <small class="cur">د.ل</small>`}</strong>
                                     <div class="hist-name">
                                         <strong style="font-size:15.5px;">${i.name}</strong> × ${formatNum(i.qty)} ${i.unitType === 'weight' ? 'كجم' : (i.unitType === 'unit' ? 'قطعة' : 'شكارة')} 
                                         ${i.isNegativeSale ? '<span style="color:#d32f2f; font-weight:bold;">[مبيعات بالسالب]</span>' : ''} 
@@ -6733,7 +6761,23 @@
                     setTimeout(function () { qs.style.transition = ''; }, 340);
                 };
             }
+            var qsHint = document.createElement('div');
+            qsHint.className = 'qs-hint';
+            qsHint.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 14l6-6 6 6"/></svg><span>اسحب للأعلى</span>';
+            document.body.appendChild(qsHint);
+            var qsHintTimer = null;
+            function showQsHint() {
+                var r = qs.getBoundingClientRect();
+                if (!r.width) return;
+                qsHint.style.top = (r.top - 40) + 'px';
+                qsHint.style.right = Math.max(8, window.innerWidth - r.right) + 'px';
+                qsHint.classList.add('show');
+                clearTimeout(qsHintTimer);
+                qsHintTimer = setTimeout(hideQsHint, 1900);
+            }
+            function hideQsHint() { clearTimeout(qsHintTimer); qsHint.classList.remove('show'); }
             makeSwipe(qs, {
+                onStart: showQsHint,
                 onMove: function (dx, dy) {
                     var up = Math.max(0, Math.min(-dy, 110));
                     var p = Math.min(1, up / (QS_COMMIT * 1.6));
@@ -6742,7 +6786,7 @@
                     qs.style.opacity = String(0.9 * (1 - 0.55 * p));
                 },
                 onEnd: function (dx, dy, moved, cancelled) {
-                    if (!cancelled && moved && -dy >= QS_COMMIT) flyQuickSale();
+                    if (!cancelled && moved && -dy >= QS_COMMIT) { hideQsHint(); flyQuickSale(); }
                     else qsReset(true);
                 }
             });
