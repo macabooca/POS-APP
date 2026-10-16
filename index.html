@@ -860,7 +860,142 @@
         .sel-day, .inv-sel, .sel-box { background: transparent !important; padding: 0 !important; border: none !important; box-shadow: none !important; }
 
         .sel-day input, .sel-box input, .inv-sel input, .month-row input { padding: 0 !important; background-color: transparent; border: none; box-shadow: none !important; }
-</style>
+
+        /* ============ v42 ============ */
+
+        /* select-to-delete bars at the bottom (sales history + inventory) */
+        .select-bar-bottom {
+            position: fixed;
+            left: 12px; right: 12px;
+            bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+            z-index: 98;
+            margin: 0;
+            padding: 8px 10px;
+            background: #ffffff;
+            border: 1px solid #e7eef3;
+            border-radius: 18px;
+            box-shadow: 0 4px 18px rgba(18, 40, 58, 0.14);
+        }
+        html[data-theme="dark"] .select-bar-bottom { background: #16232f; border-color: #2e4150; }
+        body.kb-open .select-bar-bottom { display: none !important; }
+        #view-sales, #view-inventory { padding-bottom: 64px; }
+
+        /* checkout card: a little smaller, a little higher, clear of the bottom nav */
+        .fixed-checkout-bar {
+            bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+            left: 14px; right: 14px;
+            padding: 7px 12px;
+            border-radius: 18px;
+        }
+        .fixed-checkout-bar h4 { font-size: 15px; }
+        #cart-total { font-size: 20px; }
+        .btn-complete-sale { padding: 8px 16px !important; font-size: 16px !important; border-radius: 13px; }
+        .btn-complete-sale svg { width: 18px; height: 18px; }
+        .btn-clear-cart { width: 38px; height: 38px; border-radius: 11px; }
+        .btn-clear-cart svg { width: 18px; height: 18px; }
+        .btn-complete-sale { position: relative; z-index: 2; touch-action: none; user-select: none; -webkit-user-select: none; }
+        .btn-complete-sale .swipe-chev { width: 16px; height: 16px; opacity: 0.75; animation: chevNudge 1.7s ease-in-out infinite; }
+        .btn-complete-sale.armed { background-color: var(--teal-hover); }
+        @keyframes chevNudge { 0%, 100% { transform: translateX(0); opacity: 0.35; } 50% { transform: translateX(-4px); opacity: 0.95; } }
+
+        /* product panel: bigger black name, bigger total, bigger Cancel */
+        #sel-product-name { color: #000000 !important; font-size: 21px !important; font-weight: 800; line-height: 1.3; }
+        html[data-theme="dark"] #sel-product-name { color: #ffffff !important; }
+        #selected-product-panel button[onclick="cancelProductSelection()"] { padding: 8px 15px !important; font-size: 15px !important; border-radius: 12px; }
+        .sel-total-wrap { font-size: 17px; font-weight: 700; }
+        #sel-total-display { font-size: 28px; font-weight: 800; }
+        #btn-add-to-cart { touch-action: none; user-select: none; -webkit-user-select: none; }
+        #btn-add-to-cart.armed { filter: brightness(0.9); }
+
+        /* cart checkboxes: two per row */
+        .cart-checks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; margin-bottom: 8px; }
+        .cart-checks-grid .cart-check {
+            margin-top: 0; gap: 10px;
+            padding: 11px 12px;
+            background: #f5f9fb;
+            border: 1px solid #dbe9ed;
+            border-radius: 14px;
+            font-size: 14px; font-weight: 600; line-height: 1.35;
+            min-height: 48px;
+        }
+        .cart-checks-grid .cart-check input[type="checkbox"] { width: 22px; height: 22px; flex: none; }
+        html[data-theme="dark"] .cart-checks-grid .cart-check { background: #1a2a36; border-color: #2e4150; }
+
+        /* cart line: amount first (bigger), then the name; quiet grey Edit button */
+        .cart-line-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .cart-line-main { display: flex; align-items: baseline; gap: 9px; min-width: 0; flex: 1; }
+        .cart-line-amt { font-size: 20px; font-weight: 800; color: var(--teal-primary); white-space: nowrap; flex: none; }
+        .cart-line-amt.free { color: #2e7d32; }
+        .cart-line-name { font-size: 17px; font-weight: 700; overflow-wrap: anywhere; }
+        .btn.cart-edit-btn { background-color: #8e979f; color: #ffffff; opacity: 0.4; padding: 2px 9px; font-size: 12px; }
+
+        /* sales history: amount first, then the product; more room between products; total at bottom-left */
+        .hist-line { display: flex; align-items: baseline; gap: 9px; margin-bottom: 14px; }
+        .hist-line:last-child { margin-bottom: 4px; }
+        .hist-amt { font-size: 16px; font-weight: 800; color: var(--teal-primary); white-space: nowrap; flex: none; }
+        .hist-name { min-width: 0; overflow-wrap: anywhere; }
+        .hist-total-row { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+        /* receipt look (sale confirmation + product saved) */
+        .rcpt { background: #ffffff; color: #12283a; border: 1px dashed #b9c6d0; border-radius: 12px; padding: 12px 14px; text-align: right; font-size: 15px; line-height: 1.5; }
+        .rcpt-head { text-align: center; font-weight: 800; font-size: 17px; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px dashed #b9c6d0; }
+        .rcpt-head small { display: block; font-weight: 600; font-size: 12px; color: #6b7c8c; margin-top: 2px; }
+        .rcpt-rows { max-height: 34vh; overflow-y: auto; }
+        .rcpt-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 5px 0; border-bottom: 1px dotted #dbe3e9; }
+        .rcpt-row:last-child { border-bottom: none; }
+        .rcpt-row .rn { min-width: 0; overflow-wrap: anywhere; }
+        .rcpt-row .rn small { color: #6b7c8c; font-size: 12.5px; }
+        .rcpt-row b { white-space: nowrap; color: #137e84; }
+        .rcpt-row.minus b { color: #d32f2f; }
+        .rcpt-row .tag { font-size: 11.5px; font-weight: 700; color: #e65100; }
+        .rcpt-total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; padding-top: 8px; border-top: 2px dashed #b9c6d0; font-weight: 800; font-size: 18px; }
+        .rcpt-total b { font-size: 24px; color: #137e84; }
+        .rcpt-meta { font-size: 13px; color: #4a5a6a; padding: 2px 0; }
+        .rcpt-foot { text-align: center; font-size: 12px; color: #6b7c8c; margin-top: 8px; padding-top: 6px; border-top: 1px dashed #b9c6d0; }
+
+        /* quick-sale pill is swipe-only */
+        .quick-sale-btn { touch-action: none; user-select: none; -webkit-user-select: none; will-change: transform, opacity; }
+        .fly-dot {
+            position: fixed; z-index: 10050; pointer-events: none; overflow: hidden;
+            transform: translate(-50%, -50%);
+            display: flex; align-items: center; justify-content: center;
+            border: 1.6px solid #e2923f; border-radius: 999px; background: #fdf0e1; color: #d9801f;
+            font-size: 13px; font-weight: 800; white-space: nowrap;
+        }
+        .drop-dot {
+            position: fixed; left: 0; top: 0; z-index: 10050; pointer-events: none;
+            width: 26px; height: 26px; border-radius: 50%;
+            background: var(--orange-accent); box-shadow: 0 2px 8px rgba(242, 140, 40, 0.5);
+        }
+
+        /* search box: colourful sweep around the border when it is focused */
+        @property --glow-ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+        .search-wrap.glow-wrap { isolation: isolate; }
+        .search-wrap.glow-wrap > input { position: relative; z-index: 1; }
+        .search-wrap.glow-wrap::before,
+        .search-wrap.glow-wrap::after {
+            content: ''; position: absolute; z-index: 0; pointer-events: none; opacity: 0;
+            inset: -3px; border-radius: 19px;
+            background: conic-gradient(from var(--glow-ang), #4285f4, #9b72f2, #d96570, #f9ab00, #34a853, #4285f4);
+        }
+        .search-wrap.glow-wrap::after { inset: -2px; filter: blur(9px); }
+        .search-wrap.glow-wrap:focus-within::before { animation: glowSweep 1.4s cubic-bezier(.25, .6, .3, 1) both; }
+        .search-wrap.glow-wrap:focus-within::after { animation: glowSweepSoft 1.4s cubic-bezier(.25, .6, .3, 1) both; }
+        @keyframes glowSweep {
+            0% { --glow-ang: 0deg; opacity: 0; }
+            12% { opacity: 1; }
+            100% { --glow-ang: 360deg; opacity: 0.85; }
+        }
+        @keyframes glowSweepSoft {
+            0% { --glow-ang: 0deg; opacity: 0; }
+            12% { opacity: 0.8; }
+            100% { --glow-ang: 360deg; opacity: 0.4; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .search-wrap.glow-wrap:focus-within::before { animation: none; opacity: 0.85; }
+            .search-wrap.glow-wrap:focus-within::after { animation: none; opacity: 0.4; }
+        }
+    </style>
 </head>
 <body onclick="handleGlobalClick(event)">
 
@@ -1013,22 +1148,22 @@
 
                 <div class="checks-row" style="margin-top: 8px;">
                     <label class="checkbox-container" style="margin-top:0;">
-                        <input type="checkbox" id="sel-free" onchange="onSelFreeDebtChange('free')">
-                        <span>جعل المنتج مجاني</span>
+                        <input type="checkbox" id="sel-discount-check" onchange="onSelDiscountCheck()">
+                        <span>خصم على المنتج</span>
                     </label>
                     <label class="checkbox-container" style="margin-top:0;">
                         <input type="checkbox" id="sel-debt" onchange="onSelFreeDebtChange('debt')">
                         <span>جعل المنتج دين</span>
                     </label>
                     <label class="checkbox-container" style="margin-top:0;">
-                        <input type="checkbox" id="sel-discount-check" onchange="onSelDiscountCheck()">
-                        <span>خصم على المنتج</span>
+                        <input type="checkbox" id="sel-free" onchange="onSelFreeDebtChange('free')">
+                        <span>جعل المنتج مجاني</span>
                     </label>
                 </div>
 
                 <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
-                    <button class="btn btn-orange btn-add-to-cart" id="btn-add-to-cart" onclick="confirmAddToCart()">إضافة إلى السلة</button>
-                    <div>المجموع: <strong id="sel-total-display" style="color:var(--teal-primary);">0</strong> د.ل</div>
+                    <button class="btn btn-orange btn-add-to-cart" id="btn-add-to-cart" onclick="onAddToCartTap()">إضافة إلى السلة</button>
+                    <div class="sel-total-wrap">المجموع: <strong id="sel-total-display" style="color:var(--teal-primary);">0</strong> د.ل</div>
                 </div>
             </div>
         </div>
@@ -1045,35 +1180,37 @@
             </div>
             <div id="cart-container"></div>
 
-            <div id="cart-options" style="display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
-                <label class="checkbox-container" style="margin-top:2px;">
-                    <input type="checkbox" id="cart-buyer-check" onchange="onCartFieldCheck('buyer')">
-                    <span>اسم المشتري</span>
-                </label>
+            <div id="cart-options" style="display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 12px;">
+                <div class="cart-checks-grid">
+                    <label class="checkbox-container cart-check">
+                        <input type="checkbox" id="cart-buyer-check" onchange="onCartFieldCheck('buyer')">
+                        <span>اسم المشتري</span>
+                    </label>
+                    <label class="checkbox-container cart-check">
+                        <input type="checkbox" id="cart-discount-check" onchange="onCartFieldCheck('discount')">
+                        <span>خصم على الفاتورة كلها</span>
+                    </label>
+                    <label class="checkbox-container cart-check">
+                        <input type="checkbox" id="cart-note-check" onchange="onCartFieldCheck('note')">
+                        <span>ملاحظة على الفاتورة كلها</span>
+                    </label>
+                    <label class="checkbox-container cart-check">
+                        <input type="checkbox" id="cart-debt" onchange="onCartDebtChange(this)">
+                        <span>جعل الفاتورة كلها دين</span>
+                    </label>
+                </div>
                 <input type="text" id="cart-customer" placeholder="اكتب اسم المشتري" style="display:none;">
-                <label class="checkbox-container" style="margin-top:2px;">
-                    <input type="checkbox" id="cart-discount-check" onchange="onCartFieldCheck('discount')">
-                    <span>خصم على الفاتورة كلها</span>
-                </label>
                 <input type="number" id="cart-discount" placeholder="أدخل مبلغ الخصم على الفاتورة (د.ل)" oninput="renderCart()" style="display:none;">
-                <label class="checkbox-container" style="margin-top:2px;">
-                    <input type="checkbox" id="cart-note-check" onchange="onCartFieldCheck('note')">
-                    <span>ملاحظة على الفاتورة كلها</span>
-                </label>
                 <input type="text" id="cart-note" placeholder="اكتب الملاحظة" style="display:none;">
-                <label class="checkbox-container" style="margin-top:2px;">
-                    <input type="checkbox" id="cart-debt" onchange="onCartDebtChange(this)">
-                    <span>جعل الفاتورة كلها دين</span>
-                </label>
             </div>
         </div>
 
-        <button type="button" id="quick-sale-btn" class="quick-sale-btn" onclick="openQuickSale(event)" aria-label="بيع سريع"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>بيع سريع</span></button>
+        <button type="button" id="quick-sale-btn" class="quick-sale-btn" aria-label="بيع سريع (اسحب للأعلى)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>بيع سريع</span></button>
         <div class="fixed-checkout-bar">
             <h4 dir="rtl">الإجمالي: <span id="cart-total" style="color:var(--teal-primary);">0</span> د.ل</h4>
 
             <div style="display: flex; gap: 8px; align-items: center; direction: rtl;">
-                <button class="btn btn-teal btn-complete-sale" onclick="completeSale()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h8l3 3V20.5H7z"/><path d="M10 11h5M10 14.5h5M10 8h2"/></svg><span id="complete-sale-label">إتمام البيع</span></button>
+                <button class="btn btn-teal btn-complete-sale" id="btn-finish-sale" aria-label="إتمام البيع (اسحب لليسار)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h8l3 3V20.5H7z"/><path d="M10 11h5M10 14.5h5M10 8h2"/></svg><span id="complete-sale-label">إتمام البيع</span><svg class="swipe-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 6l-6 6 6 6M19 6l-6 6 6 6"/></svg></button>
                 <button class="btn btn-red btn-clear-cart" title="تفريغ السلة" onclick="clearCart()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
             </div>
         </div>
@@ -1092,7 +1229,12 @@
             </div>
             </div>
             <div id="sales-search-info" style="display:none; font-size:12px; color:var(--muted); margin-bottom:8px;"></div>
-            <div id="sales-select-bar" class="select-bar">
+            <div id="sales-sel-months" class="sel-months" style="display:none;"></div>
+            <div id="sales-list"></div>
+            <button class="btn btn-teal" id="sales-load-older" style="display:none; width:100%; margin-top:10px;" onclick="loadOlderSales()">تحميل أيام أقدم</button>
+            <button class="btn btn-red" id="sales-delete-all" style="width:100%; margin-top:14px;" onclick="startDeleteAllSales()">🗑️ حذف كل سجل المبيعات (للمدير)</button>
+        </div>
+        <div id="sales-select-bar" class="select-bar select-bar-bottom">
                 <button class="chip-btn" id="sales-select-toggle" onclick="toggleSalesSelectMode()">تحديد للحذف</button>
                 <div id="sales-select-tools" class="select-tools" style="display:none;">
                     <button class="chip-btn" onclick="openSalesMonthPicker()">اختيار شهر</button>
@@ -1100,11 +1242,6 @@
                     <button class="btn btn-red select-del-btn" onclick="startDeleteSelectedSales()">حذف المحدد (<span id="sales-sel-count">0</span>)</button>
                 </div>
             </div>
-            <div id="sales-sel-months" class="sel-months" style="display:none;"></div>
-            <div id="sales-list"></div>
-            <button class="btn btn-teal" id="sales-load-older" style="display:none; width:100%; margin-top:10px;" onclick="loadOlderSales()">تحميل أيام أقدم</button>
-            <button class="btn btn-red" id="sales-delete-all" style="width:100%; margin-top:14px;" onclick="startDeleteAllSales()">🗑️ حذف كل سجل المبيعات (للمدير)</button>
-        </div>
     </div>
 
     <!-- INVENTORY VIEW -->
@@ -1115,16 +1252,16 @@
                 <button class="btn btn-teal btn-add-new-product" onclick="requireManagerPass(() => showProductFormModal())">+ إضافة منتج جديد</button>
             </div>
             <input id="inventory-search" type="search" placeholder="ابحث عن منتج في المخزون..." oninput="renderInventory()" style="margin-bottom:8px;">
-            <div class="select-bar">
+            <div id="inventory-count" style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;"></div>
+            <div id="inventory-list"></div>
+        </div>
+            <div class="select-bar select-bar-bottom" id="inv-select-bar">
                 <button class="chip-btn" id="inv-select-toggle" onclick="toggleInvSelectMode()">تحديد للحذف</button>
                 <div id="inv-select-tools" class="select-tools" style="display:none;">
                     <button class="chip-btn" onclick="selectShownProducts()">تحديد المعروض</button>
                     <button class="btn btn-red select-del-btn" onclick="deleteSelectedProducts()">حذف المحدد (<span id="inv-sel-count">0</span>)</button>
                 </div>
             </div>
-            <div id="inventory-count" style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;"></div>
-            <div id="inventory-list"></div>
-        </div>
         
         <div class="card">
             <button class="btn btn-teal" style="width:100%; text-align:right;" onclick="toggleStockLogs()">سجل توريد المخزون <span id="stock-log-toggle">▾</span></button>
@@ -1255,6 +1392,7 @@
             
             <input type="file" id="restore-file" accept=".json, application/json, text/plain" style="display:none" onchange="importBackup(event)">
             <button class="btn btn-teal" style="width: 100%;" onclick="requireManagerPass(() => document.getElementById('restore-file').click())">استعادة نسخة احتياطية (.json)</button>
+            <button class="btn btn-teal" style="width: 100%; margin-top: 8px;" onclick="requireManagerPass(() => openBackupPasswordManager())">كلمة سر تشفير النسخ الاحتياطي</button>
 
             <hr style="margin: 15px 0; border-color: #eee;">
             <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8.5 4.8 4.8 0 0 1 17.5 18z"/></svg></span>المزامنة السحابية (بين الأجهزة)</h3>
@@ -1583,7 +1721,7 @@
             hold.nonDismissible = true;
             showModal('جاري نقل المبيعات...', 'يرجى الانتظار وعدم إغلاق التطبيق.', false, hold);
             try {
-                exportBackup({ silent: true });
+                await exportBackup({ silent: true });
                 const unique = Array.from(new Map(sales.map(s => [String(s.id), s])).values());
                 await SalesStore.open();
                 await SalesStore.replaceAll(unique);
@@ -1687,6 +1825,7 @@
         /* Popup state: locked popups cannot be dismissed; onCancel lets a popup return somewhere. */
         let modalLocked = false;
         let modalCancelHandler = null;
+        let modalNoOutside = false;
 
         /* Sales that were deleted (kept only as ids so they never come back from cloud sync). */
         let deletedSaleIds = new Set(safeLoad(KEYS.DELETED_SALES, []).map(String));
@@ -1707,6 +1846,7 @@
         let activeProductObj = null;
         let currentSellMode = 'retail';
         let autoDismissTimer = null;
+        let swipeAddPending = false;   /* v42: Add-to-cart was triggered by swiping up */
 
         function adjustModalForKeyboard() {
             const overlay = document.getElementById('custom-modal');
@@ -2322,6 +2462,7 @@
         }
 
         function cancelProductSelection() {
+            swipeAddPending = false;
             resetSelectionEditState();
             activeSelection = null;
             activeProductObj = null;
@@ -2421,6 +2562,8 @@
         }
 
         function processAddToCartExecution(isNegative) {
+            const swipeFlow = swipeAddPending;
+            const dropFrom = swipeFlow ? getAddButtonRect() : null;
             const isFree = document.getElementById('sel-free').checked;
             const isDebt = !isFree && document.getElementById('sel-debt').checked;
             const discount = parseFloat(document.getElementById('sel-discount').value) || 0;
@@ -2457,6 +2600,7 @@
 
             cancelProductSelection();
             renderCart();
+            if (swipeFlow) { playCartDrop(dropFrom); openQuickSale(); }
         }
 
         function editCartItem(idx) {
@@ -2545,17 +2689,19 @@
             optionsBox.style.display = 'block';
             container.innerHTML = cart.map((item, idx) => `
                 <div style="border-bottom: 1px solid #eee; padding: 10px 0; cursor:pointer;" onclick="editCartItem(${idx})">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                        <strong style="font-size:17px;">${item.name}</strong>
+                    <div class="cart-line-top">
+                        <div class="cart-line-main">
+                            ${item.isFree ? '<span class="cart-line-amt free">مجاني</span>' : `<span class="cart-line-amt">${formatNum(item.total)} د.ل</span>`}
+                            <strong class="cart-line-name">${item.name}</strong>
+                        </div>
                         <span style="display:flex; gap:6px; flex:none;">
-                            <button class="btn btn-teal" style="padding:2px 8px; font-size:12px;" onclick="event.stopPropagation(); editCartItem(${idx})">✏️ تعديل</button>
+                            <button class="btn cart-edit-btn" onclick="event.stopPropagation(); editCartItem(${idx})">تعديل</button>
                             <button class="btn btn-red" style="padding:2px 8px; font-size:12px;" onclick="event.stopPropagation(); removeFromCart(${idx})">✕</button>
                         </span>
                     </div>
 
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:15px;">
+                    <div style="margin-top:6px; font-size:15px;">
                         <span>الكمية: ${formatNum(item.qty)} ${item.unitType === 'weight' ? 'كجم' : (item.unitType === 'unit' ? 'قطعة' : 'شكارة')}</span>
-                        <span>المبلغ: <strong style="color:var(--teal-primary);">${item.isFree ? '<span style="color:#2e7d32;">مجاني</span>' : `${formatNum(item.total)} د.ل`}</strong></span>
                     </div>
 
                     ${item.isNegativeSale ? `<div style="font-size:14px; color:#d32f2f; margin-top:2px; font-weight:bold;">[بيع بالسالب - مخزون غير متوفر]</div>` : ''}
@@ -2697,8 +2843,6 @@
             persistSales([saleRecord]);
             queueSaleForCloud(saleRecord);
 
-            showModal('تم إتمام البيع بنجاح!', `المبلغ الإجمالي للفاتورة:\n<span style="font-size:22px; color:var(--teal-primary); font-weight:bold;">${formatNum(finalTotal)} د.ل</span>`, false, () => {}, false, 'auto_dismiss');
-
             clearCart();
             renderInventory();
             renderSales();
@@ -2711,6 +2855,7 @@
             }
 
             modalLocked = !!(onConfirm && onConfirm.nonDismissible);
+            modalNoOutside = !!(onConfirm && onConfirm.noOutsideDismiss);
             modalCancelHandler = (onConfirm && typeof onConfirm.onCancel === 'function') ? onConfirm.onCancel : null;
 
             document.getElementById('modal-title').innerText = title;
@@ -3067,12 +3212,13 @@
             overlay.style.display = 'none';
             overlay.style.paddingBottom = '16px';
             modalLocked = false;
+            modalNoOutside = false;
             modalCancelHandler = null;
         }
 
         function closeModalOnOutsideClick(event) {
             if (event.target.id === 'custom-modal') {
-                if (modalLocked) return;
+                if (modalLocked || modalNoOutside) return;
                 const handler = modalCancelHandler;
                 closeModal();
                 if (handler) handler();
@@ -3221,7 +3367,7 @@
                 if (!input || input.dataset.clearInstalled) return;
                 input.dataset.clearInstalled = '1';
                 const wrap = document.createElement('div');
-                wrap.className = 'search-wrap';
+                wrap.className = 'search-wrap' + (id === 'pos-search' ? ' glow-wrap' : '');
                 const cs = getComputedStyle(input);
                 wrap.style.marginBottom = cs.marginBottom;
                 wrap.style.marginTop = cs.marginTop;
@@ -4394,11 +4540,12 @@
                         </div>
                         ${s.customerName ? `<div style="font-size:13px; color:var(--navy); font-weight:700; margin-top:3px;">👤 المشتري: ${escapeHtml(s.customerName)}</div>` : ''}
                         ${s.cartNote ? `<div style="font-size:13px; color:#ff8c00; font-weight:700; margin-top:3px;">📝 ملاحظة السلة: ${escapeHtml(s.cartNote)}</div>` : ''}
-                        <div style="margin: 4px 0;">
+                        <div style="margin: 8px 0 4px 0;">
                             ${s.items.map(i => `
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-                                    <div>
-                                        • <strong style="font-size:15.5px;">${i.name}</strong> × ${formatNum(i.qty)} ${i.unitType === 'weight' ? 'كجم' : (i.unitType === 'unit' ? 'قطعة' : 'شكارة')} 
+                                <div class="hist-line">
+                                    <strong class="hist-amt">${i.isFree ? '0 د.ل' : `${formatNum(i.total)} د.ل`}</strong>
+                                    <div class="hist-name">
+                                        <strong style="font-size:15.5px;">${i.name}</strong> × ${formatNum(i.qty)} ${i.unitType === 'weight' ? 'كجم' : (i.unitType === 'unit' ? 'قطعة' : 'شكارة')} 
                                         ${i.isNegativeSale ? '<span style="color:#d32f2f; font-weight:bold;">[مبيعات بالسالب]</span>' : ''} 
                                         ${i.isFree ? '<span style="color:#2e7d32;">[مجاني]</span>' : ''} 
                                         ${i.isDebt ? `<span style="color:#e65100; font-weight:bold;">[دين${i.debtorName ? ': ' + escapeHtml(i.debtorName) : ''}]</span>` : ''} 
@@ -4407,7 +4554,6 @@
                                         ${i.discount > 0 ? `<span style="color:#d32f2f;">[خصم: ${formatNum(i.discount)} د.ل]</span>` : ''} 
                                         ${i.note ? `<span style="color:#ff8c00;">[${i.note}]</span>` : ''}
                                     </div>
-                                    <strong style="color:var(--teal-primary); font-size:15px; margin-left:6px; white-space:nowrap;">${i.isFree ? '0 د.ل' : `${formatNum(i.total)} د.ل`}</strong>
                                 </div>
                             `).join('')}
                         </div>
@@ -4420,13 +4566,13 @@
                         ${s.returnedAt ? `<div style="font-size:12px; color:#d32f2f; font-weight:bold; margin-top:4px;">↩ تم إرجاع هذه الفاتورة بالكامل ${new Date(s.returnedAt).toLocaleString('ar-LY')} بواسطة ${s.returnedBy || 'غير محدد'} — المنتجات أعلاه أُعيدت إلى المخزون.</div>` : ''}
                         ${debtBanner}
 
-                        <div style="display:flex; justify-content:space-between; align-items:center; gap:4px; flex-wrap:wrap; margin-top:6px;">
+                        <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center; margin-top:6px;">
                             <div>
                                 <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick='editSaleNote(${JSON.stringify(s.id)})'>✏️ ملاحظة</button>
                                 ${s.returnedAt ? `<span style="font-size:11px; color:#d32f2f;">تم الإرجاع</span><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='deleteSale(${JSON.stringify(s.id)})'>حذف البيع</button>` : `<button class="btn btn-green" style="padding:2px 8px; font-size:11px;" onclick='editSale(${JSON.stringify(s.id)})'>تعديل البيع</button><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='returnSale(${JSON.stringify(s.id)})'>إرجاع البيع</button>`}
                             </div>
-                            <span style="font-size:15px;">الإجمالي: <strong style="color:var(--teal-primary); font-size:19px;">${formatNum(s.total)} د.ل</strong></span>
                         </div>
+                        <div class="hist-total-row"><span style="font-size:15px;">الإجمالي: <strong style="color:var(--teal-primary); font-size:19px;">${formatNum(s.total)} د.ل</strong></span></div>
                     </div>
                 `;
         }
@@ -4756,7 +4902,7 @@
                     sales.forEach(x => map.set(String(x.id), x));
                     all = Array.from(map.values());
                 }
-                downloadBackupFile({ products, sales: sortSalesDesc(all.slice()), stockLogs, cashiers, managerPin, inventoryEdits }, { silent: true });
+                await downloadBackupFile({ products, sales: sortSalesDesc(all.slice()), stockLogs, cashiers, managerPin, inventoryEdits }, { silent: true });
 
                 const returnStock = mode === 'return';
                 const ids = new Set(targets.map(x => String(x.id)));
@@ -5047,7 +5193,7 @@
                     sales.forEach(x => map.set(String(x.id), x));
                     all = Array.from(map.values());
                 }
-                downloadBackupFile({ products, sales: sortSalesDesc(all.slice()), stockLogs, cashiers, managerPin, inventoryEdits }, { silent: true });
+                await downloadBackupFile({ products, sales: sortSalesDesc(all.slice()), stockLogs, cashiers, managerPin, inventoryEdits }, { silent: true });
 
                 const clearedAt = Date.now();
                 const returnStock = mode === 'return';
@@ -5262,6 +5408,7 @@
                         showModal('اسم مكرر', `يوجد منتج مسجل بالفعل باسم "${duplicate.name}". استخدم اسمًا مختلفًا.`, false, () => showProductFormModal(existing?.id));
                         return;
                     }
+                    let receiptProd = null, receiptBefore = null;
                     const commitProduct = () => {
                     if (existing) {
                         const before = { ...existing };
@@ -5270,6 +5417,7 @@
                         const newTotalWeight = ((data.bagsCount || 0) * (data.bagWeightKg || 0)) + (data.openBagKg || 0) + (data.qty || 0);
                         const addedQty = newTotalWeight - oldTotalWeight;
                         Object.assign(existing, data);
+                        receiptProd = existing; receiptBefore = before;
                         logInventoryEdit('edit', editBefore, existing);
 
                         if (addedQty > 0) {
@@ -5284,6 +5432,7 @@
                         const newProd = { id: cloudUuid(), ...data };
                         delete newProd.supplyNote;
                         products.push(newProd);
+                        receiptProd = newProd;
                         const initialQty = ((data.bagsCount || 0) * (data.bagWeightKg || 0)) + (data.openBagKg || 0) + (data.qty || 0);
                         if (initialQty > 0) {
                             const log = { id: cloudUuid(), timestamp: new Date().toISOString(), name: data.name, qty: initialQty, note: data.supplyNote || '' };
@@ -5298,13 +5447,8 @@
                     renderInventory();
                     renderStockLogs();
 
-                    if (!existing) {
-                        setTimeout(() => {
-                            showModal('إضافة منتج آخر؟', 'تم حفظ المنتج بنجاح. هل ترغب في إضافة منتج جديد آخر الآن؟', false, () => {
-                                showProductFormModal();
-                            });
-                        }, 200);
-                    }
+                    const savedProd = receiptProd, savedBefore = receiptBefore, savedIsNew = !existing;
+                    setTimeout(() => showProductReceipt(savedProd, savedBefore, savedIsNew), 150);
                     };
 
                     if (existing) {
@@ -5362,9 +5506,93 @@
             document.getElementById('stock-log-toggle').innerText = opening ? '▴' : '▾';
         }
 
+        /* ---------- v42: receipts and the swipe-driven finish-sale confirmation ---------- */
+        function receiptNow() {
+            const d = new Date();
+            return d.toLocaleDateString('ar-LY', { year: 'numeric', month: 'numeric', day: 'numeric' }) + ' — ' + d.toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function buildCartReceiptHtml() {
+            const rawTotal = cart.reduce((acc, i) => acc + i.total, 0);
+            const globalDiscount = parseFloat(document.getElementById('cart-discount').value) || 0;
+            const finalTotal = Math.max(0, rawTotal - globalDiscount);
+            const buyer = (document.getElementById('cart-customer').value || '').trim();
+            const cartDebt = !!document.getElementById('cart-debt').checked;
+            const unitOf = (i) => i.unitType === 'weight' ? 'كجم' : (i.unitType === 'unit' ? 'قطعة' : 'شكارة');
+            const rows = cart.map(i => `<div class="rcpt-row"><span class="rn"><strong>${escapeHtml(i.name)}</strong> <small>× ${formatNum(i.qty)} ${unitOf(i)}</small>${i.discount > 0 ? ` <small>(خصم ${formatNum(i.discount)} د.ل)</small>` : ''}${(cartDebt || i.isDebt) && !i.isFree ? ' <span class="tag">[دين]</span>' : ''}</span><b>${i.isFree ? 'مجاني' : formatNum(i.total) + ' د.ل'}</b></div>`).join('');
+            return `<div class="rcpt">
+                <div class="rcpt-head">${editingSaleId ? 'فاتورة بعد التعديل' : 'فاتورة بيع'}<small>${receiptNow()}${activeCashier ? ' — ' + escapeHtml(activeCashier) : ''}</small></div>
+                ${buyer ? `<div class="rcpt-meta">المشتري: <strong>${escapeHtml(buyer)}</strong></div>` : ''}
+                <div class="rcpt-rows">${rows}</div>
+                ${globalDiscount > 0 ? `<div class="rcpt-row minus"><span class="rn">خصم على الفاتورة</span><b>- ${formatNum(globalDiscount)} د.ل</b></div>` : ''}
+                ${cartDebt ? `<div class="rcpt-meta" style="color:#e65100; font-weight:700;">الفاتورة كلها دين${cartDebtorName ? ' — على: ' + escapeHtml(cartDebtorName) : ''}</div>` : ''}
+                <div class="rcpt-total"><span>الإجمالي</span><b>${formatNum(finalTotal)} د.ل</b></div>
+            </div>`.replace(/\n\s*/g, '');
+        }
+
+        /* Opens the confirmation popup (with a small receipt). It stays until OK or Cancel is pressed. */
+        function requestFinishSale() {
+            if (cart.length === 0) {
+                if (editingSaleId) { completeSale(); return; }
+                showModal('السلة فارغة', 'لا توجد منتجات في السلة لإتمام البيع. أضف منتجاً أولاً.', false, () => {});
+                return;
+            }
+            const go = () => { completeSale(); };
+            go.noOutsideDismiss = true;
+            showModal(editingSaleId ? 'تأكيد حفظ التعديلات' : 'تأكيد إتمام البيع', buildCartReceiptHtml(), false, go);
+        }
+
+        function onAddToCartTap() {
+            swipeAddPending = false;
+            confirmAddToCart();
+        }
+
+        function showProductReceipt(prod, before, isNew) {
+            if (!prod) return;
+            const n = (v) => formatNum(Number(v) || 0);
+            const was = (f, money) => (before && (Number(before[f]) || 0) !== (Number(prod[f]) || 0)) ? ` <small style="color:#6b7c8c; font-weight:600;">(كان ${n(before[f])}${money ? ' د.ل' : ''})</small>` : '';
+            const row = (label, f, unit, money) => `<div class="rcpt-row"><span class="rn">${label}</span><b>${n(prod[f])} ${unit}${was(f, money)}</b></div>`;
+            const rows = [];
+            const isWeight = prod.unitType === 'weight';
+            rows.push(`<div class="rcpt-row"><span class="rn">نوع البيع</span><b>${isWeight ? 'بالوزن (كيلوجرام / شكائر)' : 'بالقطعة'}</b></div>`);
+            if (isWeight) {
+                rows.push(row('سعر الكيلو', 'kgPrice', 'د.ل', true));
+                if (prod.fullBagPrice > 0 || (before && before.fullBagPrice > 0)) rows.push(row('سعر الشكارة الكاملة', 'fullBagPrice', 'د.ل', true));
+                if (prod.halfBagPrice > 0 || (before && before.halfBagPrice > 0)) rows.push(row('سعر نصف الشكارة', 'halfBagPrice', 'د.ل', true));
+                rows.push(row('عدد الشكائر السليمة', 'bagsCount', '', false));
+                rows.push(row('وزن الشكارة', 'bagWeightKg', 'كجم', false));
+                rows.push(row('الوزن المفتوح المتاح', 'openBagKg', 'كجم', false));
+                if (prod.bagCost > 0 || (before && before.bagCost > 0)) rows.push(row('تكلفة الشكارة', 'bagCost', 'د.ل', true));
+                if (prod.cost > 0 || (before && before.cost > 0)) rows.push(row('تكلفة الكيلو', 'cost', 'د.ل', true));
+            } else {
+                rows.push(row('سعر القطعة', 'price', 'د.ل', true));
+                if (prod.wholesaleUnitPrice > 0 || (before && before.wholesaleUnitPrice > 0)) rows.push(row('سعر القطعة (جملة)', 'wholesaleUnitPrice', 'د.ل', true));
+                rows.push(row('الكمية المتوفرة', 'qty', 'قطعة', false));
+                if (prod.cost > 0 || (before && before.cost > 0)) rows.push(row('سعر التكلفة', 'cost', 'د.ل', true));
+            }
+            if (prod.expiryDate) rows.push(`<div class="rcpt-row"><span class="rn">انتهاء الصلاحية</span><b>${escapeHtml(expiryButtonLabel(prod.expiryDate))}</b></div>`);
+            if (prod.notes) rows.push(`<div class="rcpt-row"><span class="rn">ملاحظات</span><b style="white-space:normal;">${escapeHtml(prod.notes)}</b></div>`);
+            const html = `<div class="rcpt">
+                <div class="rcpt-head">${isNew ? 'إيصال إضافة منتج' : 'إيصال تعديل منتج'}<small>${receiptNow()}</small></div>
+                <div class="rcpt-total" style="margin-top:0; padding-top:0; border-top:none; margin-bottom:8px;"><span>${escapeHtml(prod.name)}</span></div>
+                <div class="rcpt-rows">${rows.join('')}</div>
+                <div class="rcpt-foot">${isNew ? 'تمت إضافة المنتج بنجاح' : 'تم حفظ التعديلات بنجاح'}</div>
+            </div>`.replace(/\n\s*/g, '');
+            if (isNew) {
+                const another = () => { showProductFormModal(); };
+                another.confirmLabel = 'إضافة منتج آخر';
+                another.cancelLabel = 'إغلاق';
+                showModal('تمت إضافة المنتج', html, false, another);
+            } else {
+                showModal('تم حفظ التعديل', html, false, () => {});
+                const c = document.getElementById('modal-cancel-btn');
+                if (c) c.remove();
+            }
+        }
+
         function exportBackup(opts) {
-            if (salesMode === 'idb') { exportBackupFromIdb(opts); return; }
-            downloadBackupFile({ products, sales, stockLogs, cashiers, managerPin, inventoryEdits }, opts);
+            if (salesMode === 'idb') return exportBackupFromIdb(opts);
+            return downloadBackupFile({ products, sales, stockLogs, cashiers, managerPin, inventoryEdits }, opts);
         }
 
         async function exportBackupFromIdb(opts) {
@@ -5375,27 +5603,178 @@
             } catch (e) { console.error('Could not read all sales for the backup', e); }
             const map = new Map(all.map(x => [String(x.id), x]));
             sales.forEach(x => map.set(String(x.id), x));
-            downloadBackupFile({ products, sales: sortSalesDesc(Array.from(map.values())), stockLogs, cashiers, managerPin, inventoryEdits }, opts);
+            return downloadBackupFile({ products, sales: sortSalesDesc(Array.from(map.values())), stockLogs, cashiers, managerPin, inventoryEdits }, opts);
         }
 
-        function downloadBackupFile(data, opts) {
-            const blob = new Blob([JSON.stringify(data, null, (data.sales || []).length > 3000 ? 0 : 2)], { type: 'application/json' });
+        /* ---------- v42: backup files are encrypted (AES-256-GCM, key derived from a backup password with PBKDF2) ---------- */
+        const BACKUP_PW_KEY = 'pos_backup_password';
+        const BACKUP_KDF_ITER = 200000;
+        function getBackupPassword() { try { return localStorage.getItem(BACKUP_PW_KEY) || ''; } catch (e) { return ''; } }
+        function setBackupPassword(p) { try { localStorage.setItem(BACKUP_PW_KEY, p); } catch (e) { /* ignore */ } }
+        function generateBackupPassword() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            const a = new Uint8Array(12);
+            crypto.getRandomValues(a);
+            let out = '';
+            for (let i = 0; i < 12; i++) { out += chars[a[i] % chars.length]; if (i % 4 === 3 && i < 11) out += '-'; }
+            return out;
+        }
+        function bytesToB64(bytes) {
+            let bin = '';
+            const CH = 0x8000;
+            for (let i = 0; i < bytes.length; i += CH) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+            return btoa(bin);
+        }
+        function b64ToBytes(b64) {
+            const bin = atob(b64);
+            const out = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+            return out;
+        }
+        async function deriveBackupKey(password, salt, iterations) {
+            const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+            return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+        }
+        async function gzipBytes(bytes) {
+            const stream = new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'));
+            return new Uint8Array(await new Response(stream).arrayBuffer());
+        }
+        async function gunzipBytes(bytes) {
+            const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+            return new Uint8Array(await new Response(stream).arrayBuffer());
+        }
+        async function encryptBackupData(dataObj, password) {
+            const raw = new TextEncoder().encode(JSON.stringify(dataObj));
+            let plain = raw, z = 0;
+            if (typeof CompressionStream !== 'undefined') {
+                try { plain = await gzipBytes(raw); z = 1; } catch (e) { plain = raw; z = 0; }
+            }
+            const salt = crypto.getRandomValues(new Uint8Array(16));
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const key = await deriveBackupKey(password, salt, BACKUP_KDF_ITER);
+            const cipher = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plain));
+            return { format: 'POS-BACKUP', version: 2, kdf: 'PBKDF2-SHA256', iter: BACKUP_KDF_ITER, cipher: 'AES-256-GCM', z, salt: bytesToB64(salt), iv: bytesToB64(iv), data: bytesToB64(cipher) };
+        }
+        async function decryptBackupData(env, password) {
+            const key = await deriveBackupKey(password, b64ToBytes(env.salt), env.iter || BACKUP_KDF_ITER);
+            let plain = new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64ToBytes(env.iv) }, key, b64ToBytes(env.data)));
+            if (env.z) plain = await gunzipBytes(plain);
+            return JSON.parse(new TextDecoder().decode(plain));
+        }
+
+        /* First manual backup (no password yet): ask the manager to choose one. Resolves '' if cancelled. */
+        function askNewBackupPassword() {
+            return new Promise((resolve) => {
+                const done = (val) => {
+                    const v = String(val || '').trim();
+                    if (v.length < 6) {
+                        showModal('تنبيه', 'كلمة السر قصيرة. اكتب 6 أحرف أو أرقام على الأقل.', false, () => { resolve(askNewBackupPassword()); });
+                        return;
+                    }
+                    setBackupPassword(v);
+                    resolve(v);
+                };
+                done.initialValue = generateBackupPassword();
+                done.placeholder = 'كلمة سر النسخ الاحتياطي';
+                done.onCancel = () => resolve('');
+                showModal('كلمة سر النسخ الاحتياطي', 'ملفات النسخ الاحتياطي ستكون مشفّرة ولا يمكن فتحها خارج التطبيق إلا بهذه الكلمة.\nاقترحنا لك كلمة قوية (يمكنك تغييرها). اكتبها في ورقة أو احفظها في مكان آمن: إذا ضاعت لا يمكن فتح النسخ المشفّرة على أي جهاز جديد.\nفي هذا الجهاز تُحفظ الكلمة تلقائياً فتتم الاستعادة بدون كتابتها.', 'text', done);
+            });
+        }
+
+        async function downloadBackupFile(data, opts) {
+            const silent = !!(opts && opts.silent);
+            let pw = getBackupPassword();
+            if (!pw) {
+                if (silent) {
+                    /* automatic backups (before a delete or a move) must never be blocked by a question */
+                    try { pw = generateBackupPassword(); setBackupPassword(pw); } catch (e) { pw = ''; }
+                } else {
+                    pw = await askNewBackupPassword();
+                    if (!pw) return;
+                }
+            }
+            let text;
+            try {
+                if (!pw || !(window.crypto && crypto.subtle)) throw new Error('crypto unavailable');
+                text = JSON.stringify(await encryptBackupData(data, pw));
+            } catch (e) {
+                console.error('Backup encryption failed - saving a plain file instead', e);
+                text = JSON.stringify(data, null, (data.sales || []).length > 3000 ? 0 : 2);
+            }
+            const blob = new Blob([text], { type: 'application/json' });
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            const backupFileName = `POS_Backup_${new Date().toISOString().slice(0,10)}.json`;
-            a.download = backupFileName;
+            const url = URL.createObjectURL(blob);
+            a.href = url;
+            a.download = `POS_Backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.style.display = 'none';
+            document.body.appendChild(a);
             a.click();
+            setTimeout(() => { try { URL.revokeObjectURL(url); a.remove(); } catch (e) { /* ignore */ } }, 5000);
             localStorage.setItem('pos_last_backup_at', String(Date.now()));
             localStorage.setItem('pos_last_reminder_at', String(Date.now()));
         }
 
+        /* Manager screen: view / change the backup password */
+        function openBackupPasswordManager() {
+            const current = getBackupPassword();
+            const save = (val) => {
+                const v = String(val || '').trim();
+                if (v.length < 6) { showModal('تنبيه', 'كلمة السر قصيرة. اكتب 6 أحرف أو أرقام على الأقل.', false, () => openBackupPasswordManager()); return; }
+                setBackupPassword(v);
+                showModal('تم الحفظ', 'تم حفظ كلمة سر النسخ الاحتياطي في هذا الجهاز.\nالنسخ الجديدة ستُشفَّر بهذه الكلمة. النسخ القديمة تحتاج كلمتها القديمة عند الاستعادة على جهاز آخر.', false, () => {});
+            };
+            save.initialValue = current || generateBackupPassword();
+            save.placeholder = 'كلمة سر النسخ الاحتياطي';
+            showModal('كلمة سر النسخ الاحتياطي', (current ? 'هذه كلمة السر الحالية. احتفظ بنسخة منها في مكان آمن (ورقة مثلاً): بدونها لا يمكن فتح ملفات النسخ على جهاز جديد.' : 'لم تُحدَّد كلمة سر بعد. هذه كلمة مقترحة، احفظها ثم اضغط موافق.'), 'text', save);
+        }
+
+        /* Reads a backup file's text: plain (old) backups as they are, encrypted ones with the saved or typed password. */
+        async function readBackupText(text) {
+            let obj;
+            try { obj = JSON.parse(text); } catch (e) { throw new Error('unreadable'); }
+            if (!(obj && obj.format === 'POS-BACKUP')) return obj;
+            if (!(window.crypto && crypto.subtle)) throw new Error('unreadable');
+            const saved = getBackupPassword();
+            if (saved) {
+                try { return await decryptBackupData(obj, saved); } catch (e) { /* ask for the password below */ }
+            }
+            return askPasswordAndDecrypt(obj);
+        }
+        function askPasswordAndDecrypt(env, wrong) {
+            return new Promise((resolve, reject) => {
+                const tryPw = async (val) => {
+                    const v = String(val || '').trim();
+                    try {
+                        const data = await decryptBackupData(env, v);
+                        setBackupPassword(v);   /* same password from now on for new backups */
+                        resolve(data);
+                    } catch (e) {
+                        resolve(askPasswordAndDecrypt(env, true));
+                    }
+                };
+                tryPw.placeholder = 'كلمة سر النسخة';
+                tryPw.onCancel = () => reject(new Error('cancelled'));
+                showModal('نسخة محمية بكلمة سر', (wrong ? 'كلمة السر غير صحيحة أو الملف تالف. حاول مرة أخرى.\n' : '') + 'هذه النسخة الاحتياطية مشفّرة. أدخل كلمة سر النسخ الاحتياطي لفتحها:', 'text', tryPw);
+            });
+        }
+
         function importBackup(event) {
-            const file = event.target.files[0];
+            const input = event.target;
+            const file = input.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
+                let imported;
                 try {
-                    const imported = JSON.parse(e.target.result);
+                    imported = await readBackupText(e.target.result);
+                } catch (err) {
+                    input.value = '';
+                    if (err && err.message === 'cancelled') return;
+                    showModal('خطأ', 'تعذر قراءة الملف! يرجى اختيار ملف نسخة احتياطية صالح.', false, () => {});
+                    return;
+                }
+                input.value = '';
+                try {
                     if (imported && (imported.products || imported.sales)) {
                         products = imported.products || [];
                         const importedSales = imported.sales || [];
@@ -5424,7 +5803,7 @@
                         showModal('خطأ', 'ملف النسخة الاحتياطية لا يحتوي على بنية البيانات الصحيحة!', false, () => {});
                     }
                 } catch (err) {
-                    showModal('خطأ', 'تعذر قراءة الملف! يرجى اختيار ملف نسخة احتياطية بصيغة .json صالحة.', false, () => {});
+                    showModal('خطأ', 'تعذر قراءة الملف! يرجى اختيار ملف نسخة احتياطية صالح.', false, () => {});
                 }
             };
             reader.readAsText(file);
@@ -6249,6 +6628,188 @@
                     setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 650);
                 } catch (err) {}
             }, true);
+        })();
+    </script>
+    <script>
+        /* v42: swipe gestures (quick-sale pill, finish-sale button, add-to-cart button) */
+        (function () {
+            function vib(ms) {
+                try {
+                    var v = (typeof window.getVibrationMs === 'function') ? window.getVibrationMs() : 30;
+                    if (v && navigator.vibrate) navigator.vibrate(ms || v);
+                } catch (e) {}
+            }
+
+            /* Generic pointer swipe: reports movement, and the end (with the final distance). */
+            function makeSwipe(el, o) {
+                if (!el) return;
+                var id = null, sx = 0, sy = 0, dx = 0, dy = 0, active = false, moved = false, suppress = false;
+                el.addEventListener('pointerdown', function (e) {
+                    if (e.pointerType === 'mouse' && e.button !== 0) return;
+                    id = e.pointerId; sx = e.clientX; sy = e.clientY; dx = 0; dy = 0; active = true; moved = false;
+                    try { el.setPointerCapture(id); } catch (err) {}
+                    if (o.onStart) o.onStart();
+                });
+                el.addEventListener('pointermove', function (e) {
+                    if (!active || e.pointerId !== id) return;
+                    dx = e.clientX - sx; dy = e.clientY - sy;
+                    if (!moved && Math.hypot(dx, dy) > 8) moved = true;
+                    if (moved) o.onMove(dx, dy);
+                });
+                function end(e, cancelled) {
+                    if (!active || e.pointerId !== id) return;
+                    active = false;
+                    try { el.releasePointerCapture(id); } catch (err) {}
+                    if (moved) { suppress = true; setTimeout(function () { suppress = false; }, 450); }
+                    o.onEnd(dx, dy, moved, cancelled);
+                }
+                el.addEventListener('pointerup', function (e) { end(e, false); });
+                el.addEventListener('pointercancel', function (e) { end(e, true); });
+                /* a swipe must never also count as a tap */
+                el.addEventListener('click', function (e) {
+                    if (suppress) { e.preventDefault(); e.stopImmediatePropagation(); }
+                }, true);
+            }
+
+            /* ---------- quick-sale pill: swipe up -> shrinks to a dot that flies into the search box ---------- */
+            var qs = document.getElementById('quick-sale-btn');
+            var QS_COMMIT = 42;
+            function qsReset(animated) {
+                if (!qs) return;
+                qs.style.transition = animated ? 'transform .22s cubic-bezier(.2,.9,.3,1), opacity .22s ease' : 'none';
+                qs.style.transform = '';
+                qs.style.opacity = '';
+                if (animated) setTimeout(function () { qs.style.transition = ''; }, 260);
+            }
+            function flyQuickSale() {
+                var r = qs.getBoundingClientRect();
+                var input = document.getElementById('pos-search');
+                var ir = input.getBoundingClientRect();
+                var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+                var tx = (ir.right - 30) - cx, ty = (ir.top + ir.height / 2) - cy;
+                var dot = document.createElement('div');
+                dot.className = 'fly-dot';
+                dot.style.left = cx + 'px'; dot.style.top = cy + 'px';
+                dot.style.width = r.width + 'px'; dot.style.height = r.height + 'px';
+                dot.style.gap = '6px';
+                dot.innerHTML = qs.innerHTML;
+                document.body.appendChild(dot);
+                qs.style.transition = 'none';
+                qs.style.visibility = 'hidden';
+                qs.style.transform = '';
+                qs.style.opacity = '';
+                vib();
+                openQuickSale();   /* the search box opens at once, no waiting for the animation */
+                Array.prototype.forEach.call(dot.children, function (c) {
+                    c.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 150, fill: 'forwards' });
+                });
+                var a = dot.animate([
+                    { width: r.width + 'px', height: r.height + 'px', transform: 'translate(-50%,-50%) translate(0px,0px)', opacity: 0.9, offset: 0 },
+                    { width: '30px', height: '30px', transform: 'translate(-50%,-50%) translate(' + (tx * 0.22) + 'px,' + (ty * 0.22 - 12) + 'px)', opacity: 0.85, offset: 0.38 },
+                    { width: '8px', height: '8px', transform: 'translate(-50%,-50%) translate(' + tx + 'px,' + ty + 'px)', opacity: 0, offset: 1 }
+                ], { duration: 440, easing: 'cubic-bezier(.5,.02,.3,1)', fill: 'forwards' });
+                a.onfinish = function () {
+                    if (dot.parentNode) dot.parentNode.removeChild(dot);
+                    qs.style.transition = 'opacity .28s ease';
+                    qs.style.opacity = '0';
+                    qs.style.visibility = '';
+                    requestAnimationFrame(function () { requestAnimationFrame(function () { qs.style.opacity = ''; }); });
+                    setTimeout(function () { qs.style.transition = ''; }, 340);
+                };
+            }
+            makeSwipe(qs, {
+                onMove: function (dx, dy) {
+                    var up = Math.max(0, Math.min(-dy, 110));
+                    var p = Math.min(1, up / (QS_COMMIT * 1.6));
+                    qs.style.transition = 'none';
+                    qs.style.transform = 'translateY(' + (-up * 0.9) + 'px) scale(' + (1 - 0.4 * p) + ')';
+                    qs.style.opacity = String(0.9 * (1 - 0.55 * p));
+                },
+                onEnd: function (dx, dy, moved, cancelled) {
+                    if (!cancelled && moved && -dy >= QS_COMMIT) flyQuickSale();
+                    else qsReset(true);
+                }
+            });
+
+            /* ---------- finish sale: slide left like answering a call, then confirm ---------- */
+            var fin = document.getElementById('btn-finish-sale');
+            var FIN_COMMIT = 56, FIN_MAX = 84;
+            makeSwipe(fin, {
+                onStart: function () { fin.style.transition = 'none'; },
+                onMove: function (dx, dy) {
+                    var left = Math.max(0, Math.min(-dx, FIN_MAX));
+                    fin.style.transition = 'none';
+                    fin.style.transform = 'translateX(' + (-left) + 'px)';
+                    var armed = left >= FIN_COMMIT;
+                    if (armed !== fin.classList.contains('armed')) { fin.classList.toggle('armed', armed); if (armed) vib(8); }
+                },
+                onEnd: function (dx, dy, moved, cancelled) {
+                    var left = -dx;
+                    var ok = !cancelled && moved && left >= FIN_COMMIT && Math.abs(dy) < Math.max(70, left);
+                    fin.classList.remove('armed');
+                    fin.style.transition = 'transform .26s cubic-bezier(.2,.9,.3,1)';
+                    fin.style.transform = '';
+                    setTimeout(function () { fin.style.transition = ''; }, 300);
+                    if (ok) { vib(); requestFinishSale(); }
+                }
+            });
+
+            /* ---------- add to cart: tap = add; swipe up = add + drop into the cart + open search; swipe down = finish sale ---------- */
+            var addBtn = document.getElementById('btn-add-to-cart');
+            var ADD_UP = 38, ADD_DOWN = 64;
+            var lastAddRect = null, lastAddRectAt = 0;
+            window.getAddButtonRect = function () {
+                if (lastAddRect && Date.now() - lastAddRectAt < 2500) return lastAddRect;
+                var r = addBtn.getBoundingClientRect();
+                return { left: r.left, top: r.top, width: r.width, height: r.height };
+            };
+            makeSwipe(addBtn, {
+                onStart: function () { addBtn.style.transition = 'none'; },
+                onMove: function (dx, dy) {
+                    var d = Math.max(-90, Math.min(dy, 100));
+                    var up = d < 0;
+                    var p = Math.min(1, Math.abs(d) / (up ? ADD_UP : ADD_DOWN));
+                    addBtn.style.transition = 'none';
+                    addBtn.style.transform = 'translateY(' + (d * 0.85) + 'px) scale(' + (up ? (1 - 0.18 * p) : (1 + 0.03 * p)) + ')';
+                    var armed = up ? (-dy >= ADD_UP) : (dy >= ADD_DOWN);
+                    if (armed !== addBtn.classList.contains('armed')) { addBtn.classList.toggle('armed', armed); if (armed) vib(8); }
+                },
+                onEnd: function (dx, dy, moved, cancelled) {
+                    var r = addBtn.getBoundingClientRect();
+                    lastAddRect = { left: r.left, top: r.top, width: r.width, height: r.height };
+                    lastAddRectAt = Date.now();
+                    addBtn.classList.remove('armed');
+                    addBtn.style.transition = 'transform .24s cubic-bezier(.2,.9,.3,1)';
+                    addBtn.style.transform = '';
+                    setTimeout(function () { addBtn.style.transition = ''; }, 280);
+                    if (cancelled || !moved || Math.abs(dx) > Math.abs(dy) * 1.6) return;
+                    if (-dy >= ADD_UP) { vib(); swipeAddPending = true; confirmAddToCart(); }
+                    else if (dy >= ADD_DOWN) { vib(); requestFinishSale(); }
+                }
+            });
+
+            /* the product turns into a small dot and drops into the cart */
+            window.playCartDrop = function (from) {
+                if (!from) return;
+                var cx = from.left + from.width / 2, cy = from.top + from.height / 2;
+                var dot = document.createElement('div');
+                dot.className = 'drop-dot';
+                document.body.appendChild(dot);
+                var card = document.getElementById('cart-card');
+                var cr = card ? card.getBoundingClientRect() : null;
+                var tx = cr ? cr.left + cr.width / 2 : cx;
+                var ty = cr ? Math.min(Math.max(cr.top + 34, 70), window.innerHeight - 130) : cy + 160;
+                function t(x, y, sc) { return 'translate(' + x + 'px,' + y + 'px) translate(-50%,-50%) scale(' + sc + ')'; }
+                var a = dot.animate([
+                    { transform: t(cx, cy, 1.7), opacity: 0.95, offset: 0 },
+                    { transform: t(cx, cy - 14, 1), opacity: 1, offset: 0.2 },
+                    { transform: t(tx, ty, 0.3), opacity: 0.15, offset: 1 }
+                ], { duration: 430, easing: 'cubic-bezier(.4,.1,.8,.6)', fill: 'forwards' });
+                a.onfinish = function () {
+                    if (dot.parentNode) dot.parentNode.removeChild(dot);
+                    if (card && card.animate) card.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.012)' }, { transform: 'scale(1)' }], { duration: 240, easing: 'ease-out' });
+                };
+            };
         })();
     </script>
 </body>
