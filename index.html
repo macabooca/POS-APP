@@ -920,8 +920,14 @@
         .hist-name { min-width: 0; overflow-wrap: anywhere; }
         .hist-total { display: flex; flex-direction: column; align-items: center; line-height: 1.25; text-align: center; }
         .hist-total small { font-size: 13px; color: var(--muted); font-weight: 700; position: relative; top: -4px; }
-        .hist-btns { position: relative; top: 3px; }
-        .hist-btns .btn { border-radius: 4px; }
+        .hist-btns { position: relative; top: 7px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+        .hist-btns .btn { border-radius: 7px; opacity: 0.8; }
+
+        /* soft gray behind the cards on the Sales, Inventory and Statistics pages, and behind the lists inside them */
+        body.gray-page { background-color: #e3e9ee; }
+        #sales-list, #inventory-list { background-color: #e6ebf0; border-radius: 14px; padding: 2px 8px; }
+        html[data-theme="dark"] body.gray-page { background-color: #091119; }
+        html[data-theme="dark"] #sales-list, html[data-theme="dark"] #inventory-list { background-color: #0c1620; }
 
         /* receipt look (sale confirmation + product saved): white paper, hairline rows, zigzag bottom */
         .modal-box.modal-tint { background: #e5f3f4; }
@@ -3767,6 +3773,7 @@
             }
 
             document.body.classList.toggle('pos-active', tab === 'pos');
+            document.body.classList.toggle('gray-page', tab === 'sales' || tab === 'inventory' || tab === 'stats');
             if (element) element.classList.add('active');
             if (tab === 'sales') renderSalesNow();
         }
