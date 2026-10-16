@@ -792,10 +792,10 @@
         .edit-line b { color: var(--navy); direction: rtl; }
 
         /* Fast-scroll handle: only on the sales history and inventory pages, only while scrolling */
-        #fast-scroll { position: fixed; right: 2px; top: 84px; bottom: 112px; width: 30px; z-index: 60; pointer-events: none; opacity: 0; transition: opacity 0.25s ease; touch-action: none; }
+        #fast-scroll { position: fixed; right: 2px; top: 165px; bottom: 195px; width: 44px; z-index: 60; pointer-events: none; opacity: 0; transition: opacity 0.25s ease; touch-action: none; }
         #fast-scroll.show { opacity: 1; pointer-events: auto; }
-        #fast-scroll .fs-thumb { position: absolute; right: 4px; top: 0; width: 7px; height: 56px; border-radius: 6px; background: rgba(19, 126, 132, 0.6); transition: width 0.12s ease, background 0.12s ease; }
-        #fast-scroll.drag .fs-thumb { width: 11px; background: rgba(19, 126, 132, 0.85); }
+        #fast-scroll .fs-thumb { position: absolute; right: 5px; top: 0; width: 11px; height: 72px; border-radius: 8px; background: rgba(19, 126, 132, 0.6); transition: width 0.12s ease, background 0.12s ease; }
+        #fast-scroll.drag .fs-thumb { width: 15px; background: rgba(19, 126, 132, 0.85); }
         body.kb-open #fast-scroll { display: none; }
 
         .theme-choice { display: flex; gap: 8px; }
@@ -863,22 +863,8 @@
 
         /* ============ v42 ============ */
 
-        /* select-to-delete bars at the bottom (sales history + inventory) */
-        .select-bar-bottom {
-            position: fixed;
-            left: 12px; right: 12px;
-            bottom: calc(92px + env(safe-area-inset-bottom, 0px));
-            z-index: 98;
-            margin: 0;
-            padding: 8px 10px;
-            background: #ffffff;
-            border: 1px solid #e7eef3;
-            border-radius: 18px;
-            box-shadow: 0 4px 18px rgba(18, 40, 58, 0.14);
-        }
-        html[data-theme="dark"] .select-bar-bottom { background: #16232f; border-color: #2e4150; }
-        body.kb-open .select-bar-bottom { display: none !important; }
-        #view-sales, #view-inventory { padding-bottom: 64px; }
+        /* select-to-delete bars: at the very bottom of the sales history + inventory pages */
+        .select-bar-bottom { margin: 14px 0 16px; padding: 12px 14px; }
 
         /* checkout card: a little smaller, a little higher, clear of the bottom nav */
         .fixed-checkout-bar {
@@ -901,57 +887,58 @@
         /* product panel: bigger black name, bigger total, bigger Cancel */
         #sel-product-name { color: #000000 !important; font-size: 21px !important; font-weight: 800; line-height: 1.3; }
         html[data-theme="dark"] #sel-product-name { color: #ffffff !important; }
-        #selected-product-panel button[onclick="cancelProductSelection()"] { padding: 8px 15px !important; font-size: 15px !important; border-radius: 12px; }
+        #selected-product-panel button[onclick="cancelProductSelection()"] { padding: 5px 11px !important; font-size: 13.5px !important; border-radius: 11px; }
         .sel-total-wrap { font-size: 17px; font-weight: 700; }
         #sel-total-display { font-size: 28px; font-weight: 800; }
         #btn-add-to-cart { touch-action: none; user-select: none; -webkit-user-select: none; }
         #btn-add-to-cart.armed { filter: brightness(0.9); }
 
-        /* cart checkboxes: two per row */
-        .cart-checks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; margin-bottom: 8px; }
-        .cart-checks-grid .cart-check {
-            margin-top: 0; gap: 10px;
-            padding: 11px 12px;
-            background: #f5f9fb;
-            border: 1px solid #dbe9ed;
-            border-radius: 14px;
-            font-size: 14px; font-weight: 600; line-height: 1.35;
-            min-height: 48px;
-        }
-        .cart-checks-grid .cart-check input[type="checkbox"] { width: 22px; height: 22px; flex: none; }
-        html[data-theme="dark"] .cart-checks-grid .cart-check { background: #1a2a36; border-color: #2e4150; }
+        /* cart checkboxes: plain, like the product panel, two per row */
+        .cart-checks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; margin: 2px 0 6px; }
+        .cart-checks-grid .cart-check { margin-top: 0; gap: 8px; padding: 3px 0; align-items: center; }
+        .cart-checks-grid .cart-check span { font-size: 15px; font-weight: 400; line-height: 1.35; }
+        #cart-options input[type="text"], #cart-options input[type="number"] { margin-top: 2px; }
 
         /* cart line: amount first (bigger), then the name; quiet grey Edit button */
         .cart-line-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
         .cart-line-main { display: flex; align-items: baseline; gap: 9px; min-width: 0; flex: 1; }
-        .cart-line-amt { font-size: 20px; font-weight: 800; color: var(--teal-primary); white-space: nowrap; flex: none; }
-        .cart-line-amt.free { color: #2e7d32; }
+        .cart-line-amt { font-size: 20px; font-weight: 800; color: #000000; white-space: nowrap; flex: none; }
+        html[data-theme="dark"] .cart-line-amt, html[data-theme="dark"] .hist-amt { color: #ffffff; }
+        .cart-line-amt.free, html[data-theme="dark"] .cart-line-amt.free { color: #2e7d32; }
         .cart-line-name { font-size: 17px; font-weight: 700; overflow-wrap: anywhere; }
         .btn.cart-edit-btn { background-color: #8e979f; color: #ffffff; opacity: 0.4; padding: 2px 9px; font-size: 12px; }
 
         /* sales history: amount first, then the product; more room between products; total at bottom-left */
-        .hist-line { display: flex; align-items: baseline; gap: 9px; margin-bottom: 14px; }
+        .hist-line { display: flex; align-items: baseline; gap: 9px; margin-bottom: 8px; }
         .hist-line:last-child { margin-bottom: 4px; }
-        .hist-amt { font-size: 16px; font-weight: 800; color: var(--teal-primary); white-space: nowrap; flex: none; }
+        .hist-amt { font-size: 16px; font-weight: 800; color: #000000; white-space: nowrap; flex: none; }
         .hist-name { min-width: 0; overflow-wrap: anywhere; }
-        .hist-total-row { display: flex; justify-content: flex-end; margin-top: 8px; }
+        .hist-total { display: flex; flex-direction: column; align-items: center; line-height: 1.25; text-align: center; }
+        .hist-total small { font-size: 13px; color: var(--muted); font-weight: 700; }
 
-        /* receipt look (sale confirmation + product saved) */
-        .rcpt { background: #ffffff; color: #12283a; border: 1px dashed #b9c6d0; border-radius: 12px; padding: 12px 14px; text-align: right; font-size: 15px; line-height: 1.5; }
-        .rcpt-head { text-align: center; font-weight: 800; font-size: 17px; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px dashed #b9c6d0; }
-        .rcpt-head small { display: block; font-weight: 600; font-size: 12px; color: #6b7c8c; margin-top: 2px; }
-        .rcpt-rows { max-height: 34vh; overflow-y: auto; }
-        .rcpt-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 5px 0; border-bottom: 1px dotted #dbe3e9; }
-        .rcpt-row:last-child { border-bottom: none; }
-        .rcpt-row .rn { min-width: 0; overflow-wrap: anywhere; }
-        .rcpt-row .rn small { color: #6b7c8c; font-size: 12.5px; }
-        .rcpt-row b { white-space: nowrap; color: #137e84; }
-        .rcpt-row.minus b { color: #d32f2f; }
-        .rcpt-row .tag { font-size: 11.5px; font-weight: 700; color: #e65100; }
-        .rcpt-total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; padding-top: 8px; border-top: 2px dashed #b9c6d0; font-weight: 800; font-size: 18px; }
-        .rcpt-total b { font-size: 24px; color: #137e84; }
-        .rcpt-meta { font-size: 13px; color: #4a5a6a; padding: 2px 0; }
-        .rcpt-foot { text-align: center; font-size: 12px; color: #6b7c8c; margin-top: 8px; padding-top: 6px; border-top: 1px dashed #b9c6d0; }
+        /* receipt look (sale confirmation + product saved): white paper, hairline rows, zigzag bottom */
+        .modal-box.modal-tint { background: #e5f3f4; }
+        html[data-theme="dark"] .modal-box.modal-tint { background: #16232f; }
+        .rc-paper { background: #ffffff; color: #12283a; padding: 12px 16px 4px; border-radius: 12px 12px 0 0; text-align: right; }
+        .rc-zb {
+            height: 7px; background: #ffffff;
+            -webkit-mask-size: 14px 7px; mask-size: 14px 7px; -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+            -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='7'><path d='M0 0L7 7L14 0Z' fill='black'/></svg>");
+            mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='7'><path d='M0 0L7 7L14 0Z' fill='black'/></svg>");
+        }
+        .rc-lb { text-align: center; font-size: 14px; color: #5b6878; }
+        .rc-big { text-align: center; font-size: 34px; font-weight: 700; line-height: 1.3; color: #137e84; margin: 2px 0 10px; }
+        .rc-nm { text-align: center; font-size: 25px; font-weight: 700; line-height: 1.35; color: #137e84; margin: 2px 0 10px; overflow-wrap: anywhere; }
+        .rc-rows { max-height: 34vh; overflow-y: auto; }
+        .rc-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 9px 0; border-top: 1px solid #e3e9ee; }
+        .rc-row > span { font-size: 14px; color: #4a5a6a; min-width: 0; overflow-wrap: anywhere; }
+        .rc-row > span small { font-size: 12.5px; color: #7a8896; }
+        .rc-row > b { font-size: 15px; font-weight: 400; white-space: nowrap; color: #12283a; }
+        .rc-row.minus > b { color: #d32f2f; }
+        .rc-row > b small { font-size: 12px; color: #7a4b00; font-weight: 400; }
+        .rc-tag { font-size: 11.5px; font-weight: 700; color: #e65100; }
+        .rc-note { padding: 8px 0 6px; border-top: 1px solid #e3e9ee; font-size: 13.5px; color: #e65100; font-weight: 700; }
+        .modal-box.modal-tint #modal-buttons-box { margin-top: 12px; }
 
         /* quick-sale pill is swipe-only */
         .quick-sale-btn { touch-action: none; user-select: none; -webkit-user-select: none; will-change: transform, opacity; }
@@ -962,6 +949,7 @@
             border: 1.6px solid #e2923f; border-radius: 999px; background: #fdf0e1; color: #d9801f;
             font-size: 13px; font-weight: 800; white-space: nowrap;
         }
+        .fly-dot.orange { background: #f28c28; border-color: #f28c28; color: #ffffff; }
         .drop-dot {
             position: fixed; left: 0; top: 0; z-index: 10050; pointer-events: none;
             width: 26px; height: 26px; border-radius: 50%;
@@ -979,21 +967,23 @@
             background: conic-gradient(from var(--glow-ang), #4285f4, #9b72f2, #d96570, #f9ab00, #34a853, #4285f4);
         }
         .search-wrap.glow-wrap::after { inset: -2px; filter: blur(9px); }
-        .search-wrap.glow-wrap:focus-within::before { animation: glowSweep 1.4s cubic-bezier(.25, .6, .3, 1) both; }
-        .search-wrap.glow-wrap:focus-within::after { animation: glowSweepSoft 1.4s cubic-bezier(.25, .6, .3, 1) both; }
+        .search-wrap.glow-wrap:focus-within::before { animation: glowSweep 1s cubic-bezier(.25, .6, .3, 1) both; }
+        .search-wrap.glow-wrap:focus-within::after { animation: glowSweepSoft 1s cubic-bezier(.25, .6, .3, 1) both; }
         @keyframes glowSweep {
             0% { --glow-ang: 0deg; opacity: 0; }
-            12% { opacity: 1; }
-            100% { --glow-ang: 360deg; opacity: 0.85; }
+            14% { opacity: 1; }
+            62% { opacity: 1; }
+            100% { --glow-ang: 360deg; opacity: 0; }
         }
         @keyframes glowSweepSoft {
             0% { --glow-ang: 0deg; opacity: 0; }
-            12% { opacity: 0.8; }
-            100% { --glow-ang: 360deg; opacity: 0.4; }
+            14% { opacity: 0.8; }
+            62% { opacity: 0.8; }
+            100% { --glow-ang: 360deg; opacity: 0; }
         }
         @media (prefers-reduced-motion: reduce) {
-            .search-wrap.glow-wrap:focus-within::before { animation: none; opacity: 0.85; }
-            .search-wrap.glow-wrap:focus-within::after { animation: none; opacity: 0.4; }
+            .search-wrap.glow-wrap:focus-within::before { animation: none; opacity: 0; }
+            .search-wrap.glow-wrap:focus-within::after { animation: none; opacity: 0; }
         }
     </style>
 </head>
@@ -1190,6 +1180,10 @@
                         <input type="checkbox" id="cart-discount-check" onchange="onCartFieldCheck('discount')">
                         <span>خصم على الفاتورة كلها</span>
                     </label>
+                </div>
+                <input type="text" id="cart-customer" placeholder="اكتب اسم المشتري" style="display:none;">
+                <input type="number" id="cart-discount" placeholder="أدخل مبلغ الخصم على الفاتورة (د.ل)" oninput="renderCart()" style="display:none;">
+                <div class="cart-checks-grid">
                     <label class="checkbox-container cart-check">
                         <input type="checkbox" id="cart-note-check" onchange="onCartFieldCheck('note')">
                         <span>ملاحظة على الفاتورة كلها</span>
@@ -1199,8 +1193,6 @@
                         <span>جعل الفاتورة كلها دين</span>
                     </label>
                 </div>
-                <input type="text" id="cart-customer" placeholder="اكتب اسم المشتري" style="display:none;">
-                <input type="number" id="cart-discount" placeholder="أدخل مبلغ الخصم على الفاتورة (د.ل)" oninput="renderCart()" style="display:none;">
                 <input type="text" id="cart-note" placeholder="اكتب الملاحظة" style="display:none;">
             </div>
         </div>
@@ -1234,7 +1226,7 @@
             <button class="btn btn-teal" id="sales-load-older" style="display:none; width:100%; margin-top:10px;" onclick="loadOlderSales()">تحميل أيام أقدم</button>
             <button class="btn btn-red" id="sales-delete-all" style="width:100%; margin-top:14px;" onclick="startDeleteAllSales()">🗑️ حذف كل سجل المبيعات (للمدير)</button>
         </div>
-        <div id="sales-select-bar" class="select-bar select-bar-bottom">
+        <div id="sales-select-bar" class="card select-bar select-bar-bottom">
                 <button class="chip-btn" id="sales-select-toggle" onclick="toggleSalesSelectMode()">تحديد للحذف</button>
                 <div id="sales-select-tools" class="select-tools" style="display:none;">
                     <button class="chip-btn" onclick="openSalesMonthPicker()">اختيار شهر</button>
@@ -1255,14 +1247,6 @@
             <div id="inventory-count" style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:8px;"></div>
             <div id="inventory-list"></div>
         </div>
-            <div class="select-bar select-bar-bottom" id="inv-select-bar">
-                <button class="chip-btn" id="inv-select-toggle" onclick="toggleInvSelectMode()">تحديد للحذف</button>
-                <div id="inv-select-tools" class="select-tools" style="display:none;">
-                    <button class="chip-btn" onclick="selectShownProducts()">تحديد المعروض</button>
-                    <button class="btn btn-red select-del-btn" onclick="deleteSelectedProducts()">حذف المحدد (<span id="inv-sel-count">0</span>)</button>
-                </div>
-            </div>
-        
         <div class="card">
             <button class="btn btn-teal" style="width:100%; text-align:right;" onclick="toggleStockLogs()">سجل توريد المخزون <span id="stock-log-toggle">▾</span></button>
             <div id="inventory-log-list" style="display:none; margin-top:10px;"></div>
@@ -1281,6 +1265,13 @@
                 <div id="edits-list"></div>
             </div>
         </div>
+        <div class="card select-bar select-bar-bottom" id="inv-select-bar">
+                <button class="chip-btn" id="inv-select-toggle" onclick="toggleInvSelectMode()">تحديد للحذف</button>
+                <div id="inv-select-tools" class="select-tools" style="display:none;">
+                    <button class="chip-btn" onclick="selectShownProducts()">تحديد المعروض</button>
+                    <button class="btn btn-red select-del-btn" onclick="deleteSelectedProducts()">حذف المحدد (<span id="inv-sel-count">0</span>)</button>
+                </div>
+            </div>
     </div>
 
     <!-- STATISTICS & SETTINGS -->
@@ -1846,6 +1837,7 @@
         let activeProductObj = null;
         let currentSellMode = 'retail';
         let autoDismissTimer = null;
+        let swipeFinishPending = false;
         let swipeAddPending = false;   /* v42: Add-to-cart was triggered by swiping up */
 
         function adjustModalForKeyboard() {
@@ -2463,6 +2455,7 @@
 
         function cancelProductSelection() {
             swipeAddPending = false;
+            swipeFinishPending = false;
             resetSelectionEditState();
             activeSelection = null;
             activeProductObj = null;
@@ -2563,6 +2556,7 @@
 
         function processAddToCartExecution(isNegative) {
             const swipeFlow = swipeAddPending;
+            const finishFlow = swipeFinishPending;
             const dropFrom = swipeFlow ? getAddButtonRect() : null;
             const isFree = document.getElementById('sel-free').checked;
             const isDebt = !isFree && document.getElementById('sel-debt').checked;
@@ -2601,6 +2595,7 @@
             cancelProductSelection();
             renderCart();
             if (swipeFlow) { playCartDrop(dropFrom); openQuickSale(); }
+            else if (finishFlow) { requestFinishSale(); }
         }
 
         function editCartItem(idx) {
@@ -2868,6 +2863,7 @@
             const modalBoxEl = document.querySelector('#custom-modal .modal-box');
             modalBoxEl.classList.toggle('modal-large', !inputType || inputType === 'password');
             modalBoxEl.classList.toggle('modal-form', !!inputType && inputType !== 'password');
+            modalBoxEl.classList.toggle('modal-tint', !!(onConfirm && onConfirm.tint));
 
             if (modalMode === 'reminder') {
                 buttonsBox.innerHTML = `
@@ -3214,6 +3210,7 @@
             modalLocked = false;
             modalNoOutside = false;
             modalCancelHandler = null;
+            const mb = document.querySelector('#custom-modal .modal-box'); if (mb) mb.classList.remove('modal-tint');
         }
 
         function closeModalOnOutsideClick(event) {
@@ -3317,7 +3314,7 @@
                 const vh = window.innerHeight;
                 const max = Math.max(0, doc.scrollHeight - vh);
                 const trackH = bar.clientHeight;
-                const thumbH = Math.max(52, Math.min(trackH, trackH * (vh / Math.max(doc.scrollHeight, 1))));
+                const thumbH = Math.max(72, Math.min(trackH, trackH * (vh / Math.max(doc.scrollHeight, 1))));
                 return { max, trackH, thumbH };
             };
             const update = () => {
@@ -4566,13 +4563,13 @@
                         ${s.returnedAt ? `<div style="font-size:12px; color:#d32f2f; font-weight:bold; margin-top:4px;">↩ تم إرجاع هذه الفاتورة بالكامل ${new Date(s.returnedAt).toLocaleString('ar-LY')} بواسطة ${s.returnedBy || 'غير محدد'} — المنتجات أعلاه أُعيدت إلى المخزون.</div>` : ''}
                         ${debtBanner}
 
-                        <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center; margin-top:6px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:4px; flex-wrap:wrap; margin-top:6px;">
                             <div>
                                 <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick='editSaleNote(${JSON.stringify(s.id)})'>✏️ ملاحظة</button>
                                 ${s.returnedAt ? `<span style="font-size:11px; color:#d32f2f;">تم الإرجاع</span><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='deleteSale(${JSON.stringify(s.id)})'>حذف البيع</button>` : `<button class="btn btn-green" style="padding:2px 8px; font-size:11px;" onclick='editSale(${JSON.stringify(s.id)})'>تعديل البيع</button><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='returnSale(${JSON.stringify(s.id)})'>إرجاع البيع</button>`}
                             </div>
+                            <div class="hist-total"><small>الإجمالي</small><strong style="color:var(--teal-primary); font-size:19px;">${formatNum(s.total)} د.ل</strong></div>
                         </div>
-                        <div class="hist-total-row"><span style="font-size:15px;">الإجمالي: <strong style="color:var(--teal-primary); font-size:19px;">${formatNum(s.total)} د.ل</strong></span></div>
                     </div>
                 `;
         }
@@ -5519,15 +5516,19 @@
             const buyer = (document.getElementById('cart-customer').value || '').trim();
             const cartDebt = !!document.getElementById('cart-debt').checked;
             const unitOf = (i) => i.unitType === 'weight' ? 'كجم' : (i.unitType === 'unit' ? 'قطعة' : 'شكارة');
-            const rows = cart.map(i => `<div class="rcpt-row"><span class="rn"><strong>${escapeHtml(i.name)}</strong> <small>× ${formatNum(i.qty)} ${unitOf(i)}</small>${i.discount > 0 ? ` <small>(خصم ${formatNum(i.discount)} د.ل)</small>` : ''}${(cartDebt || i.isDebt) && !i.isFree ? ' <span class="tag">[دين]</span>' : ''}</span><b>${i.isFree ? 'مجاني' : formatNum(i.total) + ' د.ل'}</b></div>`).join('');
-            return `<div class="rcpt">
-                <div class="rcpt-head">${editingSaleId ? 'فاتورة بعد التعديل' : 'فاتورة بيع'}<small>${receiptNow()}${activeCashier ? ' — ' + escapeHtml(activeCashier) : ''}</small></div>
-                ${buyer ? `<div class="rcpt-meta">المشتري: <strong>${escapeHtml(buyer)}</strong></div>` : ''}
-                <div class="rcpt-rows">${rows}</div>
-                ${globalDiscount > 0 ? `<div class="rcpt-row minus"><span class="rn">خصم على الفاتورة</span><b>- ${formatNum(globalDiscount)} د.ل</b></div>` : ''}
-                ${cartDebt ? `<div class="rcpt-meta" style="color:#e65100; font-weight:700;">الفاتورة كلها دين${cartDebtorName ? ' — على: ' + escapeHtml(cartDebtorName) : ''}</div>` : ''}
-                <div class="rcpt-total"><span>الإجمالي</span><b>${formatNum(finalTotal)} د.ل</b></div>
-            </div>`.replace(/\n\s*/g, '');
+            const rows = cart.map(i => `<div class="rc-row"><span><strong>${escapeHtml(i.name)}</strong> × ${formatNum(i.qty)} ${unitOf(i)}${i.discount > 0 ? ` <small>(خصم ${formatNum(i.discount)} د.ل)</small>` : ''}${(cartDebt || i.isDebt) && !i.isFree ? ' <span class="rc-tag">[دين]</span>' : ''}</span><b>${i.isFree ? 'مجاني' : formatNum(i.total) + ' د.ل'}</b></div>`).join('');
+            return `<div class="rc-paper">
+                <div class="rc-lb">${editingSaleId ? 'فاتورة بعد التعديل' : 'الإجمالي :'}</div>
+                <div class="rc-big">${formatNum(finalTotal)} د.ل</div>
+                <div class="rc-rows">
+                <div class="rc-row"><span>التاريخ</span><b>${receiptNow()}</b></div>
+                ${activeCashier ? `<div class="rc-row"><span>الكاشير</span><b>${escapeHtml(activeCashier)}</b></div>` : ''}
+                ${buyer ? `<div class="rc-row"><span>المشتري</span><b>${escapeHtml(buyer)}</b></div>` : ''}
+                ${rows}
+                ${globalDiscount > 0 ? `<div class="rc-row minus"><span>خصم على الفاتورة</span><b>- ${formatNum(globalDiscount)} د.ل</b></div>` : ''}
+                </div>
+                ${cartDebt ? `<div class="rc-note">الفاتورة كلها دين${cartDebtorName ? ' — على: ' + escapeHtml(cartDebtorName) : ''}</div>` : ''}
+            </div><div class="rc-zb"></div>`.replace(/\n\s*/g, '');
         }
 
         /* Opens the confirmation popup (with a small receipt). It stays until OK or Cancel is pressed. */
@@ -5537,13 +5538,21 @@
                 showModal('السلة فارغة', 'لا توجد منتجات في السلة لإتمام البيع. أضف منتجاً أولاً.', false, () => {});
                 return;
             }
-            const go = () => { completeSale(); };
+            let okRect = null;
+            const go = () => {
+                completeSale();
+                if (cart.length === 0 && !editingSaleId && window.flyToSalesTab) window.flyToSalesTab(okRect);
+            };
             go.noOutsideDismiss = true;
+            go.tint = true;
             showModal(editingSaleId ? 'تأكيد حفظ التعديلات' : 'تأكيد إتمام البيع', buildCartReceiptHtml(), false, go);
+            const okb = document.getElementById('modal-confirm-btn');
+            if (okb) okb.addEventListener('pointerdown', () => { const r = okb.getBoundingClientRect(); okRect = { left: r.left, top: r.top, width: r.width, height: r.height }; });
         }
 
         function onAddToCartTap() {
             swipeAddPending = false;
+            swipeFinishPending = false;
             confirmAddToCart();
         }
 
@@ -5551,10 +5560,10 @@
             if (!prod) return;
             const n = (v) => formatNum(Number(v) || 0);
             const was = (f, money) => (before && (Number(before[f]) || 0) !== (Number(prod[f]) || 0)) ? ` <small style="color:#6b7c8c; font-weight:600;">(كان ${n(before[f])}${money ? ' د.ل' : ''})</small>` : '';
-            const row = (label, f, unit, money) => `<div class="rcpt-row"><span class="rn">${label}</span><b>${n(prod[f])} ${unit}${was(f, money)}</b></div>`;
+            const row = (label, f, unit, money) => `<div class="rc-row"><span>${label}</span><b>${n(prod[f])} ${unit}${was(f, money)}</b></div>`;
             const rows = [];
             const isWeight = prod.unitType === 'weight';
-            rows.push(`<div class="rcpt-row"><span class="rn">نوع البيع</span><b>${isWeight ? 'بالوزن (كيلوجرام / شكائر)' : 'بالقطعة'}</b></div>`);
+            rows.push(`<div class="rc-row"><span>نوع البيع</span><b>${isWeight ? 'بالوزن (كيلوجرام / شكائر)' : 'بالقطعة'}</b></div>`);
             if (isWeight) {
                 rows.push(row('سعر الكيلو', 'kgPrice', 'د.ل', true));
                 if (prod.fullBagPrice > 0 || (before && before.fullBagPrice > 0)) rows.push(row('سعر الشكارة الكاملة', 'fullBagPrice', 'د.ل', true));
@@ -5570,21 +5579,23 @@
                 rows.push(row('الكمية المتوفرة', 'qty', 'قطعة', false));
                 if (prod.cost > 0 || (before && before.cost > 0)) rows.push(row('سعر التكلفة', 'cost', 'د.ل', true));
             }
-            if (prod.expiryDate) rows.push(`<div class="rcpt-row"><span class="rn">انتهاء الصلاحية</span><b>${escapeHtml(expiryButtonLabel(prod.expiryDate))}</b></div>`);
-            if (prod.notes) rows.push(`<div class="rcpt-row"><span class="rn">ملاحظات</span><b style="white-space:normal;">${escapeHtml(prod.notes)}</b></div>`);
-            const html = `<div class="rcpt">
-                <div class="rcpt-head">${isNew ? 'إيصال إضافة منتج' : 'إيصال تعديل منتج'}<small>${receiptNow()}</small></div>
-                <div class="rcpt-total" style="margin-top:0; padding-top:0; border-top:none; margin-bottom:8px;"><span>${escapeHtml(prod.name)}</span></div>
-                <div class="rcpt-rows">${rows.join('')}</div>
-                <div class="rcpt-foot">${isNew ? 'تمت إضافة المنتج بنجاح' : 'تم حفظ التعديلات بنجاح'}</div>
-            </div>`.replace(/\n\s*/g, '');
+            if (prod.expiryDate) rows.push(`<div class="rc-row"><span>انتهاء الصلاحية</span><b>${escapeHtml(expiryButtonLabel(prod.expiryDate))}</b></div>`);
+            if (prod.notes) rows.push(`<div class="rc-row"><span>ملاحظات</span><b style="white-space:normal;">${escapeHtml(prod.notes)}</b></div>`);
+            const html = `<div class="rc-paper">
+                <div class="rc-lb">${isNew ? 'المنتج الجديد :' : 'المنتج بعد التعديل :'}</div>
+                <div class="rc-nm">${escapeHtml(prod.name)}</div>
+                <div class="rc-rows">${rows.join('')}
+                <div class="rc-row"><span>التاريخ</span><b>${receiptNow()}</b></div></div>
+            </div><div class="rc-zb"></div>`.replace(/\n\s*/g, '');
             if (isNew) {
                 const another = () => { showProductFormModal(); };
                 another.confirmLabel = 'إضافة منتج آخر';
                 another.cancelLabel = 'إغلاق';
+                another.tint = true;
                 showModal('تمت إضافة المنتج', html, false, another);
             } else {
-                showModal('تم حفظ التعديل', html, false, () => {});
+                const okOnly = () => {}; okOnly.tint = true;
+                showModal('تم حفظ التعديل', html, false, okOnly);
                 const c = document.getElementById('modal-cancel-btn');
                 if (c) c.remove();
             }
@@ -6770,7 +6781,8 @@
                     var up = d < 0;
                     var p = Math.min(1, Math.abs(d) / (up ? ADD_UP : ADD_DOWN));
                     addBtn.style.transition = 'none';
-                    addBtn.style.transform = 'translateY(' + (d * 0.85) + 'px) scale(' + (up ? (1 - 0.18 * p) : (1 + 0.03 * p)) + ')';
+                    addBtn.style.transform = 'translateY(' + (d * 0.9) + 'px) scale(' + (up ? (1 - 0.4 * p) : (1 + 0.03 * p)) + ')';
+                    addBtn.style.opacity = up ? String(0.9 * (1 - 0.55 * p)) : '';
                     var armed = up ? (-dy >= ADD_UP) : (dy >= ADD_DOWN);
                     if (armed !== addBtn.classList.contains('armed')) { addBtn.classList.toggle('armed', armed); if (armed) vib(8); }
                 },
@@ -6779,12 +6791,276 @@
                     lastAddRect = { left: r.left, top: r.top, width: r.width, height: r.height };
                     lastAddRectAt = Date.now();
                     addBtn.classList.remove('armed');
-                    addBtn.style.transition = 'transform .24s cubic-bezier(.2,.9,.3,1)';
+                    addBtn.style.transition = 'transform .24s cubic-bezier(.2,.9,.3,1), opacity .24s ease';
                     addBtn.style.transform = '';
+                    addBtn.style.opacity = '';
                     setTimeout(function () { addBtn.style.transition = ''; }, 280);
                     if (cancelled || !moved || Math.abs(dx) > Math.abs(dy) * 1.6) return;
-                    if (-dy >= ADD_UP) { vib(); swipeAddPending = true; confirmAddToCart(); }
-                    else if (dy >= ADD_DOWN) { vib(); requestFinishSale(); }
+                    if (-dy >= ADD_UP) { vib(); swipeFinishPending = false; swipeAddPending = true; confirmAddToCart(); }
+                    else if (dy >= ADD_DOWN) { vib(); swipeAddPending = false; swipeFinishPending = true; confirmAddToCart(); }
+                }
+            });
+
+            /* the product turns into a small dot and drops into the cart */
+            window.playCartDrop = function (from) {
+                if (!from) return;
+                var input = document.getElementById('pos-search');
+                if (!input) return;
+                var ir = input.getBoundingClientRect();
+                var cx = from.left + from.width / 2, cy = from.top + from.height / 2;
+                var tx = (ir.right - 30) - cx, ty = (ir.top + ir.height / 2) - cy;
+                var dot = document.createElement('div');
+                dot.className = 'fly-dot orange';
+                dot.style.left = cx + 'px'; dot.style.top = cy + 'px';
+                dot.style.width = from.width + 'px'; dot.style.height = from.height + 'px';
+                document.body.appendChild(dot);
+                var a = dot.animate([
+                    { width: from.width + 'px', height: from.height + 'px', transform: 'translate(-50%,-50%) translate(0px,0px)', opacity: 0.9, offset: 0 },
+                    { width: '30px', height: '30px', transform: 'translate(-50%,-50%) translate(' + (tx * 0.22) + 'px,' + (ty * 0.22 - 12) + 'px)', opacity: 0.85, offset: 0.38 },
+                    { width: '8px', height: '8px', transform: 'translate(-50%,-50%) translate(' + tx + 'px,' + ty + 'px)', opacity: 0, offset: 1 }
+                ], { duration: 440, easing: 'cubic-bezier(.5,.02,.3,1)', fill: 'forwards' });
+                a.onfinish = function () { if (dot.parentNode) dot.parentNode.removeChild(dot); };
+            };
+
+            /* after OK on a sale: a small circle flies to the Sales tab */
+            window.flyToSalesTab = function (from) {
+                requestAnimationFrame(function () {
+                    var items = document.querySelectorAll('.bottom-nav .nav-item, nav .nav-item, .nav-item');
+                    var nav = null;
+                    Array.prototype.forEach.call(items, function (n) { if (/switchTab\('sales'/.test(n.getAttribute('onclick') || '')) nav = n; });
+                    var nr = nav ? nav.getBoundingClientRect() : null;
+                    var sx = from ? from.left + from.width / 2 : window.innerWidth / 2;
+                    var sy = from ? from.top + from.height / 2 : window.innerHeight / 2;
+                    var tx = nr && nr.width ? nr.left + nr.width / 2 : window.innerWidth * 0.62;
+                    var ty = nr && nr.height ? nr.top + nr.height / 2 : window.innerHeight - 40;
+                    var dot = document.createElement('div');
+                    dot.className = 'fly-dot';
+                    dot.style.left = sx + 'px'; dot.style.top = sy + 'px';
+                    dot.style.width = '34px'; dot.style.height = '34px';
+                    document.body.appendChild(dot);
+                    var dx = tx - sx, dy = ty - sy;
+                    var a = dot.animate([
+                        { transform: 'translate(-50%,-50%) translate(0px,0px) scale(1)', opacity: 0.95, offset: 0 },
+                        { transform: 'translate(-50%,-50%) translate(' + (dx * 0.3) + 'px,' + (dy * 0.3 - 30) + 'px) scale(.8)', opacity: 0.85, offset: 0.4 },
+                        { transform: 'translate(-50%,-50%) translate(' + dx + 'px,' + dy + 'px) scale(.3)', opacity: 0.35, offset: 1 }
+                    ], { duration: 520, easing: 'cubic-bezier(.5,.02,.3,1)', fill: 'forwards' });
+                    a.onfinish = function () {
+                        dot.animate([{ opacity: 0.35 }, { opacity: 0 }], { duration: 160, fill: 'forwards' }).onfinish = function () { if (dot.parentNode) dot.parentNode.removeChild(dot); };
+                        if (nav && nav.animate) nav.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.14)' }, { transform: 'scale(1)' }], { duration: 260, easing: 'ease-out' });
+                    };
+                });
+            };
+        })();
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js').catch(err => {
+                    console.warn('Service worker registration failed:', err);
+                });
+            });
+        }
+    </script>
+
+    <script>
+        // Button press ripple (visual only - does not touch any app logic)
+        (function () {
+            /* Vibration happens only on a real tap: finger lifts on the same button without scrolling or sliding. */
+            var tapCand = null;
+            document.addEventListener('pointermove', function (e) {
+                if (tapCand && e.pointerId === tapCand.id && (Math.abs(e.clientX - tapCand.x) > 10 || Math.abs(e.clientY - tapCand.y) > 10)) tapCand = null;
+            }, true);
+            document.addEventListener('pointercancel', function () { tapCand = null; }, true);
+            document.addEventListener('scroll', function () { tapCand = null; }, true);
+            document.addEventListener('pointerup', function (e) {
+                var c = tapCand; tapCand = null;
+                if (!c || e.pointerId !== c.id) return;
+                var t = e.target && e.target.closest ? e.target.closest('button, .btn, .mode-btn, .qty-btn, .nav-item, .item-row[onclick], .day-group-header, a[onclick]') : null;
+                if (t !== c.el || t.disabled) return;
+                try {
+                    var vibMs = (typeof window.getVibrationMs === 'function') ? window.getVibrationMs() : 30;
+                    if (vibMs && navigator.vibrate) navigator.vibrate(vibMs);
+                } catch (err) {}
+            }, true);
+            document.addEventListener('touchstart', function () {}, { passive: true });
+            document.addEventListener('pointerdown', function (e) {
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+                var t = e.target && e.target.closest ? e.target.closest('button, .btn, .mode-btn, .qty-btn, .nav-item, .item-row[onclick], .day-group-header, a[onclick]') : null;
+                if (!t || t.disabled) return;
+                tapCand = { el: t, x: e.clientX, y: e.clientY, id: e.pointerId };
+                try {
+                    if (getComputedStyle(t).position === 'static') t.style.position = 'relative';
+                    t.classList.add('fx-host');
+                    var r = t.getBoundingClientRect();
+                    var size = Math.max(r.width, r.height) * 2;
+                    var d = document.createElement('span');
+                    d.className = 'fx-ripple';
+                    d.style.width = d.style.height = size + 'px';
+                    d.style.left = (e.clientX - r.left - size / 2) + 'px';
+                    d.style.top = (e.clientY - r.top - size / 2) + 'px';
+                    t.appendChild(d);
+                    setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 650);
+                } catch (err) {}
+            }, true);
+        })();
+    </script>
+    <script>
+        /* v42: swipe gestures (quick-sale pill, finish-sale button, add-to-cart button) */
+        (function () {
+            function vib(ms) {
+                try {
+                    var v = (typeof window.getVibrationMs === 'function') ? window.getVibrationMs() : 30;
+                    if (v && navigator.vibrate) navigator.vibrate(ms || v);
+                } catch (e) {}
+            }
+
+            /* Generic pointer swipe: reports movement, and the end (with the final distance). */
+            function makeSwipe(el, o) {
+                if (!el) return;
+                var id = null, sx = 0, sy = 0, dx = 0, dy = 0, active = false, moved = false, suppress = false;
+                el.addEventListener('pointerdown', function (e) {
+                    if (e.pointerType === 'mouse' && e.button !== 0) return;
+                    id = e.pointerId; sx = e.clientX; sy = e.clientY; dx = 0; dy = 0; active = true; moved = false;
+                    try { el.setPointerCapture(id); } catch (err) {}
+                    if (o.onStart) o.onStart();
+                });
+                el.addEventListener('pointermove', function (e) {
+                    if (!active || e.pointerId !== id) return;
+                    dx = e.clientX - sx; dy = e.clientY - sy;
+                    if (!moved && Math.hypot(dx, dy) > 8) moved = true;
+                    if (moved) o.onMove(dx, dy);
+                });
+                function end(e, cancelled) {
+                    if (!active || e.pointerId !== id) return;
+                    active = false;
+                    try { el.releasePointerCapture(id); } catch (err) {}
+                    if (moved) { suppress = true; setTimeout(function () { suppress = false; }, 450); }
+                    o.onEnd(dx, dy, moved, cancelled);
+                }
+                el.addEventListener('pointerup', function (e) { end(e, false); });
+                el.addEventListener('pointercancel', function (e) { end(e, true); });
+                /* a swipe must never also count as a tap */
+                el.addEventListener('click', function (e) {
+                    if (suppress) { e.preventDefault(); e.stopImmediatePropagation(); }
+                }, true);
+            }
+
+            /* ---------- quick-sale pill: swipe up -> shrinks to a dot that flies into the search box ---------- */
+            var qs = document.getElementById('quick-sale-btn');
+            var QS_COMMIT = 42;
+            function qsReset(animated) {
+                if (!qs) return;
+                qs.style.transition = animated ? 'transform .22s cubic-bezier(.2,.9,.3,1), opacity .22s ease' : 'none';
+                qs.style.transform = '';
+                qs.style.opacity = '';
+                if (animated) setTimeout(function () { qs.style.transition = ''; }, 260);
+            }
+            function flyQuickSale() {
+                var r = qs.getBoundingClientRect();
+                var input = document.getElementById('pos-search');
+                var ir = input.getBoundingClientRect();
+                var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+                var tx = (ir.right - 30) - cx, ty = (ir.top + ir.height / 2) - cy;
+                var dot = document.createElement('div');
+                dot.className = 'fly-dot';
+                dot.style.left = cx + 'px'; dot.style.top = cy + 'px';
+                dot.style.width = r.width + 'px'; dot.style.height = r.height + 'px';
+                dot.style.gap = '6px';
+                dot.innerHTML = qs.innerHTML;
+                document.body.appendChild(dot);
+                qs.style.transition = 'none';
+                qs.style.visibility = 'hidden';
+                qs.style.transform = '';
+                qs.style.opacity = '';
+                vib();
+                openQuickSale();   /* the search box opens at once, no waiting for the animation */
+                Array.prototype.forEach.call(dot.children, function (c) {
+                    c.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 150, fill: 'forwards' });
+                });
+                var a = dot.animate([
+                    { width: r.width + 'px', height: r.height + 'px', transform: 'translate(-50%,-50%) translate(0px,0px)', opacity: 0.9, offset: 0 },
+                    { width: '30px', height: '30px', transform: 'translate(-50%,-50%) translate(' + (tx * 0.22) + 'px,' + (ty * 0.22 - 12) + 'px)', opacity: 0.85, offset: 0.38 },
+                    { width: '8px', height: '8px', transform: 'translate(-50%,-50%) translate(' + tx + 'px,' + ty + 'px)', opacity: 0, offset: 1 }
+                ], { duration: 440, easing: 'cubic-bezier(.5,.02,.3,1)', fill: 'forwards' });
+                a.onfinish = function () {
+                    if (dot.parentNode) dot.parentNode.removeChild(dot);
+                    qs.style.transition = 'opacity .28s ease';
+                    qs.style.opacity = '0';
+                    qs.style.visibility = '';
+                    requestAnimationFrame(function () { requestAnimationFrame(function () { qs.style.opacity = ''; }); });
+                    setTimeout(function () { qs.style.transition = ''; }, 340);
+                };
+            }
+            makeSwipe(qs, {
+                onMove: function (dx, dy) {
+                    var up = Math.max(0, Math.min(-dy, 110));
+                    var p = Math.min(1, up / (QS_COMMIT * 1.6));
+                    qs.style.transition = 'none';
+                    qs.style.transform = 'translateY(' + (-up * 0.9) + 'px) scale(' + (1 - 0.4 * p) + ')';
+                    qs.style.opacity = String(0.9 * (1 - 0.55 * p));
+                },
+                onEnd: function (dx, dy, moved, cancelled) {
+                    if (!cancelled && moved && -dy >= QS_COMMIT) flyQuickSale();
+                    else qsReset(true);
+                }
+            });
+
+            /* ---------- finish sale: slide left like answering a call, then confirm ---------- */
+            var fin = document.getElementById('btn-finish-sale');
+            var FIN_COMMIT = 56, FIN_MAX = 84;
+            makeSwipe(fin, {
+                onStart: function () { fin.style.transition = 'none'; },
+                onMove: function (dx, dy) {
+                    var left = Math.max(0, Math.min(-dx, FIN_MAX));
+                    fin.style.transition = 'none';
+                    fin.style.transform = 'translateX(' + (-left) + 'px)';
+                    var armed = left >= FIN_COMMIT;
+                    if (armed !== fin.classList.contains('armed')) { fin.classList.toggle('armed', armed); if (armed) vib(8); }
+                },
+                onEnd: function (dx, dy, moved, cancelled) {
+                    var left = -dx;
+                    var ok = !cancelled && moved && left >= FIN_COMMIT && Math.abs(dy) < Math.max(70, left);
+                    fin.classList.remove('armed');
+                    fin.style.transition = 'transform .26s cubic-bezier(.2,.9,.3,1)';
+                    fin.style.transform = '';
+                    setTimeout(function () { fin.style.transition = ''; }, 300);
+                    if (ok) { vib(); requestFinishSale(); }
+                }
+            });
+
+            /* ---------- add to cart: tap = add; swipe up = add + drop into the cart + open search; swipe down = finish sale ---------- */
+            var addBtn = document.getElementById('btn-add-to-cart');
+            var ADD_UP = 38, ADD_DOWN = 64;
+            var lastAddRect = null, lastAddRectAt = 0;
+            window.getAddButtonRect = function () {
+                if (lastAddRect && Date.now() - lastAddRectAt < 2500) return lastAddRect;
+                var r = addBtn.getBoundingClientRect();
+                return { left: r.left, top: r.top, width: r.width, height: r.height };
+            };
+            makeSwipe(addBtn, {
+                onStart: function () { addBtn.style.transition = 'none'; },
+                onMove: function (dx, dy) {
+                    var d = Math.max(-90, Math.min(dy, 100));
+                    var up = d < 0;
+                    var p = Math.min(1, Math.abs(d) / (up ? ADD_UP : ADD_DOWN));
+                    addBtn.style.transition = 'none';
+                    addBtn.style.transform = 'translateY(' + (d * 0.9) + 'px) scale(' + (up ? (1 - 0.4 * p) : (1 + 0.03 * p)) + ')';
+                    addBtn.style.opacity = up ? String(0.9 * (1 - 0.55 * p)) : '';
+                    var armed = up ? (-dy >= ADD_UP) : (dy >= ADD_DOWN);
+                    if (armed !== addBtn.classList.contains('armed')) { addBtn.classList.toggle('armed', armed); if (armed) vib(8); }
+                },
+                onEnd: function (dx, dy, moved, cancelled) {
+                    var r = addBtn.getBoundingClientRect();
+                    lastAddRect = { left: r.left, top: r.top, width: r.width, height: r.height };
+                    lastAddRectAt = Date.now();
+                    addBtn.classList.remove('armed');
+                    addBtn.style.transition = 'transform .24s cubic-bezier(.2,.9,.3,1), opacity .24s ease';
+                    addBtn.style.transform = '';
+                    addBtn.style.opacity = '';
+                    setTimeout(function () { addBtn.style.transition = ''; }, 280);
+                    if (cancelled || !moved || Math.abs(dx) > Math.abs(dy) * 1.6) return;
+                    if (-dy >= ADD_UP) { vib(); swipeFinishPending = false; swipeAddPending = true; confirmAddToCart(); }
+                    else if (dy >= ADD_DOWN) { vib(); swipeAddPending = false; swipeFinishPending = true; confirmAddToCart(); }
                 }
             });
 
