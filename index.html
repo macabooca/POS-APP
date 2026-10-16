@@ -921,11 +921,13 @@
         .hist-total { display: flex; flex-direction: column; align-items: center; line-height: 1.25; text-align: center; }
         .hist-total small { font-size: 13px; color: var(--muted); font-weight: 700; position: relative; top: -4px; }
         .hist-btns { position: relative; top: 7px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-        .hist-btns .btn { border-radius: 7px; opacity: 0.8; }
+        .hist-btns .btn { border-radius: 7px; }
 
         /* gray individual cards: each sale, each inventory product, each statistics tile (the big cards stay white) */
-        .sale-card:not(.sale-returned), #inventory-list .item-row, .stat-tile { background-color: #d3dae1; border-color: #c2cbd4; }
-        html[data-theme="dark"] .sale-card:not(.sale-returned), html[data-theme="dark"] #inventory-list .item-row, html[data-theme="dark"] .stat-tile { background-color: #243749; border-color: #324a5f; }
+        #inventory-list .item-row { background-color: #d3dae1; border-color: #c2cbd4; }
+        .sale-card:not(.sale-returned), .stat-tile { background-color: #dbe1e7; border-color: #ced5dc; }
+        html[data-theme="dark"] #inventory-list .item-row { background-color: #243749; border-color: #324a5f; }
+        html[data-theme="dark"] .sale-card:not(.sale-returned), html[data-theme="dark"] .stat-tile { background-color: #213344; border-color: #2d4457; }
 
         /* receipt look (sale confirmation + product saved): white paper, hairline rows, zigzag bottom */
         .modal-box.modal-tint { background: #e5f3f4; }
@@ -6777,7 +6779,7 @@
                 qsHint.style.right = Math.max(8, window.innerWidth - r.right) + 'px';
                 qsHint.classList.add('show');
                 clearTimeout(qsHintTimer);
-                qsHintTimer = setTimeout(hideQsHint, 1900);
+                qsHintTimer = setTimeout(hideQsHint, 900);
             }
             function hideQsHint() { clearTimeout(qsHintTimer); qsHint.classList.remove('show'); }
             makeSwipe(qs, {
