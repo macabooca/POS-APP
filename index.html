@@ -515,6 +515,8 @@
         #pos-search { margin-bottom: 0; }
         #product-dropdown { margin-bottom: 0 !important; }
         #product-dropdown:not(:empty) { margin-top: 8px; }
+        #product-dropdown .item-row { touch-action: manipulation; }
+        .search-wrap.glow-wrap::before { box-shadow: 0 0 10px rgba(66,133,244,.35); }
 
         /* Buttons */
         .btn { border-radius: 12px; font-weight: 700; padding: 9px 16px; }
@@ -896,6 +898,7 @@
         /* cart checkboxes: plain, like the product panel, two per row */
         .cart-checks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; margin: 2px 0 6px; }
         .cart-checks-grid .cart-check { margin-top: 0; gap: 8px; padding: 3px 0; align-items: center; }
+        .cart-checks-grid .cart-check input[type="checkbox"] { width: 14px; height: 14px; opacity: 0.8; }
         .cart-checks-grid .cart-check span { font-size: 15px; font-weight: 400; line-height: 1.35; }
         #cart-options input[type="text"], #cart-options input[type="number"] { margin-top: 2px; }
 
@@ -905,16 +908,18 @@
         .cart-line-amt { font-size: 20px; font-weight: 800; color: #000000; white-space: nowrap; flex: none; }
         html[data-theme="dark"] .cart-line-amt, html[data-theme="dark"] .hist-amt { color: #ffffff; }
         .cart-line-amt.free, html[data-theme="dark"] .cart-line-amt.free { color: #2e7d32; }
-        .cart-line-name { font-size: 17px; font-weight: 700; overflow-wrap: anywhere; }
+        .cart-line-name { font-size: 16px; font-weight: 700; overflow-wrap: anywhere; }
         .btn.cart-edit-btn { background-color: #8e979f; color: #ffffff; opacity: 0.4; padding: 2px 9px; font-size: 12px; }
 
         /* sales history: amount first, then the product; more room between products; total at bottom-left */
         .hist-line { display: flex; align-items: baseline; gap: 9px; margin-bottom: 8px; }
         .hist-line:last-child { margin-bottom: 4px; }
-        .hist-amt { font-size: 16px; font-weight: 800; color: #000000; white-space: nowrap; flex: none; }
+        .hist-amt { font-size: 17px; font-weight: 800; color: #000000; white-space: nowrap; flex: none; }
         .hist-name { min-width: 0; overflow-wrap: anywhere; }
         .hist-total { display: flex; flex-direction: column; align-items: center; line-height: 1.25; text-align: center; }
-        .hist-total small { font-size: 13px; color: var(--muted); font-weight: 700; }
+        .hist-total small { font-size: 13px; color: var(--muted); font-weight: 700; position: relative; top: -4px; }
+        .hist-btns { position: relative; top: 3px; }
+        .hist-btns .btn { border-radius: 4px; }
 
         /* receipt look (sale confirmation + product saved): white paper, hairline rows, zigzag bottom */
         .modal-box.modal-tint { background: #e5f3f4; }
@@ -962,11 +967,11 @@
         .search-wrap.glow-wrap > input { position: relative; z-index: 1; }
         .search-wrap.glow-wrap::before,
         .search-wrap.glow-wrap::after {
-            content: ''; position: absolute; z-index: 0; pointer-events: none; opacity: 0;
+            content: ''; position: absolute; z-index: 0; pointer-events: none; opacity: 0; will-change: opacity;
             inset: -3px; border-radius: 19px;
             background: conic-gradient(from var(--glow-ang), #4285f4, #9b72f2, #d96570, #f9ab00, #34a853, #4285f4);
         }
-        .search-wrap.glow-wrap::after { inset: -2px; filter: blur(9px); }
+        .search-wrap.glow-wrap::after { display: none; }
         .search-wrap.glow-wrap:focus-within::before { animation: glowSweep 1s cubic-bezier(.25, .6, .3, 1) both; }
         .search-wrap.glow-wrap:focus-within::after { animation: glowSweepSoft 1s cubic-bezier(.25, .6, .3, 1) both; }
         @keyframes glowSweep {
@@ -4564,7 +4569,7 @@
                         ${debtBanner}
 
                         <div style="display:flex; justify-content:space-between; align-items:center; gap:4px; flex-wrap:wrap; margin-top:6px;">
-                            <div>
+                            <div class="hist-btns">
                                 <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick='editSaleNote(${JSON.stringify(s.id)})'>✏️ ملاحظة</button>
                                 ${s.returnedAt ? `<span style="font-size:11px; color:#d32f2f;">تم الإرجاع</span><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='deleteSale(${JSON.stringify(s.id)})'>حذف البيع</button>` : `<button class="btn btn-green" style="padding:2px 8px; font-size:11px;" onclick='editSale(${JSON.stringify(s.id)})'>تعديل البيع</button><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='returnSale(${JSON.stringify(s.id)})'>إرجاع البيع</button>`}
                             </div>
