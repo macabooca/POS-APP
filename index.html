@@ -923,9 +923,9 @@
         .hist-btns { position: relative; top: 7px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
         .hist-btns .btn { border-radius: 7px; opacity: 0.8; }
 
-        /* gray cards on the Sales, Inventory and Statistics pages (the white sale / product cards inside stand out on them) */
-        #view-sales > .card, #view-inventory > .card, #view-stats > .card { background-color: #dde3e9; }
-        html[data-theme="dark"] #view-sales > .card, html[data-theme="dark"] #view-inventory > .card, html[data-theme="dark"] #view-stats > .card { background-color: #1f3141; }
+        /* gray individual cards: each sale, each inventory product, each statistics tile (the big cards stay white) */
+        .sale-card:not(.sale-returned), #inventory-list .item-row, .stat-tile { background-color: #d3dae1; border-color: #c2cbd4; }
+        html[data-theme="dark"] .sale-card:not(.sale-returned), html[data-theme="dark"] #inventory-list .item-row, html[data-theme="dark"] .stat-tile { background-color: #243749; border-color: #324a5f; }
 
         /* receipt look (sale confirmation + product saved): white paper, hairline rows, zigzag bottom */
         .modal-box.modal-tint { background: #e5f3f4; }
@@ -961,12 +961,12 @@
             font-size: 13px; font-weight: 800; white-space: nowrap;
         }
         .qs-hint {
-            position: fixed; z-index: 10040; pointer-events: none; display: flex; align-items: center; gap: 5px;
-            background: rgba(30,41,54,.92); color: #fff; font-size: 13px; font-weight: 700; padding: 6px 11px; border-radius: 12px;
+            position: fixed; z-index: 10040; pointer-events: none; display: flex; align-items: center; gap: 3px;
+            background: rgba(30,41,54,.55); color: #fff; font-size: 11px; font-weight: 400; padding: 3px 8px; border-radius: 9px;
             opacity: 0; transform: translateY(6px); transition: opacity .16s ease, transform .16s ease; white-space: nowrap;
         }
-        .qs-hint.show { opacity: 1; transform: translateY(0); }
-        .qs-hint svg { width: 15px; height: 15px; animation: qsHintUp 1s ease-in-out infinite; }
+        .qs-hint.show { opacity: 0.8; transform: translateY(0); }
+        .qs-hint svg { width: 11px; height: 11px; animation: qsHintUp 1s ease-in-out infinite; }
         @keyframes qsHintUp { 0%,100% { transform: translateY(1px); } 50% { transform: translateY(-3px); } }
         .fly-dot.orange { background: #f28c28; border-color: #f28c28; color: #ffffff; }
         .drop-dot {
@@ -6773,7 +6773,7 @@
             function showQsHint() {
                 var r = qs.getBoundingClientRect();
                 if (!r.width) return;
-                qsHint.style.top = (r.top - 40) + 'px';
+                qsHint.style.top = (r.top - 27) + 'px';
                 qsHint.style.right = Math.max(8, window.innerWidth - r.right) + 'px';
                 qsHint.classList.add('show');
                 clearTimeout(qsHintTimer);
