@@ -551,6 +551,7 @@
         }
         .nav-item {
             flex: 1;
+            transition: transform 0.08s ease, filter 0.08s ease;
             display: flex; flex-direction: column; align-items: center; gap: 3px;
             padding: 8px 6px;
             border-radius: 20px;
@@ -657,19 +658,19 @@
             position: fixed;
             right: 23px;
             bottom: calc(187px + env(safe-area-inset-bottom, 0px));
-            height: 40px;
-            border: 1.6px solid #e2923f; border-radius: 21px;
+            height: 43px;
+            border: 1.6px solid #e2923f; border-radius: 22px;
             background: #fdf0e1;
             color: #d9801f;
             display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 6px;
-            padding: 0 16px;
+            padding: 0 18px;
             box-shadow: none;
             opacity: 0.9;
             z-index: 101;
             cursor: pointer;
-            font-family: inherit; font-size: 13px; font-weight: 800;
+            font-family: inherit; font-size: 14px; font-weight: 800;
         }
-        .quick-sale-btn svg { width: 18px; height: 18px; display: block; }
+        .quick-sale-btn svg { width: 19px; height: 19px; display: block; }
         html[data-theme="dark"] .quick-sale-btn { background: #3a2c1a; color: #ffb15c; border-color: #b9742a; }
         body.panel-open .quick-sale-btn,
         body.kb-open .quick-sale-btn { display: none !important; }
@@ -870,17 +871,18 @@
 
         /* checkout card: a little smaller, a little higher, clear of the bottom nav */
         .fixed-checkout-bar {
-            bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+            bottom: calc(101px + env(safe-area-inset-bottom, 0px));
             left: 14px; right: 14px;
-            padding: 7px 12px;
-            border-radius: 18px;
+            padding: 10px 14px;
+            border-radius: 20px;
         }
-        .fixed-checkout-bar h4 { font-size: 15px; }
-        #cart-total { font-size: 20px; }
-        .btn-complete-sale { padding: 8px 16px !important; font-size: 16px !important; border-radius: 13px; }
-        .btn-complete-sale svg { width: 18px; height: 18px; }
-        .btn-clear-cart { width: 38px; height: 38px; border-radius: 11px; }
-        .btn-clear-cart svg { width: 18px; height: 18px; }
+        .fixed-checkout-bar h4 { font-size: calc(16.5px * var(--fit, 1)); white-space: nowrap; flex: none; }
+        #cart-total { font-size: calc(22px * var(--fit, 1)); }
+        .fixed-checkout-bar > div { flex: none; }
+        .btn-complete-sale { padding: calc(10px * var(--fit, 1)) calc(18px * var(--fit, 1)) !important; font-size: calc(17.5px * var(--fit, 1)) !important; border-radius: 14px; white-space: nowrap; }
+        .btn-complete-sale svg { width: 20px; height: 20px; }
+        .btn-clear-cart { width: 43px; height: 43px; border-radius: 12px; }
+        .btn-clear-cart svg { width: 20px; height: 20px; }
         .btn-complete-sale { position: relative; z-index: 2; touch-action: none; user-select: none; -webkit-user-select: none; }
         .btn-complete-sale .swipe-chev { width: 16px; height: 16px; opacity: 0.75; animation: chevNudge 1.7s ease-in-out infinite; }
         .btn-complete-sale.armed { background-color: var(--teal-hover); }
@@ -890,8 +892,9 @@
         #sel-product-name { color: #000000 !important; font-size: 21px !important; font-weight: 800; line-height: 1.3; }
         html[data-theme="dark"] #sel-product-name { color: #ffffff !important; }
         #selected-product-panel button[onclick="cancelProductSelection()"] { padding: 5px 11px !important; font-size: 13.5px !important; border-radius: 11px; }
-        .sel-total-wrap { font-size: 17px; font-weight: 700; }
-        #sel-total-display { font-size: 28px; font-weight: 800; }
+        .sel-total-wrap { font-size: calc(17px * var(--fit, 1)); font-weight: 700; white-space: nowrap; flex: none; }
+        #sel-total-display { font-size: calc(28px * var(--fit, 1)); font-weight: 800; }
+        #btn-add-to-cart { font-size: calc(16px * var(--fit, 1)) !important; padding: calc(12px * var(--fit, 1)) calc(22px * var(--fit, 1)) !important; white-space: nowrap; flex: none; }
         #btn-add-to-cart { touch-action: none; user-select: none; -webkit-user-select: none; }
         #btn-add-to-cart.armed { filter: brightness(0.9); }
 
@@ -899,7 +902,7 @@
         .cart-checks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; margin: 2px 0 6px; }
         .cart-checks-grid .cart-check { margin-top: 0; gap: 8px; padding: 3px 0; align-items: center; }
         .cart-checks-grid .cart-check input[type="checkbox"] { width: 14px; height: 14px; opacity: 0.8; }
-        .cart-checks-grid .cart-check span { font-size: 15px; font-weight: 400; line-height: 1.35; }
+        .cart-checks-grid .cart-check span { font-size: 12px; font-weight: 400; line-height: 1.35; }
         #cart-options input[type="text"], #cart-options input[type="number"] { margin-top: 2px; }
 
         /* cart line: amount first (bigger), then the name; quiet grey Edit button */
@@ -914,7 +917,7 @@
         .btn.cart-edit-btn { background-color: #8e979f; color: #ffffff; opacity: 0.4; padding: 2px 9px; font-size: 12px; }
 
         /* sales history: amount first, then the product; more room between products; total at bottom-left */
-        .hist-line { display: flex; align-items: baseline; gap: 9px; margin-bottom: 8px; }
+        .hist-line { display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px; }
         .hist-line:last-child { margin-bottom: 4px; }
         .hist-amt { font-size: 17px; font-weight: 800; color: #000000; white-space: nowrap; flex: none; }
         .hist-name { min-width: 0; overflow-wrap: anywhere; }
@@ -950,6 +953,9 @@
         .rc-row.minus > b { color: #d32f2f; }
         .rc-row > b small { font-size: 12px; color: #7a4b00; font-weight: 400; }
         .rc-tag { font-size: 11.5px; font-weight: 700; color: #e65100; }
+        .rc-paper.rc-sale .rc-rows .rc-row:first-child { border-top: none; }
+        .rc-total { border-top: 1px solid #e3e9ee; margin-top: 4px; padding: 10px 0 4px; }
+        .rc-total .rc-big { margin: 2px 0 6px; }
         .rc-note { padding: 8px 0 6px; border-top: 1px solid #e3e9ee; font-size: 13.5px; color: #e65100; font-weight: 700; }
         .modal-box.modal-tint #modal-buttons-box { margin-top: 12px; }
 
@@ -1006,6 +1012,45 @@
             .search-wrap.glow-wrap:focus-within::before { animation: none; opacity: 0; }
             .search-wrap.glow-wrap:focus-within::after { animation: none; opacity: 0; }
         }
+
+        /* v55: quick notes */
+        .qn-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10060; display: flex; align-items: flex-start; justify-content: center; padding: calc(env(safe-area-inset-top, 0px) + 7vh) 12px 12px; }
+        .qn-box { background: #ffffff; border-radius: 22px; width: 100%; max-width: 420px; padding: 14px; direction: rtl; box-shadow: 0 12px 40px rgba(18,40,58,0.25); }
+        .qn-title { font-size: 19px; font-weight: 800; color: #12283a; margin-bottom: 8px; }
+        .qn-box textarea { width: 100%; min-height: 34vh; max-height: 46vh; resize: none; box-sizing: border-box; font-family: inherit; font-size: 18px; line-height: 1.6; padding: 10px 12px; border: 1px solid #cfdadf; border-radius: 14px; background: #f7fafb; color: #12283a; }
+        .qn-hint { font-size: 12px; color: #6b7c8c; margin: 6px 2px 10px; }
+        .qn-btns { display: flex; gap: 8px; }
+        .qn-btns .btn { flex: 1; padding: 12px; font-size: 17px; border-radius: 13px; }
+        html[data-theme="dark"] .qn-box { background: #16232f; }
+        html[data-theme="dark"] .qn-title { color: #ffffff; }
+        html[data-theme="dark"] .qn-box textarea { background: #0f1b25; color: #ffffff; border-color: #324a5f; }
+        #quick-notes-box { margin: 0 0 12px; }
+        .qn-head { font-size: 14px; font-weight: 800; color: #b45f06; margin: 2px 2px 8px; }
+        .qn-card { background: #fff4e5; border: 1px solid #f5c98a; border-radius: 14px; padding: 10px 12px; margin-bottom: 8px; }
+        .qn-meta { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: #7a5a2a; }
+        .qn-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .qn-selbar { display: flex; gap: 8px; margin: 0 0 8px; }
+        .qn-selbar .btn { padding: 6px 12px; font-size: 13px; border-radius: 10px; }
+        .qn-card.qn-sel { position: relative; padding-left: 44px; }
+        .qn-check { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; }
+        .qn-check input { width: 22px; height: 22px; }
+        .qn-old { display: inline-block; background: #f28c28; color: #fff; border-radius: 6px; padding: 0 6px; margin-inline-start: 6px; font-size: 11px; }
+        .qn-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 16px; font-weight: 700; color: #12283a; margin: 6px 0 8px; }
+        .qn-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+        .qn-actions .btn { padding: 5px 11px; font-size: 13px; border-radius: 9px; }
+        html[data-theme="dark"] .qn-card { background: #3a2c1a; border-color: #8a5a22; }
+        html[data-theme="dark"] .qn-text { color: #ffffff; }
+        html[data-theme="dark"] .qn-meta, html[data-theme="dark"] .qn-head { color: #ffb15c; }
+        .nav-badge { position: absolute; top: 2px; left: calc(50% + 6px); min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: #f28c28; color: #fff; font-size: 11px; font-style: normal; font-weight: 800; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+        .nav-item { position: relative; }
+        #note-convert-banner { background: #e0f1f2; border: 1px solid #9fd0d3; border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
+        #note-convert-title { font-weight: 800; color: #0f5f63; font-size: 14px; }
+        #note-convert-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 15px; margin: 4px 0 8px; color: #12283a; }
+        html[data-theme="dark"] #note-convert-banner { background: #16323a; border-color: #2d6168; }
+        html[data-theme="dark"] #note-convert-text { color: #ffffff; }
+        html[data-theme="dark"] #note-convert-title { color: #7fd6da; }
+        .rc-warn { background: #fff4e5; border: 1px solid #f5c98a; color: #8a4b00; border-radius: 10px; padding: 8px 10px; margin: 0 0 8px; font-size: 13px; line-height: 1.55; text-align: right; }
+        .rc-warn b { color: #b45f06; }
     </style>
 </head>
 <body onclick="handleGlobalClick(event)">
@@ -1172,7 +1217,7 @@
                     </label>
                 </div>
 
-                <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div id="sel-total-row" style="margin-top:10px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
                     <button class="btn btn-orange btn-add-to-cart" id="btn-add-to-cart" onclick="onAddToCartTap()">إضافة إلى السلة</button>
                     <div class="sel-total-wrap">المجموع: <strong id="sel-total-display" style="color:var(--teal-primary);">0</strong> د.ل</div>
                 </div>
@@ -1188,6 +1233,11 @@
             <div class="cart-card-header">
                 <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M3 4h2.4l2.1 11h10.2l1.8-8H6.2"/></svg></span>سلة المشتريات</h3>
                 <span class="cart-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
+            </div>
+            <div id="note-convert-banner" style="display:none;">
+                <div id="note-convert-title"></div>
+                <div id="note-convert-text"></div>
+                <button class="btn btn-red" style="padding:4px 10px; font-size:12px;" onclick="cancelNoteConvert()">إلغاء التحويل</button>
             </div>
             <div id="cart-container"></div>
 
@@ -1243,6 +1293,7 @@
             </div>
             <div id="sales-search-info" style="display:none; font-size:12px; color:var(--muted); margin-bottom:8px;"></div>
             <div id="sales-sel-months" class="sel-months" style="display:none;"></div>
+            <div id="quick-notes-box" style="display:none;"></div>
             <div id="sales-list"></div>
             <button class="btn btn-teal" id="sales-load-older" style="display:none; width:100%; margin-top:10px;" onclick="loadOlderSales()">تحميل أيام أقدم</button>
             <button class="btn btn-red" id="sales-delete-all" style="width:100%; margin-top:14px;" onclick="startDeleteAllSales()">🗑️ حذف كل سجل المبيعات (للمدير)</button>
@@ -1346,6 +1397,7 @@
                 <div class="stats-grid">
                     <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.2"/><path d="M12 9.8v4.4"/></svg></div><div class="stat-t">قروش إضافية (غير محسوبة في المبيعات)</div><div class="stat-v"><span id="stat-today-extra-gurush">0</span> <small>د.ل</small></div></div>
                     <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16"/><path d="M7 20h10"/><path d="M5 7h14"/><path d="M5 7l-3 7a3.5 3.5 0 0 0 6 0L5 7z"/><path d="M19 7l-3 7a3.5 3.5 0 0 0 6 0L19 7z"/></svg></div><div class="stat-t">جرامات إضافية</div><div class="stat-v"><span id="stat-today-extra-grams">0</span> <small>جرام</small></div></div>
+                    <div class="stat-tile stat-sm" id="stat-late-note-tile" style="display:none;"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h8l3 3V20.5H7z"/><path d="M10 12h5M10 15.5h5"/></svg></div><div class="stat-t" id="stat-late-note-title">ربح من ملاحظة سابقة</div><div class="stat-v"><span id="stat-late-note-profit">0</span> <small>د.ل</small></div></div>
                 </div>
             </div>
         </div>
@@ -1416,7 +1468,7 @@
     <!-- NAVIGATION BAR -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('pos', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5 5.5 4h13L20 9.5"/><path d="M4 9.5a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0"/><path d="M5.5 12.5V20h13v-7.5"/><path d="M10 20v-4.5h4V20"/></svg><span>الرئيسية</span></div>
-        <div class="nav-item" onclick="switchTab('sales', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V12M10 20V6M15 20V10M20 20V15"/></svg><span>المبيعات</span></div>
+        <div class="nav-item" onclick="switchTab('sales', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V12M10 20V6M15 20V10M20 20V15"/></svg><span>المبيعات</span><i class="nav-badge" id="notes-badge" style="display:none;"></i></div>
         <div class="nav-item" onclick="switchTab('inventory', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg><span>المخزون</span></div>
         <div class="nav-item" onclick="switchTab('stats', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 1 0 8.5 8.5H12z"/><path d="M15 3.8A8.5 8.5 0 0 1 20.2 9H15z"/></svg><span>الإحصائيات</span></div>
         <div class="nav-item" onclick="switchTab('more', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18.5" cy="12" r="1.6"/></svg><span>المزيد</span></div>
@@ -1846,6 +1898,9 @@
         /* Cart editing / debtor names */
         let editingCartIndex = null;
         let editingSaleId = null;
+        let quickNotes = safeLoad('pos_quick_notes', []);
+        if (!Array.isArray(quickNotes)) quickNotes = [];
+        let convertingNote = null;
         let salesDebtFilter = 'all';
         let selDebtorName = '';
         let cartDebtorName = '';
@@ -2766,6 +2821,8 @@
 
         function clearCart() {
             cart = [];
+            convertingNote = null;
+            if (typeof updateNoteBanner === 'function') updateNoteBanner();
             document.getElementById('cart-discount').value = '';
             document.getElementById('cart-debt').checked = false;
             document.getElementById('cart-customer').value = '';
@@ -2788,6 +2845,8 @@
             let totalCost = cart.reduce((acc, i) => acc + (i.qty * i.cost), 0);
 
             const now = new Date();
+            const noteCtx = convertingNote;
+            const saleAt = noteCtx ? new Date(noteCtx.ts) : now;
             const daysArr = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
             const inventoryBefore = new Map();
             cart.forEach(item => {
@@ -2805,9 +2864,9 @@
             const invoiceNote = cart.map(item => String(item.note || '').trim()).filter(Boolean).join(' | ');
             const saleRecord = {
                 id: cloudUuid(),
-                timestamp: now.toISOString(),
-                dayName: daysArr[now.getDay()],
-                cashier: activeCashier,
+                timestamp: saleAt.toISOString(),
+                dayName: daysArr[saleAt.getDay()],
+                cashier: noteCtx ? (noteCtx.cashier || activeCashier) : activeCashier,
                 items: cart.map(item => (cartDebt && !item.isFree) ? { ...item, isDebt: true } : { ...item }),
                 globalDiscount: globalDiscount,
                 total: finalTotal,
@@ -2819,6 +2878,11 @@
                 note: invoiceNote,
                 inventoryDeltas: []
             };
+            if (noteCtx) {
+                saleRecord.fromNote = { id: noteCtx.id, text: noteCtx.text, createdAt: noteCtx.ts };
+                saleRecord.convertedAt = now.toISOString();
+                saleRecord.convertedBy = activeCashier;
+            }
             const newSaleBreakdown = getSaleBreakdown(saleRecord);
             saleRecord.profit = newSaleBreakdown.cashProfit + newSaleBreakdown.debtProfit;
 
@@ -2887,9 +2951,14 @@
             persistSales([saleRecord]);
             queueSaleForCloud(saleRecord);
 
+            if (noteCtx) {
+                quickNotes = quickNotes.filter(n => String(n.id) !== String(noteCtx.id));
+                safeSave('pos_quick_notes', quickNotes);
+            }
             clearCart();
             renderInventory();
             renderSales();
+            if (typeof refreshNotesUI === 'function') refreshNotesUI();
         }
 
         function showModal(title, text, inputType, onConfirm, keepOpen = false, modalMode = 'normal') {
@@ -3784,7 +3853,7 @@
 
             document.body.classList.toggle('pos-active', tab === 'pos');
             if (element) element.classList.add('active');
-            if (tab === 'sales') renderSalesNow();
+            if (tab === 'sales') requestAnimationFrame(() => setTimeout(() => { if (document.getElementById('view-sales').style.display !== 'none') renderSalesNow(); }, 0));
         }
 
         /* ---------- Statistics (v35): today / a chosen day / last 7 days / last 30 days ---------- */
@@ -3859,6 +3928,7 @@
 
         function computeStats(list, fromMs, toMs, days) {
             const out = {
+                lateProfit: 0, lateProfitBefore: 0, lateBagProfit: 0, lateOtherProfit: 0,
                 rev: 0, profit: 0, customers: 0, paid: 0, extraKg: 0, extraValue: 0, perDay: new Array(days).fill(0),
                 bagRev: 0, otherRev: 0, bagProfit: 0, otherProfit: 0, freeValue: 0, discountValue: 0, profitBefore: 0
             };
@@ -3877,16 +3947,30 @@
                 const bd = getSaleBreakdown(s);
                 const t = saleTimeMs(s);
                 const money = getItemMoney(s);
+                const lateNote = isLateNoteSale(s);
                 if (t >= fromMs && t < toMs) {
                     out.customers++;
                     out.perDay[dayIndex(t)] += bd.cashAmount;
-                    money.forEach(m => { if (!m.item.isDebt || m.freeValue > 0) addItem(m); });
+                    /* a note converted on a later day: its sales amount stays on the note's day, its profit goes to the conversion day's own card */
+                    money.forEach(m => { if (!m.item.isDebt || m.freeValue > 0) addItem(lateNote ? Object.assign({}, m, { profit: 0, freeProfitImpact: 0, discountProfitImpact: 0 }) : m); });
                     (s.items || []).forEach(i => {
                         if (Number(i.extraKg || 0) > 0 && Number(i.qty || 0) > 0) {
                             out.extraKg += Number(i.extraKg);
                             out.extraValue += Number(i.extraKg) * Number(i.price || 0);
                         }
                     });
+                }
+                if (lateNote) {
+                    const ct = new Date(s.convertedAt).getTime() || 0;
+                    if (ct >= fromMs && ct < toMs) {
+                        money.forEach(m => {
+                            if (!m.item.isDebt || m.freeValue > 0) {
+                                out.lateProfit += m.profit;
+                                out.lateProfitBefore += m.profit + m.freeProfitImpact + m.discountProfitImpact;
+                                if (m.isBag) out.lateBagProfit += m.profit; else out.lateOtherProfit += m.profit;
+                            }
+                        });
+                    }
                 }
                 if (bd.debtAmount > 1e-7 && s.debtPaidAt) {
                     const pt = new Date(s.debtPaidAt).getTime() || 0;
@@ -3897,7 +3981,17 @@
                     }
                 }
             });
+            if (days > 1) {
+                /* longer periods (week, month, lifetime) include those profits so their totals stay correct */
+                out.profit += out.lateProfit; out.bagProfit += out.lateBagProfit; out.otherProfit += out.lateOtherProfit; out.profitBefore += out.lateProfitBefore;
+            }
             return out;
+        }
+
+        function isLateNoteSale(s) {
+            if (!s || !s.fromNote || !s.convertedAt) return false;
+            const c = new Date(s.convertedAt).getTime();
+            return !!c && dayStartMs(saleTimeMs(s)) !== dayStartMs(c);
         }
 
         function currentDebtOwed() {
@@ -4010,6 +4104,12 @@
             document.getElementById('stat-today-extra-grams').innerText = formatNum(st.extraKg * 1000);
             document.getElementById('stat-today-debt-paid').innerText = formatNum(st.paid);
             document.getElementById('stat-debt-owed').innerText = formatNum(currentDebtOwed());
+            const lateTile = document.getElementById('stat-late-note-tile');
+            if (lateTile) {
+                lateTile.style.display = Math.abs(st.lateProfit || 0) > 1e-7 ? '' : 'none';
+                document.getElementById('stat-late-note-profit').innerText = formatNum(st.lateProfit || 0);
+                document.getElementById('stat-late-note-title').textContent = r.days === 1 ? 'ربح من ملاحظة سابقة حُوّلت الآن (غير محسوب في أرباح اليوم)' : 'منها: ربح من ملاحظات سابقة حُوّلت لاحقاً';
+            }
             renderStatsChart(r, st.perDay);
         }
 
@@ -4585,6 +4685,7 @@
                             <span>الكاشير: ${s.cashier}</span>
                         </div>
                         ${s.customerName ? `<div style="font-size:13px; color:var(--navy); font-weight:700; margin-top:3px;">👤 المشتري: ${escapeHtml(s.customerName)}</div>` : ''}
+                        ${s.fromNote ? `<div style="font-size:12.5px; color:var(--teal-primary); font-weight:700; margin-top:3px;">📝 محوّلة من ملاحظة سريعة${s.convertedAt && new Date(s.convertedAt).toDateString() !== new Date(s.timestamp).toDateString() ? ' — حُوّلت في ' + new Date(s.convertedAt).toLocaleString('ar-LY') : ''}<span style="display:block; font-weight:400; color:var(--muted); white-space:pre-wrap;">${escapeHtml(s.fromNote.text || '')}</span></div>` : ''}
                         ${s.cartNote ? `<div style="font-size:13px; color:#ff8c00; font-weight:700; margin-top:3px;">📝 ملاحظة السلة: ${escapeHtml(s.cartNote)}</div>` : ''}
                         <div style="margin: 8px 0 4px 0;">
                             ${s.items.map(i => `
@@ -4634,6 +4735,7 @@
         }
 
         function renderSalesNow() {
+            if (typeof renderQuickNotes === 'function') renderQuickNotes();
             const container = document.getElementById('sales-list');
             if (sales.length === 0) {
                 container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد مبيعات سابقة</p>';
@@ -5553,8 +5655,8 @@
         }
 
         /* ---------- v42: receipts and the swipe-driven finish-sale confirmation ---------- */
-        function receiptNow() {
-            const d = new Date();
+        function receiptNow(ts) {
+            const d = ts ? new Date(ts) : new Date();
             return d.toLocaleDateString('ar-LY', { year: 'numeric', month: 'numeric', day: 'numeric' }) + ' — ' + d.toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' });
         }
 
@@ -5566,17 +5668,19 @@
             const cartDebt = !!document.getElementById('cart-debt').checked;
             const unitOf = (i) => i.unitType === 'weight' ? 'كجم' : (i.unitType === 'unit' ? 'قطعة' : 'شكارة');
             const rows = cart.map(i => `<div class="rc-row"><span><strong>${escapeHtml(i.name)}</strong> × ${formatNum(i.qty)} ${unitOf(i)}${i.discount > 0 ? ` <small>(خصم ${formatNum(i.discount)} د.ل)</small>` : ''}${(cartDebt || i.isDebt) && !i.isFree ? ' <span class="rc-tag">[دين]</span>' : ''}</span><b>${i.isFree ? 'مجاني' : formatNum(i.total) + ' د.ل'}</b></div>`).join('');
-            return `<div class="rc-paper">
-                <div class="rc-lb">${editingSaleId ? 'فاتورة بعد التعديل' : 'الإجمالي :'}</div>
-                <div class="rc-big">${formatNum(finalTotal)} د.ل</div>
+            return `<div class="rc-paper rc-sale">
                 <div class="rc-rows">
-                <div class="rc-row"><span>التاريخ</span><b>${receiptNow()}</b></div>
+                <div class="rc-row"><span>التاريخ</span><b>${receiptNow(convertingNote ? convertingNote.ts : undefined)}</b></div>
                 ${activeCashier ? `<div class="rc-row"><span>الكاشير</span><b>${escapeHtml(activeCashier)}</b></div>` : ''}
                 ${buyer ? `<div class="rc-row"><span>المشتري</span><b>${escapeHtml(buyer)}</b></div>` : ''}
                 ${rows}
                 ${globalDiscount > 0 ? `<div class="rc-row minus"><span>خصم على الفاتورة</span><b>- ${formatNum(globalDiscount)} د.ل</b></div>` : ''}
                 </div>
                 ${cartDebt ? `<div class="rc-note">الفاتورة كلها دين${cartDebtorName ? ' — على: ' + escapeHtml(cartDebtorName) : ''}</div>` : ''}
+                <div class="rc-total">
+                    <div class="rc-lb">${editingSaleId ? 'فاتورة بعد التعديل' : 'الإجمالي :'}</div>
+                    <div class="rc-big">${formatNum(finalTotal)} د.ل</div>
+                </div>
             </div><div class="rc-zb"></div>`.replace(/\n\s*/g, '');
         }
 
@@ -5594,7 +5698,8 @@
             };
             go.noOutsideDismiss = true;
             go.tint = true;
-            showModal(editingSaleId ? 'تأكيد حفظ التعديلات' : 'تأكيد إتمام البيع', buildCartReceiptHtml(), false, go);
+            const noteWarn = (convertingNote && typeof noteWarningsHtml === 'function') ? noteWarningsHtml() : '';
+            showModal(editingSaleId ? 'تأكيد حفظ التعديلات' : (convertingNote ? 'تأكيد تحويل الملاحظة إلى بيع' : 'تأكيد إتمام البيع'), noteWarn + buildCartReceiptHtml(), false, go);
             const okb = document.getElementById('modal-confirm-btn');
             if (okb) okb.addEventListener('pointerdown', () => { const r = okb.getBoundingClientRect(); okRect = { left: r.left, top: r.top, width: r.width, height: r.height }; });
         }
@@ -5742,6 +5847,7 @@
         }
 
         async function downloadBackupFile(data, opts) {
+            if (data && typeof data === 'object' && !('quickNotes' in data)) data.quickNotes = quickNotes;
             const silent = !!(opts && opts.silent);
             let pw = getBackupPassword();
             if (!pw) {
@@ -5845,6 +5951,7 @@
                         localStorage.setItem(SALES_CLEARED_KEY, '0');
                         stockLogs = imported.stockLogs || [];
                         if (Array.isArray(imported.inventoryEdits)) { inventoryEdits = imported.inventoryEdits; safeSave(EDITS_KEY, inventoryEdits); renderInventoryEdits(); }
+                        if (Array.isArray(imported.quickNotes)) { quickNotes = imported.quickNotes; safeSave('pos_quick_notes', quickNotes); if (typeof refreshNotesUI === 'function') refreshNotesUI(); }
                         cashiers = imported.cashiers || cashiers;
                         managerPin = imported.managerPin || managerPin;
 
@@ -6797,6 +6904,13 @@
             makeSwipe(qs, {
                 onStart: showQsHint,
                 onMove: function (dx, dy) {
+                    if (dx < 0 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+                        var lf = Math.max(0, Math.min(-dx, 90));
+                        qs.style.transition = 'none';
+                        qs.style.transform = 'translateX(' + (-lf) + 'px)';
+                        qs.style.opacity = String(0.9 * (1 - 0.4 * Math.min(1, lf / 90)));
+                        return;
+                    }
                     var up = Math.max(0, Math.min(-dy, 110));
                     var p = Math.min(1, up / (QS_COMMIT * 1.6));
                     qs.style.transition = 'none';
@@ -6804,6 +6918,7 @@
                     qs.style.opacity = String(0.9 * (1 - 0.55 * p));
                 },
                 onEnd: function (dx, dy, moved, cancelled) {
+                    if (!cancelled && moved && -dx >= 56 && Math.abs(dx) > Math.abs(dy) * 1.2) { hideQsHint(); qsReset(true); vib(); if (window.openNoteBox) window.openNoteBox(); return; }
                     if (!cancelled && moved && -dy >= QS_COMMIT) { hideQsHint(); flyQuickSale(); }
                     else qsReset(true);
                 }
@@ -6947,6 +7062,378 @@
                     e.preventDefault(); e.stopImmediatePropagation();
                 }
             }, true);
+        })();
+    </script>
+    <script>
+        /* v55: quick notes (rush-hour notes that are turned into real sales later) */
+        const QN_KEY = 'pos_quick_notes', QN_DRAFT_KEY = 'pos_quick_note_draft';
+        function saveQuickNotes() { safeSave(QN_KEY, quickNotes); }
+        function qnFmt(ts) {
+            const d = new Date(ts);
+            return d.toLocaleDateString('ar-LY', { weekday: 'long', day: 'numeric', month: 'numeric' }) + ' — ' + d.toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' });
+        }
+        function updateNotesBadge() {
+            const b = document.getElementById('notes-badge');
+            if (!b) return;
+            const n = quickNotes.length;
+            b.textContent = n > 99 ? '99+' : String(n);
+            b.style.display = n ? 'flex' : 'none';
+        }
+        function refreshNotesUI() { renderQuickNotes(); }
+
+        function openNoteBox(editId) {
+            if (document.getElementById('qn-overlay')) return;
+            const editing = editId ? quickNotes.find(n => String(n.id) === String(editId)) : null;
+            let start = '';
+            try { start = editing ? editing.text : (localStorage.getItem(QN_DRAFT_KEY) || ''); } catch (e) { start = editing ? editing.text : ''; }
+            const ov = document.createElement('div');
+            ov.id = 'qn-overlay';
+            ov.className = 'qn-overlay';
+            ov.innerHTML = '<div class="qn-box"><div class="qn-title">' + (editing ? 'تعديل الملاحظة' : 'ملاحظة سريعة') + '</div>' +
+                '<textarea id="qn-text" placeholder="اكتب ما بعته بسرعة، سطر لكل منتج"></textarea>' +
+                '<div class="qn-hint">' + (editing ? 'تعديل نص الملاحظة فقط.' : 'ما تكتبه يُحفظ تلقائياً حتى لو أغلقت النافذة.') + '</div>' +
+                '<div class="qn-btns"><button type="button" class="btn btn-teal" id="qn-save">حفظ</button><button type="button" class="btn btn-red" id="qn-close">إغلاق</button></div></div>';
+            document.body.appendChild(ov);
+            const ta = ov.querySelector('#qn-text');
+            ta.value = start;
+            ta.addEventListener('input', function () { if (!editing) { try { localStorage.setItem(QN_DRAFT_KEY, ta.value); } catch (e) {} } });
+            ov.querySelector('#qn-close').addEventListener('click', function () { ov.remove(); });
+            ov.querySelector('#qn-save').addEventListener('click', function () {
+                const t = ta.value.trim();
+                if (!t) { try { ta.focus(); } catch (e) {} return; }
+                if (editing) { editing.text = t; editing.editedAt = new Date().toISOString(); }
+                else {
+                    const now = new Date();
+                    const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+                    quickNotes.unshift({ id: cloudUuid(), ts: now.toISOString(), cashier: activeCashier, dayName: days[now.getDay()], text: t });
+                    try { localStorage.removeItem(QN_DRAFT_KEY); } catch (e) {}
+                }
+                saveQuickNotes();
+                ov.remove();
+                refreshNotesUI();
+            });
+            try { ta.focus(); } catch (e) {}
+        }
+        window.openNoteBox = openNoteBox;
+
+        function renderQuickNotes() {
+            updateNotesBadge();
+            const box = document.getElementById('quick-notes-box');
+            if (!box) return;
+            const q = (document.getElementById('sales-search') || {}).value || '';
+            let list = quickNotes.slice().sort((a, b) => new Date(b.ts) - new Date(a.ts));
+            if (q.trim()) list = list.filter(n => matchesSearch(n.text + ' ' + qnFmt(n.ts) + ' ملاحظة سريعة ' + (n.cashier || ''), q));
+            if (!list.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+            const today = new Date().toDateString();
+            box.style.display = 'block';
+            if (!qnSelectMode) qnSel.clear();
+            qnSel.forEach(id => { if (!quickNotes.some(n => String(n.id) === id)) qnSel.delete(id); });
+            const head = '<div class="qn-head"><span>📝 ملاحظات سريعة لم تُحوَّل بعد (' + list.length + ')</span>' +
+                '<button type="button" class="chip-btn' + (qnSelectMode ? ' active' : '') + '" onclick="toggleNoteSelect()">' + (qnSelectMode ? 'إنهاء التحديد' : 'تحديد للحذف') + '</button></div>' +
+                (qnSelectMode ? '<div class="qn-selbar"><button type="button" class="chip-btn" onclick="selectAllNotes()">تحديد الكل</button><button type="button" class="btn btn-red" onclick="deleteSelectedNotes()">حذف المحدد (' + qnSel.size + ')</button></div>' : '');
+            box.innerHTML = head + list.map(n => {
+                const old = new Date(n.ts).toDateString() !== today;
+                const id = JSON.stringify(String(n.id));
+                const check = qnSelectMode ? '<label class="qn-check"><input type="checkbox" ' + (qnSel.has(String(n.id)) ? 'checked ' : '') + 'onchange=\'toggleNoteSel(' + id + ', this.checked)\'></label>' : '';
+                return '<div class="qn-card' + (qnSelectMode ? ' qn-sel' : '') + '">' + check + '<div class="qn-meta"><span>' + qnFmt(n.ts) + (old ? '<span class="qn-old">من يوم سابق</span>' : '') + '</span><span>الكاشير: ' + escapeHtml(n.cashier || '') + '</span></div>' +
+                    '<div class="qn-text">' + escapeHtml(n.text) + '</div>' +
+                    (qnSelectMode ? '' : '<div class="qn-actions"><button class="btn btn-green" onclick=\'startNoteConvert(' + id + ', "manual")\'>تحويل يدوي</button>' +
+                    '<button class="btn btn-teal" onclick=\'startNoteConvert(' + id + ', "read")\'>قراءة النص</button>' +
+                    '<button class="btn btn-orange" onclick=\'openNoteBox(' + id + ')\'>تعديل النص</button>' +
+                    '<button class="btn btn-red" onclick=\'deleteNote(' + id + ')\'>حذف</button></div>') + '</div>';
+            }).join('');
+        }
+
+        let qnSelectMode = false;
+        const qnSel = new Set();
+        function toggleNoteSelect() { qnSelectMode = !qnSelectMode; if (!qnSelectMode) qnSel.clear(); renderQuickNotes(); }
+        function toggleNoteSel(id, on) { if (on) qnSel.add(String(id)); else qnSel.delete(String(id)); renderQuickNotes(); }
+        function selectAllNotes() {
+            const q = (document.getElementById('sales-search') || {}).value || '';
+            quickNotes.filter(n => !q.trim() || matchesSearch(n.text + ' ' + qnFmt(n.ts) + ' ملاحظة سريعة ' + (n.cashier || ''), q)).forEach(n => qnSel.add(String(n.id)));
+            renderQuickNotes();
+        }
+        function removeNotes(ids) {
+            const set = new Set(ids.map(String));
+            quickNotes = quickNotes.filter(n => !set.has(String(n.id)));
+            if (convertingNote && set.has(String(convertingNote.id))) clearCart();
+            saveQuickNotes();
+            qnSel.clear();
+            if (!quickNotes.length) qnSelectMode = false;
+            refreshNotesUI();
+        }
+        function confirmNoteDelete(ids) {
+            const n = ids.length;
+            showModal('حذف ' + (n === 1 ? 'الملاحظة' : n + ' ملاحظات'), 'سيتم حذف ' + (n === 1 ? 'هذه الملاحظة' : 'الملاحظات المحددة (' + n + ')') + ' نهائياً ولا يمكن التراجع.\nلن يتغير المخزون ولا الإحصائيات لأنها لم تتحول إلى بيع.', false, () => removeNotes(ids));
+        }
+        function deleteNote(id) { promptManagerPassword(() => confirmNoteDelete([String(id)])); }
+        function deleteSelectedNotes() {
+            if (!qnSel.size) { showModal('تنبيه', 'لم يتم تحديد أي ملاحظة للحذف.', false, () => {}); return; }
+            const ids = Array.from(qnSel);
+            promptManagerPassword(() => confirmNoteDelete(ids));
+        }
+
+        function updateNoteBanner() {
+            const b = document.getElementById('note-convert-banner');
+            if (!b) return;
+            b.style.display = convertingNote ? 'block' : 'none';
+            if (convertingNote) {
+                document.getElementById('note-convert-title').textContent = '📝 تحويل ملاحظة سريعة (' + qnFmt(convertingNote.ts) + ')';
+                document.getElementById('note-convert-text').textContent = convertingNote.text;
+            }
+        }
+        function cancelNoteConvert() { clearCart(); }
+
+        function startNoteConvert(id, mode) {
+            const note = quickNotes.find(n => String(n.id) === String(id));
+            if (!note) return;
+            if (cart.length > 0 || editingSaleId) {
+                showModal('تنبيه', 'السلة فيها منتجات أو عملية جارية. أتمم البيع أو فرّغ السلة أولاً ثم حوّل الملاحظة.', false, () => {});
+                return;
+            }
+            clearCart();
+            convertingNote = { id: note.id, ts: note.ts, cashier: note.cashier || activeCashier, text: note.text };
+            let report = null;
+            if (mode === 'read') report = fillCartFromNote(note.text);
+            updateNoteBanner();
+            renderCart();
+            switchTab('pos', document.querySelectorAll('.nav-item')[0]);
+            if (report) showNoteReadReport(report);
+        }
+
+        /* ----- reading the text ----- */
+        const QN_U = {
+            dinar: /^(دينار|دنانير|دينارين|دل|د\.ل|د\.ل\.|dinar|lyd)$/,
+            gurush: /^(قرش|قروش|غرش|غروش|قرشا)$/,
+            gram: /^(جرام|جرامات|غرام|غرامات|جم|غ|g|gr)$/,
+            kilo: /^(كيلو|كيلوات|كجم|كغ|كغم|كيلوجرام|كيلوغرام|kg)$/,
+            count: /^(قطعه|قطع|حبه|حبات|علبه|علب|عبوه|كيس|اكياس)$/,
+            bag: /^(شكاره|شكارات|شكائر|شكايير|شكاير)$/,
+            extra: /^(زياده|زايد|زائد|اضافي|اضافيه|اضافه|\+)$/,
+            half: /^(نص|نصف)$/,
+            full: /^(كامل|كامله)$/,
+            fill: /^(من|و|مع|في|على|عند|ب|بس|فقط|الي|ال)$/
+        };
+        function qnParseLine(raw) {
+            let s = normalizeSearchText(raw).replace(/[،,;؛]/g, ' ').replace(/٫/g, '.');
+            s = s.replace(/(\d)(?=[^\d\s.])/g, '$1 ').replace(/([^\d\s.])(?=\d)/g, '$1 ').replace(/\+/g, ' + ');
+            const toks = s.split(' ').filter(Boolean);
+            const r = { amount: 0, kg: 0, gramsMain: 0, extraGurush: 0, extraGrams: 0, count: 0, bagCount: 0, bare: null, bagWord: false, half: false, full: false, name: [], notes: [] };
+            const grams = [];
+            const hasExtraWord = toks.some(t => QN_U.extra.test(t));
+            for (let i = 0; i < toks.length; i++) {
+                const t = toks[i];
+                if (/^\d+(\.\d+)?$/.test(t)) {
+                    const n = parseFloat(t), nx = toks[i + 1] || '';
+                    if (QN_U.dinar.test(nx)) { r.amount += n; i++; }
+                    else if (QN_U.gurush.test(nx)) { r.extraGurush += n; i++; }
+                    else if (QN_U.gram.test(nx)) { grams.push(n); i++; }
+                    else if (QN_U.kilo.test(nx)) { r.kg += n; i++; }
+                    else if (QN_U.bag.test(nx)) { r.bagCount = n; i++; }
+                    else if (QN_U.count.test(nx)) { r.count += n; i++; }
+                    else if (r.bare === null) r.bare = n;
+                    else r.notes.push('رقم زائد بدون وحدة: ' + t);
+                    continue;
+                }
+                if (QN_U.extra.test(t) || QN_U.fill.test(t)) continue;
+                if (QN_U.half.test(t)) { r.half = true; continue; }
+                if (QN_U.bag.test(t)) { r.bagWord = true; continue; }
+                if (QN_U.full.test(t)) { r.full = true; continue; }
+                if (QN_U.dinar.test(t) || QN_U.gurush.test(t) || QN_U.gram.test(t) || QN_U.kilo.test(t) || QN_U.count.test(t)) continue;
+                r.name.push(t);
+            }
+            grams.forEach(g => { if (hasExtraWord || r.amount > 0 || r.kg > 0) r.extraGrams += g; else r.gramsMain += g; });
+            return r;
+        }
+        function qnFindProduct(nameTokens) {
+            const toks = nameTokens.map(t => (t.length > 3 && t.startsWith('ال')) ? t.slice(2) : t).filter(t => t.length >= 2);
+            if (!toks.length) return null;
+            let best = [], bestScore = 0;
+            products.forEach(p => {
+                const hay = normalizeSearchText(p.name);
+                let sc = 0;
+                toks.forEach(t => { if (hay.includes(t)) sc++; });
+                if (sc > bestScore) { best = [p]; bestScore = sc; }
+                else if (sc === bestScore && sc > 0) best.push(p);
+            });
+            if (!bestScore || bestScore < Math.ceil(toks.length / 2)) return null;
+            best.sort((a, b) => String(a.name).length - String(b.name).length);
+            return { prod: best[0], others: best.slice(1, 3), sure: bestScore === toks.length && best.length === 1 };
+        }
+        function qnBlankItem(p, over) {
+            return Object.assign({ id: p.id, name: p.name, unitType: 'unit', sellMode: 'retail', price: 0, cost: 0, qty: 0, bagWeight: 0, halfKg: 0, halfSource: '', extraKg: 0, discount: 0, isFree: false, isDebt: false, debtorName: '', isNegativeSale: false, total: 0, note: '' }, over);
+        }
+        function qnBuildItems(p, r, issues) {
+            const out = [];
+            if (p.unitType === 'weight') {
+                if (r.bagWord && r.half) {
+                    const price = Number(p.halfBagPrice || 0), halfKg = (p.bagWeightKg || 0) / 2;
+                    if (!(price > 0)) { issues.push('«' + p.name + '» ليس له سعر نصف شكارة'); return out; }
+                    const n = Math.max(1, Math.floor(r.bagCount || r.bare || 1));
+                    for (let k = 0; k < n; k++) out.push(qnBlankItem(p, { name: p.name + ' (نصف شكارة - ' + halfKg + 'كجم)', unitType: 'halfbag', sellMode: 'halfbag', price, cost: getWholeBagCost(p) / 2, qty: 1, halfKg, halfSource: 'newbag', total: price }));
+                    return out;
+                }
+                if (r.bagWord || r.full) {
+                    const price = Number(p.fullBagPrice || 0);
+                    if (!(price > 0)) { issues.push('«' + p.name + '» ليس له سعر شكارة كاملة'); return out; }
+                    const n = Math.max(1, Math.floor(r.bagCount || r.bare || 1));
+                    out.push(qnBlankItem(p, { name: p.name + ' (شكارة كاملة - ' + (p.bagWeightKg || 0) + 'كجم)', unitType: 'fullbag', sellMode: 'fullbag', price, cost: getWholeBagCost(p), qty: n, bagWeight: p.bagWeightKg || 0, total: price * n }));
+                    return out;
+                }
+                const price = Number(p.kgPrice || 0);
+                if (!(price > 0)) { issues.push('«' + p.name + '» ليس له سعر كيلو'); return out; }
+                let qty = 0, total = 0;
+                if (r.amount > 0) { qty = r.amount / price; total = r.amount; }
+                else if (r.kg > 0) { qty = r.kg; total = qty * price; }
+                else if (r.gramsMain > 0) { qty = r.gramsMain / 1000; total = qty * price; }
+                else if (r.bare > 0) { qty = r.bare / price; total = r.bare; issues.push('«' + p.name + '»: الرقم بدون وحدة اعتُبر مبلغاً بالدينار (' + formatNum(r.bare) + ' د.ل)'); }
+                if (!(qty > 0)) { issues.push('«' + p.name + '»: لا يوجد مبلغ ولا وزن'); return out; }
+                const extraKg = (r.extraGurush / 100) / price + r.extraGrams / 1000;
+                out.push(qnBlankItem(p, { unitType: 'weight', sellMode: 'retail', price, cost: p.cost, qty, extraKg, total }));
+                return out;
+            }
+            const price = Number(p.price || 0);
+            if (!(price > 0)) { issues.push('«' + p.name + '» ليس له سعر'); return out; }
+            let qty = 1;
+            if (r.count > 0) qty = r.count;
+            else if (r.amount > 0) { qty = r.amount / price; if (Math.abs(qty - Math.round(qty)) > 1e-6) { issues.push('«' + p.name + '»: المبلغ ' + formatNum(r.amount) + ' لا يقابل عدداً صحيحاً من القطع'); } qty = Math.max(1, Math.round(qty)); }
+            else if (r.bare > 0) qty = r.bare;
+            if (r.extraGurush > 0 || r.extraGrams > 0) issues.push('«' + p.name + '» منتج بالقطعة، تم تجاهل الإضافة');
+            out.push(qnBlankItem(p, { unitType: 'unit', sellMode: 'retail', price, cost: p.cost, qty, total: qty * price }));
+            return out;
+        }
+
+        /* Stock use, in the same order and with the same rules as completing a sale. Returns what is short. */
+        function qnSimStock(items) {
+            const sim = new Map(), short = [];
+            items.forEach(it => {
+                const p = products.find(x => String(x.id) === String(it.id));
+                if (!p) return;
+                if (!sim.has(String(p.id))) sim.set(String(p.id), { qty: Number(p.qty || 0), bags: Number(p.bagsCount || 0), open: Number(p.openBagKg || 0) });
+                const st = sim.get(String(p.id));
+                let bad = false;
+                if (it.sellMode === 'fullbag') { st.bags -= it.qty; bad = st.bags < 0; }
+                else if (it.sellMode === 'halfbag') {
+                    const n = Math.max(1, Math.floor(Number(it.qty) || 1));
+                    if (it.halfSource === 'open') { st.open -= n * it.halfKg; bad = st.open < -1e-9; }
+                    else for (let h = 0; h < n; h++) { if (st.bags > 0) { st.bags -= 1; st.open += it.halfKg; } else { st.open -= it.halfKg; bad = bad || st.open < -1e-9; } }
+                } else if (p.unitType === 'weight') {
+                    const kg = Number(it.qty || 0) + (Number(it.qty || 0) > 0 ? Number(it.extraKg || 0) : 0);
+                    if (st.open >= kg) st.open -= kg;
+                    else {
+                        let rem = kg - st.open; st.open = 0;
+                        const cap = p.bagWeightKg || 1;
+                        while (rem > 1e-9 && st.bags > 0) { st.bags -= 1; if (rem <= cap) { st.open = cap - rem; rem = 0; } else rem -= cap; }
+                        if (rem > 1e-9) { st.open = -rem; bad = true; }
+                    }
+                } else { st.qty -= it.qty; bad = st.qty < 0; }
+                if (bad) short.push({ item: it, p });
+            });
+            return short;
+        }
+        function qnStockMessages(items) {
+            const seen = new Set(), msgs = [];
+            qnSimStock(items).forEach(x => {
+                if (seen.has(String(x.p.id))) return;
+                seen.add(String(x.p.id));
+                const have = x.p.unitType === 'weight' ? 'الوزن المفتوح ' + formatNum(x.p.openBagKg || 0) + ' كجم، الشكائر ' + formatNum(x.p.bagsCount || 0) : 'المتوفر ' + formatNum(x.p.qty || 0);
+                msgs.push('المخزون غير كافٍ لـ «' + x.p.name + '» (' + have + ')');
+            });
+            return msgs;
+        }
+        const QN_PRICE_LABELS = ['سعر البيع', 'سعر الجملة', 'سعر الكيلو', 'سعر الشكارة الكاملة', 'سعر نصف الشكارة'];
+        function qnPriceMessages(noteTs, items) {
+            const since = new Date(noteTs).getTime() || 0, msgs = [], ids = new Set();
+            items.forEach(it => ids.add(String(it.id)));
+            ids.forEach(id => {
+                const edits = inventoryEdits.filter(e => String(e.productId) === id && e.ts > since && Array.isArray(e.changes)).sort((a, b) => a.ts - b.ts);
+                const first = new Map(), last = new Map();
+                edits.forEach(e => e.changes.forEach(c => {
+                    if (QN_PRICE_LABELS.indexOf(c.f) < 0) return;
+                    if (!first.has(c.f)) first.set(c.f, c.from);
+                    last.set(c.f, c.to);
+                }));
+                const name = (products.find(p => String(p.id) === id) || {}).name || (edits[0] && edits[0].name) || '';
+                first.forEach((from, label) => msgs.push('«' + name + '»: ' + label + ' تغيّر من ' + from + ' إلى ' + last.get(label) + ' بعد وقت الملاحظة'));
+            });
+            return msgs;
+        }
+        function noteWarningList() {
+            if (!convertingNote) return [];
+            return qnPriceMessages(convertingNote.ts, cart).concat(qnStockMessages(cart));
+        }
+        function noteWarningsHtml() {
+            const w = noteWarningList();
+            if (!w.length) return '';
+            return '<div class="rc-warn"><b>تنبيه قبل التأكيد:</b><br>' + w.map(x => escapeHtml(x)).join('<br>') + '</div>';
+        }
+
+        function fillCartFromNote(text) {
+            const rep = { added: 0, unknown: [], uncertain: [], issues: [], warnings: [] };
+            const items = [];
+            String(text || '').split(/\n+/).map(l => l.trim()).filter(Boolean).forEach(line => {
+                const r = qnParseLine(line);
+                if (!r.name.length) { rep.unknown.push(line); return; }
+                const m = qnFindProduct(r.name);
+                if (!m) { rep.unknown.push(line); return; }
+                const built = qnBuildItems(m.prod, r, rep.issues);
+                if (!built.length) { rep.unknown.push(line); return; }
+                if (!m.sure) rep.uncertain.push(line + '  ←  «' + m.prod.name + '»' + (m.others.length ? ' (أو: ' + m.others.map(o => o.name).join('، ') + ')' : ''));
+                built.forEach(b => items.push(b));
+            });
+            qnSimStock(items).forEach(x => { x.item.isNegativeSale = true; });
+            items.forEach(it => cart.push(it));
+            rep.added = items.length;
+            rep.warnings = qnPriceMessages(convertingNote.ts, items).concat(qnStockMessages(items));
+            return rep;
+        }
+        function showNoteReadReport(rep) {
+            const li = arr => arr.map(x => '• ' + escapeHtml(x)).join('<br>');
+            let h = '<div style="text-align:right; font-size:15px; line-height:1.6;">';
+            h += rep.added ? '<b>أُضيف إلى السلة: ' + rep.added + ' منتج.</b> راجعها قبل إتمام البيع، واضغط على أي سطر لتعديله.' : '<b>لم أستطع إضافة أي منتج.</b> يمكنك إضافة المنتجات يدوياً والنص ظاهر لك أعلى السلة.';
+            if (rep.unknown.length) h += '<div class="rc-warn" style="margin-top:8px;"><b>لم أفهم هذه الأسطر ولم تُضَف:</b><br>' + li(rep.unknown) + '</div>';
+            if (rep.uncertain.length) h += '<div class="rc-warn" style="margin-top:8px;"><b>تأكد من هذه الأسطر:</b><br>' + li(rep.uncertain) + '</div>';
+            if (rep.issues.length) h += '<div class="rc-warn" style="margin-top:8px;"><b>ملاحظات:</b><br>' + li(rep.issues) + '</div>';
+            if (rep.warnings.length) h += '<div class="rc-warn" style="margin-top:8px;"><b>تنبيه:</b><br>' + li(rep.warnings) + '</div>';
+            h += '</div>';
+            showModal('نتيجة قراءة الملاحظة', h, false, () => {});
+        }
+
+        updateNotesBadge();
+    </script>
+    <script>
+        /* v53: when a total is long, the total and its neighbouring button shrink a little so they never overlap */
+        (function () {
+            function fit(row) {
+                if (!row) return;
+                row.style.setProperty('--fit', '1');
+                if (!row.clientWidth) return;
+                var cs = getComputedStyle(row);
+                var inner = row.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+                var gap = parseFloat(cs.columnGap) || 0;
+                function need() {
+                    var sum = 0, n = 0;
+                    Array.prototype.forEach.call(row.children, function (c) { if (c.offsetWidth) { sum += c.getBoundingClientRect().width; n++; } });
+                    return sum + gap * Math.max(0, n - 1) + 4;
+                }
+                var f = 1;
+                while (need() > inner && f > 0.55) { f -= 0.03; row.style.setProperty('--fit', f.toFixed(2)); }
+            }
+            var queued = false;
+            function run() {
+                queued = false;
+                fit(document.getElementById('sel-total-row'));
+                fit(document.querySelector('.fixed-checkout-bar'));
+            }
+            function queue() { if (!queued) { queued = true; requestAnimationFrame(run); } }
+            var opts = { childList: true, characterData: true, subtree: true };
+            ['sel-total-display', 'btn-add-to-cart', 'cart-total'].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) new MutationObserver(queue).observe(el, opts);
+            });
+            new MutationObserver(queue).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+            window.addEventListener('resize', queue);
+            queue();
         })();
     </script>
 </body>
