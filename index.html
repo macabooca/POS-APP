@@ -2085,14 +2085,18 @@
             if (event) event.stopPropagation();
             const input = document.getElementById('pos-search');
             if (!input) return;
-            input.focus();
+            /* v52: put the search card at the top right now, before the keyboard opens, so nothing has to move later
+               (a page that moves while you tap swallows the tap). */
+            const card = input.closest('.card') || input;
+            document.body.style.paddingBottom = window.innerHeight + 'px';
+            const top = card.getBoundingClientRect().top + window.scrollY - 8;
+            window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
+            try { input.focus({ preventScroll: true }); } catch (e) { input.focus(); }
             showSearchDropdown();
-            setTimeout(() => {
-                /* keyboard did not open (no resize): fall back to showing the search card at the top */
-                if (document.body.classList.contains('kb-open')) { positionSearchAboveKeyboard(); return; }
-                const card = input.closest('.card');
-                (card || input).scrollIntoView({ behavior: 'instant', block: 'start' });
-            }, 500);
+            input.addEventListener('blur', function onBlur() {
+                input.removeEventListener('blur', onBlur);
+                if (!document.body.classList.contains('kb-open')) document.body.style.removeProperty('padding-bottom');
+            });
         }
 
         function showSearchDropdown() {
@@ -2118,11 +2122,17 @@
             if (!card || !dropdown || !dropdown.firstElementChild) return;
             const visibleH = window.innerHeight;
             document.body.style.paddingBottom = visibleH + 'px';
-            const bottom = dropdown.getBoundingClientRect().bottom + 10;
-            let delta = bottom - (visibleH - 6);
+            /* v52: never move the page if the list is already visible; if the keyboard would cover its lower part,
+               make the list shorter instead (the rows you can see stay exactly where they are). */
+            const dr = dropdown.getBoundingClientRect();
+            const room = Math.floor(visibleH - 8 - dr.top);
+            if (dr.bottom <= visibleH - 6) return;
+            if (room >= 120) { dropdown.style.maxHeight = room + 'px'; return; }
+            let delta = (dr.top + 130) - (visibleH - 6);
             const maxUp = card.getBoundingClientRect().top - 8;
             if (delta > maxUp) delta = maxUp;
-            if (Math.abs(delta) > 1) window.scrollBy({ top: delta, behavior: 'instant' });
+            if (delta > 1) window.scrollBy({ top: delta, behavior: 'instant' });
+            dropdown.style.maxHeight = Math.max(120, Math.floor(visibleH - 8 - dropdown.getBoundingClientRect().top)) + 'px';
         }
 
         function filterProducts() {
@@ -6622,6 +6632,8 @@
                     }
                 } else {
                     document.body.style.removeProperty('padding-bottom');
+                    const dd = document.getElementById('product-dropdown');
+                    if (dd) dd.style.maxHeight = '200px';
                 }
             }
 
@@ -6905,6 +6917,36 @@
                     };
                 });
             };
+        })();
+
+        /* v52: a tap always counts on the product list, the bottom tabs and popup buttons, even if the page shifts
+           under the finger (keyboard opening/closing). Without this the browser can drop the first tap after a swipe. */
+        (function () {
+            var SEL = '#product-dropdown .item-row, .bottom-nav .nav-item, #modal-buttons-box button';
+            var cand = null, synth = null;
+            document.addEventListener('pointerdown', function (e) {
+                if (e.pointerType === 'mouse') { cand = null; return; }
+                var t = e.target && e.target.closest ? e.target.closest(SEL) : null;
+                cand = t ? { el: t, id: e.pointerId, x: e.clientX, y: e.clientY, at: Date.now() } : null;
+            }, true);
+            document.addEventListener('pointermove', function (e) {
+                if (cand && e.pointerId === cand.id && (Math.abs(e.clientX - cand.x) > 10 || Math.abs(e.clientY - cand.y) > 10)) cand = null;
+            }, true);
+            document.addEventListener('pointercancel', function () { cand = null; }, true);
+            document.addEventListener('pointerup', function (e) {
+                var c = cand; cand = null;
+                if (!c || e.pointerId !== c.id || Date.now() - c.at > 800 || !c.el.isConnected || c.el.disabled) return;
+                synth = { x: e.clientX, y: e.clientY, at: Date.now() };
+                c.el.click();
+            }, true);
+            /* the browser's own click for that same tap is dropped, so nothing runs twice */
+            document.addEventListener('click', function (e) {
+                if (!e.isTrusted || !synth) return;
+                var s = synth; synth = null;
+                if (Date.now() - s.at < 700 && Math.abs(e.clientX - s.x) < 30 && Math.abs(e.clientY - s.y) < 30) {
+                    e.preventDefault(); e.stopImmediatePropagation();
+                }
+            }, true);
         })();
     </script>
 </body>
