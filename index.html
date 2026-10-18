@@ -1014,12 +1014,12 @@
         }
 
         /* v55: quick notes */
-        .qn-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10060; display: flex; align-items: flex-start; justify-content: center; padding: calc(env(safe-area-inset-top, 0px) + 7vh) 12px 12px; }
-        .qn-box { background: #ffffff; border-radius: 22px; width: 100%; max-width: 420px; padding: 14px; direction: rtl; box-shadow: 0 12px 40px rgba(18,40,58,0.25); }
-        .qn-title { font-size: 19px; font-weight: 800; color: #12283a; margin-bottom: 8px; }
-        .qn-box textarea { width: 100%; min-height: 34vh; max-height: 46vh; resize: none; box-sizing: border-box; font-family: inherit; font-size: 18px; line-height: 1.6; padding: 10px 12px; border: 1px solid #cfdadf; border-radius: 14px; background: #f7fafb; color: #12283a; }
-        .qn-hint { font-size: 12px; color: #6b7c8c; margin: 6px 2px 10px; }
-        .qn-btns { display: flex; gap: 8px; }
+        .qn-overlay { position: fixed; left: 0; right: 0; top: 0; height: 100%; box-sizing: border-box; background: rgba(0,0,0,0.55); z-index: 10060; display: flex; align-items: stretch; justify-content: center; padding: calc(env(safe-area-inset-top, 0px) + 5vh) 10px 6px; }
+        .qn-box { background: #ffffff; border-radius: 22px; width: 100%; max-width: 420px; padding: 12px 14px 14px; direction: rtl; box-shadow: 0 12px 40px rgba(18,40,58,0.25); display: flex; flex-direction: column; min-height: 0; box-sizing: border-box; }
+        .qn-title { font-size: 19px; font-weight: 800; color: #12283a; margin-bottom: 0; }
+        .qn-box textarea { width: 100%; flex: 1 1 auto; min-height: 90px; resize: none; box-sizing: border-box; font-family: inherit; font-size: 18px; line-height: 1.6; padding: 10px 12px; border: 1px solid #cfdadf; border-radius: 14px; background: #f7fafb; color: #12283a; }
+        .qn-hint { font-size: 12px; color: #6b7c8c; margin: 6px 2px 8px; flex: none; }
+        .qn-btns { display: flex; gap: 8px; flex: none; }
         .qn-btns .btn { flex: 1; padding: 12px; font-size: 17px; border-radius: 13px; }
         html[data-theme="dark"] .qn-box { background: #16232f; }
         html[data-theme="dark"] .qn-title { color: #ffffff; }
@@ -1030,17 +1030,83 @@
         .qn-meta { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: #7a5a2a; }
         .qn-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
         .qn-selbar { display: flex; gap: 8px; margin: 0 0 8px; }
-        .qn-selbar .btn { padding: 6px 12px; font-size: 13px; border-radius: 10px; }
+        .qn-selbar .btn { padding: 4.5px 9px; font-size: 9.75px; border-radius: 7.5px; }
         .qn-card.qn-sel { position: relative; padding-left: 44px; }
         .qn-check { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; }
         .qn-check input { width: 22px; height: 22px; }
         .qn-old { display: inline-block; background: #f28c28; color: #fff; border-radius: 6px; padding: 0 6px; margin-inline-start: 6px; font-size: 11px; }
         .qn-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 16px; font-weight: 700; color: #12283a; margin: 6px 0 8px; }
         .qn-actions { display: flex; flex-wrap: wrap; gap: 6px; }
-        .qn-actions .btn { padding: 5px 11px; font-size: 13px; border-radius: 9px; }
+        .qn-actions .btn { padding: 4px 9px; font-size: 10.4px; border-radius: 7px; opacity: 0.9; }
         html[data-theme="dark"] .qn-card { background: #3a2c1a; border-color: #8a5a22; }
         html[data-theme="dark"] .qn-text { color: #ffffff; }
         html[data-theme="dark"] .qn-meta, html[data-theme="dark"] .qn-head { color: #ffb15c; }
+
+        /* v57: note box (clear / undo button), smaller note buttons, receipt amounts, long-press fill, bulk sales */
+        .qn-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex: none; }
+        .qn-top .qn-title { flex: 1; }
+        .qn-x { flex: none; width: 36px; height: 36px; border: none; border-radius: 50%; background: #eef3f6; color: #4a5a6a; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; }
+        .qn-x svg { width: 19px; height: 19px; display: block; }
+        .qn-x.undo { background: #fdf0e1; color: #d9801f; }
+        .qn-x:disabled { opacity: 0.4; }
+        html[data-theme="dark"] .qn-x { background: #243746; color: #cfe0ee; }
+        html[data-theme="dark"] .qn-x.undo { background: #3a2c1a; color: #ffb15c; }
+        .qn-banner { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #fff4e5; border: 1px solid #f5c98a; border-radius: 12px; padding: 6px 10px; margin-bottom: 8px; font-size: 12.5px; color: #7a5a2a; }
+        .qn-banner .btn { padding: 4px 10px; font-size: 12px; border-radius: 9px; flex: none; }
+        html[data-theme="dark"] .qn-banner { background: #3a2c1a; border-color: #8a5a22; color: #ffcf9a; }
+        .qn-head::after, .qn-selbar::after { content: ''; flex: 0.25 1 0; }
+        .qn-head .chip-btn, .qn-selbar .chip-btn { flex: 0.75 1 0; padding: 6.75px 4.5px; font-size: 9.75px; border-radius: 9px; }
+        .rc-row > span.rc-item { font-size: 14px; color: #12283a; }
+        .rc-row > span.rc-item strong { font-weight: 700; }
+        .rc-row > span.rc-item .rc-amt { font-weight: 800; color: #000000; margin-inline-end: 9px; white-space: nowrap; }
+        .rc-row > span.rc-item .rc-amt small { font-size: 12px; font-weight: 800; color: #000000; }
+        .quick-sale-btn.qs-holding { background-image: linear-gradient(#f6c48c, #f6c48c); background-repeat: no-repeat; background-position: right center; background-size: 0% 100%; animation: qsFill 3s linear forwards; }
+        html[data-theme="dark"] .quick-sale-btn.qs-holding { background-image: linear-gradient(#7a5226, #7a5226); }
+        @keyframes qsFill { 0%, 12% { background-size: 0% 100%; } 100% { background-size: 100% 100%; } }
+        body.bk-open .modal-overlay, body.bk-open #custom-modal { z-index: 10100; }
+        .bk-review { position: fixed; left: 0; right: 0; top: 0; height: 100%; z-index: 10065; display: flex; flex-direction: column; direction: rtl; background: var(--bg-color, #f2f6f9); padding-top: env(safe-area-inset-top, 0px); box-sizing: border-box; }
+        .bk-head { flex: none; padding: 12px 14px 8px; }
+        .bk-title { font-size: 19px; font-weight: 800; color: var(--navy, #12283a); }
+        .bk-sum { font-size: 13px; color: var(--muted, #8695a6); margin-top: 3px; line-height: 1.5; }
+        .bk-list { flex: 1; overflow-y: auto; padding: 4px 12px 12px; -webkit-overflow-scrolling: touch; }
+        .bk-card { background: var(--card-bg, #ffffff); border: 1px solid var(--border-color, #e3e9ee); border-radius: 16px; padding: 10px 12px; margin-bottom: 10px; }
+        .bk-card-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+        .bk-card-t { font-weight: 800; color: var(--navy, #12283a); font-size: 15px; }
+        .bk-card-tot { font-weight: 800; color: #000000; font-size: 15px; }
+        html[data-theme="dark"] .bk-card-tot, html[data-theme="dark"] .bk-amt { color: #ffffff; }
+        .bk-card-sub { font-size: 12px; color: #e65100; font-weight: 700; margin-bottom: 2px; }
+        .bk-line { border-top: 1px solid var(--border-color, #e9eef2); border-right: 4px solid #2e7d32; padding: 8px 8px 8px 0; padding-right: 8px; margin-top: 6px; border-radius: 4px; }
+        .bk-line.st-warn { border-right-color: #f28c28; }
+        .bk-line.st-bad { border-right-color: #d32f2f; background: rgba(211, 47, 47, 0.07); }
+        .bk-main { font-size: 15px; color: var(--text-color, #12283a); }
+        .bk-main.bk-att { font-size: 13px; color: #7a5a2a; font-weight: 700; }
+        .bk-amt { font-weight: 800; color: #000000; margin-inline-end: 8px; white-space: nowrap; }
+        .bk-amt small { font-size: 12px; font-weight: 800; }
+        .bk-name { font-weight: 700; }
+        .bk-qty { font-size: 13px; color: var(--muted, #8695a6); }
+        .bk-orig { font-size: 11.5px; color: var(--muted, #8695a6); margin-top: 2px; overflow-wrap: anywhere; }
+        .bk-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+        .bk-tag { font-size: 11.5px; font-weight: 700; border-radius: 8px; padding: 1px 7px; background: #eef3f6; color: #4a5a6a; }
+        .bk-tag.free { background: #e8f5e9; color: #2e7d32; }
+        .bk-tag.debt { background: #fff0e0; color: #e65100; }
+        .bk-tag.disc { background: #fdeaea; color: #d32f2f; }
+        .bk-tag.extra { background: #f3e8fb; color: #6a1b9a; }
+        .bk-msg { font-size: 12.5px; margin-top: 3px; font-weight: 700; }
+        .bk-msg.warn { color: #b45f06; }
+        .bk-msg.bad { color: #d32f2f; }
+        .bk-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+        .bk-acts button, .bk-card-h button { border: 1px solid #cfe3e6; background: var(--card-bg, #ffffff); color: var(--teal-primary, #137e84); border-radius: 9px; padding: 4px 10px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
+        .bk-acts button.del, .bk-card-h button.del { color: #d32f2f; border-color: #f3c5c5; }
+        .bk-foot { flex: none; display: flex; gap: 8px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--border-color, #e3e9ee); background: var(--card-bg, #ffffff); }
+        .bk-foot .btn { flex: 1; padding: 13px; font-size: 16px; border-radius: 13px; }
+        .bk-foot #bk-ok { flex: 1.7; }
+        .bk-pick-ov { z-index: 10070; }
+        .bk-pick-list { flex: 1 1 auto; overflow-y: auto; margin-top: 8px; min-height: 0; }
+        .bk-pick-item { padding: 11px 6px; border-bottom: 1px solid #e9eef2; font-weight: 700; font-size: 15px; color: #12283a; cursor: pointer; }
+        .bk-pick-item small { color: #6b7c8c; font-weight: 600; }
+        html[data-theme="dark"] .bk-pick-item { color: #ffffff; border-bottom-color: #2b3d4c; }
+        .bk-pick-search { width: 100%; box-sizing: border-box; font-family: inherit; font-size: 17px; padding: 10px 12px; border: 1px solid #cfdadf; border-radius: 12px; background: #f7fafb; color: #12283a; flex: none; }
+        html[data-theme="dark"] .bk-pick-search { background: #0f1b25; color: #ffffff; border-color: #324a5f; }
         .nav-badge { position: absolute; top: 2px; left: calc(50% + 6px); min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: #f28c28; color: #fff; font-size: 11px; font-style: normal; font-weight: 800; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
         .nav-item { position: relative; }
         #note-convert-banner { background: #e0f1f2; border: 1px solid #9fd0d3; border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
@@ -1202,6 +1268,17 @@
                     </div>
                 </div>
 
+                <div id="sel-partial-row" style="display:none; gap:8px; margin-top:8px;">
+                    <div style="flex:1;">
+                        <span class="form-label">مبلغ الدين (د.ل)</span>
+                        <input type="number" id="sel-partial-amount" placeholder="" onfocus="handlePosInputFocus(this)" style="margin:0;">
+                    </div>
+                    <div style="flex:1;">
+                        <span class="form-label">اسم المدين (اختياري)</span>
+                        <input type="text" id="sel-partial-name" placeholder="" onfocus="handlePosInputFocus(this)" style="margin:0;">
+                    </div>
+                </div>
+
                 <div class="checks-row" style="margin-top: 8px;">
                     <label class="checkbox-container" style="margin-top:0;">
                         <input type="checkbox" id="sel-discount-check" onchange="onSelDiscountCheck()">
@@ -1214,6 +1291,10 @@
                     <label class="checkbox-container" style="margin-top:0;">
                         <input type="checkbox" id="sel-free" onchange="onSelFreeDebtChange('free')">
                         <span>جعل المنتج مجاني</span>
+                    </label>
+                    <label class="checkbox-container" style="margin-top:0;">
+                        <input type="checkbox" id="sel-partial-debt" onchange="onSelPartialCheck()">
+                        <span>دين جزئي</span>
                     </label>
                 </div>
 
@@ -2243,6 +2324,9 @@
             document.getElementById('sel-free').disabled = false;
             document.getElementById('sel-debt').checked = false;
             document.getElementById('sel-debt').disabled = false;
+            document.getElementById('sel-partial-debt').checked = false;
+            document.getElementById('sel-partial-debt').disabled = false;
+            syncPartialRow();
 
             const btnFull = document.getElementById('mode-btn-fullbag');
             const btnHalf = document.getElementById('mode-btn-halfbag');
@@ -2522,16 +2606,38 @@
             showModal('تأكيد', 'هل تريد جعل الفاتورة كلها دين؟ سيُسجَّل المبلغ كدين مستحق ولا يُحسب ضمن المبيعات حتى يتم سداده.\nاكتب اسم المدين (اختياري):', 'text', askCartDebt);
         }
 
+        function syncPartialRow() {
+            const on = document.getElementById('sel-partial-debt').checked;
+            const row = document.getElementById('sel-partial-row');
+            row.style.display = on ? 'flex' : 'none';
+            if (!on) {
+                document.getElementById('sel-partial-amount').value = '';
+                document.getElementById('sel-partial-name').value = '';
+            }
+        }
+
+        function onSelPartialCheck() {
+            applyFreeDebtState('partial');
+            const box = document.getElementById('sel-partial-debt');
+            if (box.checked) {
+                const input = document.getElementById('sel-partial-amount');
+                try { input.focus({ preventScroll: true }); } catch (e) { try { input.focus(); } catch (e2) {} }
+                revealCartInput(input);
+                setTimeout(() => revealCartInput(input), 380);
+            }
+        }
+
         function applyFreeDebtState(which) {
             const freeBox = document.getElementById('sel-free');
             const debtBox = document.getElementById('sel-debt');
-            if (which === 'free') {
-                if (freeBox.checked) debtBox.checked = false;
-                debtBox.disabled = freeBox.checked;
-            } else {
-                if (debtBox.checked) freeBox.checked = false;
-                freeBox.disabled = debtBox.checked;
-            }
+            const partBox = document.getElementById('sel-partial-debt');
+            if (which === 'free' && freeBox.checked) { debtBox.checked = false; partBox.checked = false; }
+            else if (which === 'debt' && debtBox.checked) { freeBox.checked = false; partBox.checked = false; }
+            else if (which === 'partial' && partBox.checked) { freeBox.checked = false; debtBox.checked = false; }
+            freeBox.disabled = debtBox.checked || partBox.checked;
+            debtBox.disabled = freeBox.checked || partBox.checked;
+            partBox.disabled = freeBox.checked || debtBox.checked;
+            syncPartialRow();
             calculateSelTotal();
         }
 
@@ -2571,9 +2677,34 @@
             if (!activeSelection || !activeProductObj) return;
             const disc = parseFloat(document.getElementById('sel-discount').value) || 0;
             const isFreeNow = document.getElementById('sel-free').checked;
-            if (disc > 0 && !isFreeNow && (activeSelection.qty || 0) > 0) {
-                const afterDisc = Math.max(0, (activeSelection.qty * activeSelection.price) - disc);
+            const qtyNow = activeSelection.qty || 0;
+            const afterDisc = Math.max(0, (qtyNow * activeSelection.price) - disc);
+            const partOn = !isFreeNow && document.getElementById('sel-partial-debt').checked;
+            const partAmt = partOn ? (parseFloat(document.getElementById('sel-partial-amount').value) || 0) : 0;
+            const partName = String(document.getElementById('sel-partial-name').value || '').trim();
+            if (partOn && qtyNow > 0) {
+                if (!(partAmt > 0)) {
+                    showModal('تنبيه', 'اكتب مبلغ الدين الجزئي، أو ألغِ تحديد «دين جزئي».', false, () => {});
+                    return;
+                }
+                if (partAmt >= afterDisc - 1e-9) {
+                    showModal('تنبيه', `مبلغ الدين الجزئي (${formatNum(partAmt)} د.ل) يجب أن يكون أقل من إجمالي المنتج (${formatNum(afterDisc)} د.ل).\nإذا كان المنتج كله دين فاستخدم «جعل المنتج دين».`, false, () => {});
+                    return;
+                }
+            }
+            const hasDisc = disc > 0 && !isFreeNow && qtyNow > 0;
+            const hasPart = partAmt > 0 && qtyNow > 0;
+            if (hasDisc && !hasPart) {
                 showModal('تأكيد الخصم', `هل تريد إضافة خصم ${formatNum(disc)} د.ل على هذا المنتج؟\nالمبلغ بعد الخصم: ${formatNum(afterDisc)} د.ل`, false, () => { addToCartChecked(); });
+                return;
+            }
+            if (hasPart) {
+                const partText = `سيُسجَّل ${formatNum(partAmt)} د.ل كدين${partName ? ' على: ' + partName : ''}، والمدفوع الآن: ${formatNum(afterDisc - partAmt)} د.ل.\nيبقى الدين ظاهراً في سجل المبيعات حتى يتم سداده.`;
+                if (hasDisc) {
+                    showModal('تأكيد الخصم والدين الجزئي', `خصم ${formatNum(disc)} د.ل على هذا المنتج، والمبلغ بعد الخصم: ${formatNum(afterDisc)} د.ل.\n` + partText, false, () => { addToCartChecked(); });
+                } else {
+                    showModal('تأكيد الدين الجزئي', partText, false, () => { addToCartChecked(); });
+                }
                 return;
             }
             addToCartChecked();
@@ -2672,6 +2803,8 @@
             if (!isFree) {
                 itemTotal = Math.max(0, (qty * activeSelection.price) - discount);
             }
+            const partOn = !isFree && !isDebt && document.getElementById('sel-partial-debt').checked;
+            const partialDebtVal = partOn ? Math.min(Math.max(parseFloat(document.getElementById('sel-partial-amount').value) || 0, 0), itemTotal) : 0;
 
             const newCartItem = {
                 id: activeSelection.id,
@@ -2689,6 +2822,8 @@
                 isFree: isFree,
                 isDebt: isDebt,
                 debtorName: isDebt ? selDebtorName : '',
+                partialDebt: partialDebtVal > 0 ? partialDebtVal : 0,
+                partialDebtorName: partialDebtVal > 0 ? String(document.getElementById('sel-partial-name').value || '').trim() : '',
                 isNegativeSale: isNegative,
                 total: itemTotal,
                 note: note
@@ -2752,8 +2887,14 @@
             const debtBox = document.getElementById('sel-debt');
             freeBox.checked = !!item.isFree;
             debtBox.checked = !!item.isDebt && !item.isFree;
-            freeBox.disabled = debtBox.checked;
-            debtBox.disabled = freeBox.checked;
+            const partBox = document.getElementById('sel-partial-debt');
+            partBox.checked = Number(item.partialDebt) > 0 && !item.isFree && !item.isDebt;
+            document.getElementById('sel-partial-amount').value = partBox.checked ? formatNum(item.partialDebt) : '';
+            document.getElementById('sel-partial-name').value = partBox.checked ? (item.partialDebtorName || '') : '';
+            freeBox.disabled = debtBox.checked || partBox.checked;
+            debtBox.disabled = freeBox.checked || partBox.checked;
+            partBox.disabled = freeBox.checked || debtBox.checked;
+            syncPartialRow();
             selDebtorName = item.debtorName || '';
 
             document.getElementById('btn-add-to-cart').textContent = 'حفظ التعديل';
@@ -2805,6 +2946,7 @@
 
                     ${item.isNegativeSale ? `<div style="font-size:14px; color:#d32f2f; margin-top:2px; font-weight:bold;">[بيع بالسالب - مخزون غير متوفر]</div>` : ''}
                     ${item.isDebt ? `<div style="font-size:14px; color:#e65100; margin-top:2px; font-weight:bold;">[دين${item.debtorName ? ': ' + escapeHtml(item.debtorName) : ''}]</div>` : ''}
+                    ${(!item.isDebt && !item.isFree && Number(item.partialDebt) > 0) ? `<div style="font-size:14px; color:#e65100; margin-top:2px; font-weight:bold;">[دين جزئي: ${formatNum(item.partialDebt)} د.ل${item.partialDebtorName ? ' — ' + escapeHtml(item.partialDebtorName) : ''}]</div>` : ''}
                     ${item.halfSource === 'open' ? `<div style="font-size:14px; color:#6a1b9a; margin-top:2px;">[من الوزن المفتوح]</div>` : ''}
                     ${item.extraKg > 0 ? `<div style="font-size:14px; color:#6a1b9a; margin-top:2px;">[إضافة غير محسوبة: ${formatNum(item.extraKg * 1000)} جرام (${formatNum(item.extraKg * item.price)} د.ل)]</div>` : ''}
                     ${item.discount > 0 ? `<div style="font-size:14px; color:#d32f2f; margin-top:2px;">[خصم على المنتج: ${formatNum(item.discount)} د.ل]</div>` : ''}
@@ -3905,7 +4047,7 @@
             const items = Array.isArray(sale && sale.items) ? sale.items : [];
             const rawTotal = items.reduce((acc, i) => acc + Number(i.total || 0), 0);
             const D = Math.min(Math.max(Number((sale && sale.globalDiscount) || 0), 0), rawTotal);
-            return items.map(i => {
+            return items.flatMap(i => {
                 const t = Number(i.total || 0);
                 const qty = Number(i.qty || 0);
                 const cost = Number(i.cost || 0);
@@ -3916,13 +4058,23 @@
                 const free = !!i.isFree;
                 const price = Number(i.price || 0);
                 const itemDisc = free ? 0 : Math.min(Number(i.discount || 0), qty * price);
-                return {
+                const rec = {
                     item: i, isBag, amount, profit, costed: cost > 0,
                     freeValue: free ? qty * price : 0,
                     freeProfitImpact: (free && cost > 0) ? qty * price : 0,
                     discount: itemDisc + share,
                     discountProfitImpact: cost > 0 ? itemDisc + share : 0
                 };
+                const f = partialDebtFraction(i);
+                if (f >= 1) return [Object.assign({}, rec, { item: Object.assign({}, i, { isDebt: true }) })];
+                if (!(f > 0)) return [rec];
+                /* partial debt: one record for the part paid now and one for the part owed */
+                const part = (k, asDebt) => Object.assign({}, rec, {
+                    item: asDebt ? Object.assign({}, i, { isDebt: true }) : i,
+                    amount: rec.amount * k, profit: rec.profit * k,
+                    discount: rec.discount * k, discountProfitImpact: rec.discountProfitImpact * k
+                });
+                return [part(1 - f, false), part(f, true)];
             });
         }
 
@@ -4547,7 +4699,7 @@
             const total = Math.max(0, editedItems.reduce((sum, item) => sum + Number(item.total || 0), 0) - globalDiscount);
 
             const signature = (items, discount, debt, customer, debtor, cnote) => JSON.stringify([
-                items.map(i => [i.id, i.sellMode, i.qty, i.price, i.total, i.discount, i.note || '', !!i.isFree, !!i.isDebt, i.debtorName || '', i.extraKg || 0, i.halfSource || '']),
+                items.map(i => [i.id, i.sellMode, i.qty, i.price, i.total, i.discount, i.note || '', !!i.isFree, !!i.isDebt, i.debtorName || '', i.extraKg || 0, i.halfSource || '', Number(i.partialDebt) || 0, i.partialDebtorName || '']),
                 Number(discount || 0), !!debt, customer || '', debtor || '', cnote || ''
             ]);
             if (signature(editedItems, globalDiscount, cartDebt, customerName, debtorName, cartNote) === signature(sale.items || [], sale.globalDiscount, sale.cartDebt, sale.customerName, sale.debtorName, sale.cartNote)) {
@@ -4611,6 +4763,14 @@
 
         /* Splits a sale into the part paid now (cash) and the part owed (debt), with amounts and profits.
            Profit is counted only for products that have a cost entered (cost > 0). */
+        /* Share (0..1) of an item that is owed as a partial debt. Whole-debt and free items are not split. */
+        function partialDebtFraction(i) {
+            if (!i || i.isDebt || i.isFree) return 0;
+            const pd = Number(i.partialDebt || 0), t = Number(i.total || 0);
+            if (!(pd > 0) || !(t > 0)) return 0;
+            return Math.min(1, pd / t);
+        }
+
         function getSaleBreakdown(sale) {
             const items = Array.isArray(sale && sale.items) ? sale.items : [];
             const rawTotal = items.reduce((acc, i) => acc + Number(i.total || 0), 0);
@@ -4618,14 +4778,17 @@
             const groups = { cash: { raw: 0, costedRaw: 0, cost: 0 }, debt: { raw: 0, costedRaw: 0, cost: 0 } };
 
             items.forEach(i => {
-                const g = i.isDebt ? groups.debt : groups.cash;
-                const t = Number(i.total || 0);
-                g.raw += t;
-                const cost = Number(i.cost || 0);
-                if (cost > 0) {
-                    g.costedRaw += t;
-                    g.cost += Number(i.qty || 0) * cost;
-                }
+                const f = partialDebtFraction(i);
+                const parts = i.isDebt ? [[groups.debt, 1]] : (f >= 1 ? [[groups.debt, 1]] : (f > 0 ? [[groups.debt, f], [groups.cash, 1 - f]] : [[groups.cash, 1]]));
+                parts.forEach(([g, k]) => {
+                    const t = Number(i.total || 0) * k;
+                    g.raw += t;
+                    const cost = Number(i.cost || 0);
+                    if (cost > 0) {
+                        g.costedRaw += t;
+                        g.cost += Number(i.qty || 0) * cost * k;
+                    }
+                });
             });
 
             const finish = (g) => {
@@ -4648,7 +4811,7 @@
             const names = [];
             const add = n => { n = String(n || '').trim(); if (n && !names.includes(n)) names.push(n); };
             add(sale.debtorName);
-            (sale.items || []).forEach(i => { if (i.isDebt) add(i.debtorName); });
+            (sale.items || []).forEach(i => { if (i.isDebt) add(i.debtorName); else if (Number(i.partialDebt) > 0 && !i.isFree) add(i.partialDebtorName); });
             return names.join('، ');
         }
 
@@ -4696,6 +4859,7 @@
                                         ${i.isNegativeSale ? '<span style="color:#d32f2f; font-weight:bold;">[مبيعات بالسالب]</span>' : ''} 
                                         ${i.isFree ? '<span style="color:#2e7d32;">[مجاني]</span>' : ''} 
                                         ${i.isDebt ? `<span style="color:#e65100; font-weight:bold;">[دين${i.debtorName ? ': ' + escapeHtml(i.debtorName) : ''}]</span>` : ''} 
+                                        ${(!i.isDebt && !i.isFree && Number(i.partialDebt) > 0) ? `<span style="color:#e65100; font-weight:bold;">[دين جزئي: ${formatNum(i.partialDebt)} د.ل${i.partialDebtorName ? ' — ' + escapeHtml(i.partialDebtorName) : ''}]</span>` : ''} 
                                         ${i.halfSource === 'open' ? '<span style="color:#6a1b9a;">[من الوزن المفتوح]</span>' : ''} 
                                         ${(i.extraKg > 0 && i.qty > 0) ? `<span style="color:#6a1b9a;">[إضافة: ${formatNum(i.extraKg * 1000)} جرام (${formatNum(i.extraKg * i.price)} د.ل)]</span>` : ''} 
                                         ${i.discount > 0 ? `<span style="color:#d32f2f;">[خصم: ${formatNum(i.discount)} د.ل]</span>` : ''} 
@@ -5667,7 +5831,7 @@
             const buyer = (document.getElementById('cart-customer').value || '').trim();
             const cartDebt = !!document.getElementById('cart-debt').checked;
             const unitOf = (i) => i.unitType === 'weight' ? 'كجم' : (i.unitType === 'unit' ? 'قطعة' : 'شكارة');
-            const rows = cart.map(i => `<div class="rc-row"><span><strong>${escapeHtml(i.name)}</strong> × ${formatNum(i.qty)} ${unitOf(i)}${i.discount > 0 ? ` <small>(خصم ${formatNum(i.discount)} د.ل)</small>` : ''}${(cartDebt || i.isDebt) && !i.isFree ? ' <span class="rc-tag">[دين]</span>' : ''}</span><b>${i.isFree ? 'مجاني' : formatNum(i.total) + ' د.ل'}</b></div>`).join('');
+            const rows = cart.map(i => `<div class="rc-row"><span class="rc-item"><b class="rc-amt">${i.isFree ? 'مجاني' : formatNum(i.total) + ' <small>د.ل</small>'}</b><strong>${escapeHtml(i.name)}</strong> × ${formatNum(i.qty)} ${unitOf(i)}${i.discount > 0 ? ` <small>(خصم ${formatNum(i.discount)} د.ل)</small>` : ''}${(cartDebt || i.isDebt) && !i.isFree ? ' <span class="rc-tag">[دين]</span>' : ''}${(!cartDebt && !i.isDebt && !i.isFree && Number(i.partialDebt) > 0) ? ' <span class="rc-tag">[دين جزئي ' + formatNum(i.partialDebt) + ' د.ل]</span>' : ''}</span></div>`).join('');
             return `<div class="rc-paper rc-sale">
                 <div class="rc-rows">
                 <div class="rc-row"><span>التاريخ</span><b>${receiptNow(convertingNote ? convertingNote.ts : undefined)}</b></div>
@@ -6901,9 +7065,30 @@
                 qsHintTimer = setTimeout(hideQsHint, 900);
             }
             function hideQsHint() { clearTimeout(qsHintTimer); qsHint.classList.remove('show'); }
+            /* v57: a long press (about 3 seconds, finger not moving) opens the bulk-sales box */
+            var qsHoldTimer = null, qsHoldFired = false;
+            function qsHoldCancel() {
+                if (qsHoldTimer) { clearTimeout(qsHoldTimer); qsHoldTimer = null; }
+                qs.classList.remove('qs-holding');
+            }
+            function qsHoldStart() {
+                qsHoldCancel();
+                qsHoldFired = false;
+                qs.classList.add('qs-holding');
+                qsHoldTimer = setTimeout(function () {
+                    qsHoldTimer = null;
+                    qs.classList.remove('qs-holding');
+                    qsHoldFired = true;
+                    hideQsHint();
+                    vib(40);
+                    qsReset(true);
+                    if (window.openBulkBox) window.openBulkBox();
+                }, 3000);
+            }
             makeSwipe(qs, {
-                onStart: showQsHint,
+                onStart: function () { showQsHint(); qsHoldStart(); },
                 onMove: function (dx, dy) {
+                    qsHoldCancel();
                     if (dx < 0 && Math.abs(dx) > Math.abs(dy) * 1.2) {
                         var lf = Math.max(0, Math.min(-dx, 90));
                         qs.style.transition = 'none';
@@ -6918,6 +7103,8 @@
                     qs.style.opacity = String(0.9 * (1 - 0.55 * p));
                 },
                 onEnd: function (dx, dy, moved, cancelled) {
+                    qsHoldCancel();
+                    if (qsHoldFired) { qsHoldFired = false; return; }
                     if (!cancelled && moved && -dx >= 56 && Math.abs(dx) > Math.abs(dy) * 1.2) { hideQsHint(); qsReset(true); vib(); if (window.openNoteBox) window.openNoteBox(); return; }
                     if (!cancelled && moved && -dy >= QS_COMMIT) { hideQsHint(); flyQuickSale(); }
                     else qsReset(true);
@@ -7081,6 +7268,42 @@
         }
         function refreshNotesUI() { renderQuickNotes(); }
 
+        /* v57: a box that follows the on-screen keyboard (its bottom sits right above it) */
+        function qnDock(ov) {
+            const vv = window.visualViewport;
+            const apply = function () { if (!vv) return; ov.style.top = vv.offsetTop + 'px'; ov.style.height = vv.height + 'px'; };
+            apply();
+            if (vv) { vv.addEventListener('resize', apply); vv.addEventListener('scroll', apply); }
+            document.body.classList.add('bk-open');
+            return function () {
+                if (vv) { vv.removeEventListener('resize', apply); vv.removeEventListener('scroll', apply); }
+                if (!document.querySelector('.qn-overlay, .bk-review')) document.body.classList.remove('bk-open');
+            };
+        }
+        const QN_ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+        const QN_ICON_UNDO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5L3.5 9.5 8 14"/><path d="M4 9.5h9a6 6 0 0 1 0 12H9"/></svg>';
+        /* X clears the text at once and turns into Undo; Undo brings it back and turns into X again. Typing after clearing drops the undo. */
+        function qnAttachClear(btn, ta, onChange) {
+            let backup = null;
+            const paint = function () {
+                btn.innerHTML = backup === null ? QN_ICON_X : QN_ICON_UNDO;
+                btn.classList.toggle('undo', backup !== null);
+                btn.setAttribute('aria-label', backup === null ? 'مسح الكل' : 'تراجع');
+                btn.disabled = backup === null && !ta.value;
+            };
+            btn.addEventListener('pointerdown', function (e) { e.preventDefault(); });
+            btn.addEventListener('click', function () {
+                if (backup === null) { if (!ta.value) return; backup = ta.value; ta.value = ''; }
+                else { ta.value = backup; backup = null; }
+                paint();
+                if (onChange) onChange();
+                try { ta.focus(); } catch (e) {}
+            });
+            ta.addEventListener('input', function () { if (backup !== null) backup = null; paint(); });
+            paint();
+            return paint;
+        }
+
         function openNoteBox(editId) {
             if (document.getElementById('qn-overlay')) return;
             const editing = editId ? quickNotes.find(n => String(n.id) === String(editId)) : null;
@@ -7089,30 +7312,44 @@
             const ov = document.createElement('div');
             ov.id = 'qn-overlay';
             ov.className = 'qn-overlay';
-            ov.innerHTML = '<div class="qn-box"><div class="qn-title">' + (editing ? 'تعديل الملاحظة' : 'ملاحظة سريعة') + '</div>' +
+            ov.innerHTML = '<div class="qn-box"><div class="qn-top"><button type="button" class="qn-x" id="qn-x"></button><div class="qn-title">' + (editing ? 'تعديل الملاحظة' : 'ملاحظة سريعة') + '</div></div>' +
                 '<textarea id="qn-text" placeholder="اكتب ما بعته بسرعة، سطر لكل منتج"></textarea>' +
-                '<div class="qn-hint">' + (editing ? 'تعديل نص الملاحظة فقط.' : 'ما تكتبه يُحفظ تلقائياً حتى لو أغلقت النافذة.') + '</div>' +
-                '<div class="qn-btns"><button type="button" class="btn btn-teal" id="qn-save">حفظ</button><button type="button" class="btn btn-red" id="qn-close">إغلاق</button></div></div>';
+                '<div class="qn-hint">' + (editing ? 'اضغط خارج النافذة لحفظ التعديل، أو «إلغاء» لتجاهله.' : 'اضغط خارج النافذة لحفظ الملاحظة، أو «إلغاء» لتجاهلها.') + '</div>' +
+                '<div class="qn-btns"><button type="button" class="btn btn-teal" id="qn-save">حفظ</button><button type="button" class="btn btn-red" id="qn-close">إلغاء</button></div></div>';
             document.body.appendChild(ov);
+            const undock = qnDock(ov);
             const ta = ov.querySelector('#qn-text');
             ta.value = start;
-            ta.addEventListener('input', function () { if (!editing) { try { localStorage.setItem(QN_DRAFT_KEY, ta.value); } catch (e) {} } });
-            ov.querySelector('#qn-close').addEventListener('click', function () { ov.remove(); });
-            ov.querySelector('#qn-save').addEventListener('click', function () {
+            const dropDraft = function () { if (!editing) { try { localStorage.removeItem(QN_DRAFT_KEY); } catch (e) {} } };
+            const saveDraft = function () { if (!editing) { try { if (ta.value) localStorage.setItem(QN_DRAFT_KEY, ta.value); else localStorage.removeItem(QN_DRAFT_KEY); } catch (e) {} } };
+            ta.addEventListener('input', saveDraft);
+            qnAttachClear(ov.querySelector('#qn-x'), ta, saveDraft);
+            const close = function () { ov.remove(); undock(); };
+            const commit = function (fromOutside) {
                 const t = ta.value.trim();
-                if (!t) { try { ta.focus(); } catch (e) {} return; }
-                if (editing) { editing.text = t; editing.editedAt = new Date().toISOString(); }
-                else {
+                if (!t) {
+                    if (fromOutside) { dropDraft(); close(); } else { try { ta.focus(); } catch (e) {} }
+                    return;
+                }
+                if (editing) {
+                    if (t !== editing.text) { editing.text = t; editing.editedAt = new Date().toISOString(); }
+                } else {
                     const now = new Date();
                     const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
                     quickNotes.unshift({ id: cloudUuid(), ts: now.toISOString(), cashier: activeCashier, dayName: days[now.getDay()], text: t });
-                    try { localStorage.removeItem(QN_DRAFT_KEY); } catch (e) {}
+                    dropDraft();
                 }
                 saveQuickNotes();
-                ov.remove();
+                close();
                 refreshNotesUI();
-            });
-            try { ta.focus(); } catch (e) {}
+            };
+            ov.querySelector('#qn-save').addEventListener('click', function () { commit(false); });
+            ov.querySelector('#qn-close').addEventListener('click', function () { dropDraft(); close(); });
+            /* tapping outside the box saves the note (a drag that started inside the text never counts) */
+            let downOnOverlay = false;
+            ov.addEventListener('pointerdown', function (e) { downOnOverlay = (e.target === ov); });
+            ov.addEventListener('click', function (e) { if (e.target === ov && downOnOverlay) commit(true); downOnOverlay = false; });
+            try { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) {}
         }
         window.openNoteBox = openNoteBox;
 
@@ -7435,6 +7672,633 @@
             window.addEventListener('resize', queue);
             queue();
         })();
+    </script>
+    <script>
+        /* v57: bulk sales from text (long-press the quick-sale pill).
+           Blank lines separate invoices, every other line is one product. The text is read into review cards;
+           nothing is saved until the person confirms. */
+        const BK_DRAFT_KEY = 'pos_bulk_draft', BK_LAST_KEY = 'pos_last_import', BK_HASH_KEY = 'pos_bulk_hashes';
+        const BK = {
+            disc: /^(سامحته|سامحتها|سامحتهم|سامحتو|سامحت|سماح|خصمت|خصم|خصمته|نقصته|نقصتها|نقصت|نزلته|نزلتها|نزلت|نزلتله|نزلتلو)$/,
+            fill: /^(في|ب|ل|له|لو|لها|ليه|علي|من|مبلغ|بمبلغ|بقيمه|قيمه)$/,
+            whole: /^(الفاتوره|فاتوره|للفاتوره|الاجمالي|اجمالي|المجموع|مجموع|الحساب|حساب|الكل|للكل|كل|كامل|كامله|كلها|كله)$/,
+            free: /^(بلاش|ببلاش|مجاني|مجانا|مجانيه|هديه|عطيته|عطيتها|عطيتهم|عطيتلو|عطيتو|اعطيته|اعطيتها|اهديته|اهديتها)$/,
+            debt: /^(دين|بالدين|سلف|بالسلف|اجل|بالاجل|ديون)$/,
+            bag: /^(شوال|اشوال|شوالات|شوالين|جوال|اجوال|اجوله|جوالات)$/,
+            drop: /^(بيع|بعت|باع|ببيع|بعته|بعتها|وبيع)$/
+        };
+        let bkOpenedAt = null;   /* imported sales get the day this box was opened, never another day */
+        let bkState = null, bkView = null, bkText = '';
+
+        /* ---------- reading one line ---------- */
+        function bkIsNum(w) { return /^\d+(\.\d+)?$/.test(w || ''); }
+        function bkIsMoney(w) { return !!w && QN_U.dinar.test(w); }
+        function bkIsGurush(w) { return !!w && QN_U.gurush.test(w); }
+        function bkIsWord(w) {
+            return !!w && !bkIsNum(w) && w !== '+' && !QN_U.dinar.test(w) && !QN_U.gurush.test(w) && !QN_U.gram.test(w) &&
+                !QN_U.kilo.test(w) && !QN_U.count.test(w) && !QN_U.extra.test(w) && !QN_U.fill.test(w) && !BK.fill.test(w);
+        }
+        function bkTokens(raw) {
+            let s = normalizeSearchText(raw).replace(/(\d)[,٫](\d)/g, '$1.$2').replace(/[،,;؛]/g, ' ').replace(/٫/g, '.');
+            s = s.replace(/(\d)(?=[^\d\s.])/g, '$1 ').replace(/([^\d\s.])(?=\d)/g, '$1 ').replace(/\+/g, ' + ');
+            return s.split(' ').filter(Boolean).map(w => BK.bag.test(w) ? 'شكاره' : w).filter(w => !BK.drop.test(w));
+        }
+        function bkParseLine(raw) {
+            const t = bkTokens(raw);
+            const used = new Set();
+            const p = { raw, t, used, discount: 0, discountWhole: 0, discAssumed: false, discNoAmount: false, free: false, debt: null };
+            /* discount: "سامحته في 1 دينار" (a word showing the whole bill makes it a whole-invoice discount) */
+            for (let i = 0; i < t.length; i++) {
+                if (used.has(i) || !BK.disc.test(t[i])) continue;
+                const idxs = [i];
+                let j = i + 1, wholeHit = false;
+                while (j < t.length && !used.has(j) && (BK.fill.test(t[j]) || BK.whole.test(t[j]))) { if (BK.whole.test(t[j])) wholeHit = true; idxs.push(j); j++; }
+                if (j < t.length && bkIsNum(t[j])) {
+                    let n = parseFloat(t[j]);
+                    const numIdx = j;
+                    idxs.push(j); j++;
+                    if (j < t.length && bkIsMoney(t[j])) { idxs.push(j); j++; }
+                    else if (j < t.length && bkIsGurush(t[j])) { n = n / 100; idxs.push(j); j++; }
+                    else if (!/\./.test(t[numIdx])) p.discAssumed = true;
+                    while (j < t.length && !used.has(j) && (BK.fill.test(t[j]) || BK.whole.test(t[j]))) { if (BK.whole.test(t[j])) wholeHit = true; idxs.push(j); j++; }
+                    if (wholeHit) p.discountWhole += n; else p.discount += n;
+                } else p.discNoAmount = true;
+                idxs.forEach(k => used.add(k));
+            }
+            /* free */
+            t.forEach((w, i) => { if (!used.has(i) && BK.free.test(w)) { p.free = true; used.add(i); } });
+            /* debt: "3 دينار دين" or "دين 3 دينار" (+ the debtor's name after it) */
+            for (let d = 0; d < t.length; d++) {
+                if (used.has(d) || !BK.debt.test(t[d])) continue;
+                const dd = { d, amount: null, amtIdx: [], afterIdx: [], beforeHas: false, otherMoney: 0 };
+                const unitAt = k => bkIsMoney(t[k]) || bkIsGurush(t[k]);
+                if (bkIsNum(t[d + 1]) && !used.has(d + 1) && unitAt(d + 2) && !used.has(d + 2)) {
+                    dd.amount = parseFloat(t[d + 1]) / (bkIsGurush(t[d + 2]) ? 100 : 1); dd.amtIdx = [d + 1, d + 2];
+                } else if (d >= 2 && bkIsNum(t[d - 2]) && unitAt(d - 1) && !used.has(d - 2) && !used.has(d - 1)) {
+                    dd.amount = parseFloat(t[d - 2]) / (bkIsGurush(t[d - 1]) ? 100 : 1); dd.amtIdx = [d - 2, d - 1];
+                }
+                const span = dd.amtIdx.concat([d]);
+                const cStart = Math.min.apply(null, span), cEnd = Math.max.apply(null, span);
+                for (let i = 0; i < cStart; i++) if (!used.has(i) && bkIsWord(t[i])) { dd.beforeHas = true; break; }
+                for (let i = 0; i < t.length; i++) if (i !== d && !dd.amtIdx.includes(i) && !used.has(i) && bkIsNum(t[i]) && bkIsMoney(t[i + 1])) dd.otherMoney++;
+                for (let i = cEnd + 1; i < t.length && !used.has(i) && bkIsWord(t[i]); i++) dd.afterIdx.push(i);
+                p.debt = dd;
+                break;
+            }
+            return p;
+        }
+        function bkParseText(text) {
+            const carts = [];
+            let cur = null;
+            String(text || '').split(/\r?\n/).forEach(raw => {
+                const line = raw.replace(/[\u200b-\u200f\u202a-\u202e\ufeff]/g, '').trim();
+                if (!line) { cur = null; return; }
+                if (!cur) { cur = { lines: [], deleted: false }; carts.push(cur); }
+                cur.lines.push({ raw: line, p: bkParseLine(line), ov: {} });
+            });
+            return { carts };
+        }
+
+        /* ---------- finding the product (typos, ة/ه, ط/ظ, any word order) ---------- */
+        function bkSq(s) { return normalizeSearchText(s).replace(/ظ/g, 'ط'); }
+        function bkStrip(w) { return (w.length > 3 && w.startsWith('ال')) ? w.slice(2) : w; }
+        function bkWordClose(a, b) {
+            if (a === b) return true;
+            if (a.length < 4 || b.length < 4 || Math.abs(a.length - b.length) > 1) return false;
+            let i = 0, j = 0, diff = 0;
+            while (i < a.length && j < b.length) {
+                if (a[i] === b[j]) { i++; j++; continue; }
+                if (++diff > 1) return false;
+                if (a.length > b.length) i++; else if (b.length > a.length) j++; else { i++; j++; }
+            }
+            return diff + (a.length - i) + (b.length - j) <= 1;
+        }
+        function bkFindProduct(nameTokens) {
+            const toks = nameTokens.map(w => bkStrip(bkSq(w))).filter(w => w.length >= 2);
+            if (!toks.length) return null;
+            const cands = [];
+            products.forEach(p => {
+                const hay = bkSq(p.name);
+                const words = hay.split(' ').filter(Boolean).map(bkStrip);
+                let sc = 0;
+                toks.forEach(t => { if (hay.includes(t) || words.some(w => bkWordClose(w, t))) sc++; });
+                if (!sc) return;
+                const covered = w => toks.some(t => t === w || bkWordClose(t, w));
+                const extra = words.filter(w => !covered(w)).length;
+                cands.push({ p, sc, extra, exact: words.length > 0 && extra === 0 && sc === toks.length, len: String(p.name).length });
+            });
+            if (!cands.length) return null;
+            const bestSc = Math.max.apply(null, cands.map(c => c.sc));
+            if (bestSc < Math.ceil(toks.length / 2)) return null;
+            const top = cands.filter(c => c.sc === bestSc).sort((a, b) => (b.exact - a.exact) || (a.extra - b.extra) || (a.len - b.len));
+            const sure = bestSc === toks.length && (top.length === 1 || (top[0].exact && !top[1].exact));
+            const others = cands.filter(c => c !== top[0] && c.sc >= Math.ceil(toks.length / 2)).sort((a, b) => (b.sc - a.sc) || (a.extra - b.extra)).slice(0, 3).map(c => c.p);
+            return { prod: top[0].p, others, sure };
+        }
+
+        /* ---------- deciding what the debt words mean ---------- */
+        function bkResolveDebt(p, hasPrev) {
+            const dd = p.debt;
+            const out = { remove: new Set(), whole: false, partial: null, debtor: '', modifierOnly: false };
+            if (!dd) return out;
+            const words = idxs => idxs.map(i => p.t[i]).join(' ');
+            out.remove.add(dd.d);
+            if (dd.amount === null) {
+                out.whole = true;
+                if (dd.beforeHas && dd.afterIdx.length) { out.debtor = words(dd.afterIdx); dd.afterIdx.forEach(i => out.remove.add(i)); }
+                return out;
+            }
+            const asPartial = idxs => {
+                out.partial = dd.amount;
+                dd.amtIdx.forEach(i => out.remove.add(i));
+                if (idxs.length) { out.debtor = words(idxs); idxs.forEach(i => out.remove.add(i)); }
+            };
+            if (dd.otherMoney > 0) { asPartial(dd.afterIdx); return out; }
+            if (dd.beforeHas) { out.whole = true; out.debtor = dd.afterIdx.length ? words(dd.afterIdx) : ''; dd.afterIdx.forEach(i => out.remove.add(i)); return out; }
+            /* the debt clause starts the line and there is no other amount: either a note for the line above, or a debt sale */
+            const m = dd.afterIdx.length ? bkFindProduct(dd.afterIdx.map(i => p.t[i])) : null;
+            if (hasPrev && !(m && m.sure)) { asPartial(dd.afterIdx); out.modifierOnly = true; return out; }
+            out.whole = true;
+            return out;
+        }
+
+        /* ---------- building the invoices from the lines ---------- */
+        function bkMsg(lv, kind, text) { if (!lv.msgs.some(m => m.text === text)) lv.msgs.push({ kind, text }); }
+        function bkUnit(it) { return it.unitType === 'weight' ? 'كجم' : (it.unitType === 'unit' ? 'قطعة' : 'شكارة'); }
+
+        function bkApplyMods(tl, mods, lv) {
+            const it = tl.items[0];
+            if (mods.extraG > 0 || mods.extraGr > 0) {
+                if (it.unitType === 'weight' && it.sellMode === 'retail') it.extraKg = (it.extraKg || 0) + (mods.extraG / 100) / it.price + mods.extraGr / 1000;
+                else bkMsg(lv, 'warn', 'الإضافة لا تنطبق على هذا المنتج، تم تجاهلها');
+            }
+            if (mods.discount > 0) {
+                if (it.isFree) bkMsg(lv, 'warn', 'الخصم لا معنى له على منتج مجاني، تم تجاهله');
+                else {
+                    const raw = it.total + (it.discount || 0);
+                    let d = mods.discount;
+                    if (d > raw - (it.discount || 0) + 1e-9) { d = Math.max(0, raw - (it.discount || 0)); bkMsg(lv, 'warn', 'الخصم أكبر من سعر المنتج، اقتُصر على ' + formatNum(d) + ' د.ل'); }
+                    it.discount = (it.discount || 0) + d;
+                    it.total = Math.max(0, raw - it.discount);
+                }
+            }
+            if (mods.free) { it.isFree = true; it.isDebt = false; it.partialDebt = 0; it.discount = 0; it.total = 0; }
+            if (mods.whole) {
+                if (it.isFree) bkMsg(lv, 'warn', 'المنتج مجاني فلا يمكن أن يكون دين، تم تجاهل الدين');
+                else { it.isDebt = true; it.debtorName = mods.debtor || it.debtorName || ''; it.partialDebt = 0; }
+            }
+            if (mods.partial !== null) {
+                if (it.isFree || it.isDebt) bkMsg(lv, 'warn', 'لا يمكن إضافة دين جزئي على منتج مجاني أو دين كامل، تم تجاهله');
+                else if (mods.partial >= it.total - 1e-9) {
+                    it.isDebt = true; it.debtorName = mods.debtor || ''; it.partialDebt = 0;
+                    bkMsg(lv, 'warn', 'مبلغ الدين يساوي أو يزيد عن سعر المنتج، اعتُبر المنتج كله دين');
+                } else { it.partialDebt = mods.partial; it.partialDebtorName = mods.debtor || ''; }
+            }
+        }
+        function bkTags(lv, mods, r) {
+            const tag = (k, t) => lv.tags.push({ k, t });
+            if (mods.free) tag('free', 'مجاني');
+            if (mods.discount > 0) tag('disc', 'خصم ' + formatNum(mods.discount) + ' د.ل');
+            if (mods.discountWhole > 0) tag('disc', 'خصم على الفاتورة ' + formatNum(mods.discountWhole) + ' د.ل');
+            if (mods.whole && !mods.free) tag('debt', 'دين' + (mods.debtor ? ': ' + mods.debtor : ''));
+            if (mods.partial !== null && !mods.free) tag('debt', 'دين جزئي ' + formatNum(mods.partial) + ' د.ل' + (mods.debtor ? ' — ' + mods.debtor : ''));
+            const g = (r ? r.extraGurush : 0) + (mods.extraG || 0), gr = (r ? r.extraGrams : 0) + (mods.extraGr || 0);
+            if (g > 0) tag('extra', 'زيادة ' + formatNum(g) + ' قرش');
+            if (gr > 0) tag('extra', 'زيادة ' + formatNum(gr) + ' جرام');
+        }
+
+        function bkBuildLine(ln, prev, cv) {
+            const p = ln.p;
+            const lv = { ln, status: 'ok', msgs: [], tags: [], items: [], attached: false, ambiguous: false, bareChoice: '', match: null, pickable: false, targetName: '' };
+            const dres = bkResolveDebt(p, !!(prev && prev.items.length));
+            const core = p.t.filter((w, i) => !p.used.has(i) && !dres.remove.has(i));
+            const r = qnParseLine(core.join(' '));
+            const mods = { discount: p.discount, discountWhole: p.discountWhole, free: p.free, whole: dres.whole, partial: dres.partial, debtor: dres.debtor, extraG: 0, extraGr: 0 };
+            if (p.discNoAmount) bkMsg(lv, 'warn', 'كلمة الخصم بدون مبلغ، تم تجاهلها');
+            if (p.discAssumed) bkMsg(lv, 'warn', 'مبلغ الخصم كُتب بدون «دينار»، اعتُبر بالدينار');
+            const finish = () => {
+                lv.status = lv.msgs.some(m => m.kind === 'bad') ? 'bad' : (lv.msgs.length ? 'warn' : 'ok');
+                return lv;
+            };
+            if (!r.name.length) {
+                const extraOnly = r.extraGurush > 0 || r.extraGrams > 0;
+                const perItem = mods.discount > 0 || mods.free || mods.whole || mods.partial !== null || extraOnly;
+                if (mods.discountWhole > 0 || perItem) {
+                    lv.attached = true;
+                    if (mods.discountWhole > 0) cv.globalDiscount += mods.discountWhole;
+                    if (perItem) {
+                        if (!prev || !prev.items.length) { bkMsg(lv, 'bad', 'لا يوجد منتج مفهوم قبل هذا السطر ليُطبَّق عليه'); return finish(); }
+                        mods.extraG = r.extraGurush; mods.extraGr = r.extraGrams;
+                        bkApplyMods(prev, mods, lv);
+                        lv.targetName = prev.items[0].name;
+                    }
+                    bkTags(lv, mods, null);
+                    return finish();
+                }
+                bkMsg(lv, 'bad', 'لم أفهم هذا السطر');
+                return finish();
+            }
+            const ov = ln.ov;
+            let m = null;
+            if (ov.prodId) { const pr0 = products.find(x => String(x.id) === String(ov.prodId)); m = pr0 ? { prod: pr0, sure: true, others: [] } : null; }
+            else m = bkFindProduct(r.name);
+            lv.pickable = true;
+            if (!m) { bkMsg(lv, 'bad', 'لم أجد منتجاً مطابقاً لـ «' + r.name.join(' ') + '»'); return finish(); }
+            lv.match = m;
+            const pr = m.prod;
+            if (pr.unitType !== 'weight') {
+                if (r.amount > 0 && r.bare !== null) { r.count = r.bare; r.bare = null; }
+                else if (r.bare !== null && !(r.amount > 0) && !(r.count > 0)) {
+                    lv.ambiguous = true;
+                    const pp = Number(pr.price || 0);
+                    const looksLikeMoney = pp > 0 && r.bare >= 20 && Math.abs(r.bare / pp - Math.round(r.bare / pp)) < 1e-9;
+                    const mode = ov.bareMode || (looksLikeMoney ? 'money' : 'qty');
+                    if (mode === 'money') { r.amount = r.bare; r.bare = null; lv.bareChoice = 'money'; }
+                    else lv.bareChoice = 'qty';
+                    bkMsg(lv, 'warn', 'الرقم ' + formatNum(lv.bareChoice === 'money' ? r.amount : r.bare) + ' بدون «دينار»: اعتُبر ' + (lv.bareChoice === 'money' ? 'مبلغاً بالدينار' : 'كمية') + ' (يمكنك تغييره)');
+                }
+            }
+            if (pr.unitType === 'weight' && (r.bagWord || r.full) && r.amount > 0 && !(r.bagCount > 0) && r.bare === null) {
+                const price = r.half ? Number(pr.halfBagPrice || 0) : Number(pr.fullBagPrice || 0);
+                if (price > 0) {
+                    const n = r.amount / price, rn = Math.round(n);
+                    if (Math.abs(n - rn) < 1e-6 && rn >= 1) r.bagCount = rn;
+                    else { r.bagCount = Math.max(1, rn); bkMsg(lv, 'warn', 'المبلغ ' + formatNum(r.amount) + ' لا يقابل عدداً صحيحاً من الشكائر (سعر الشكارة ' + formatNum(price) + ')، اعتُبر ' + r.bagCount); }
+                    r.amount = 0;
+                }
+            }
+            const issues = [];
+            if (pr.unitType !== 'weight' && r.amount > 0 && r.count > 0) {
+                const exp = r.count * Number(pr.price || 0);
+                if (Math.abs(exp - r.amount) > 0.011) issues.push('المبلغ ' + formatNum(r.amount) + ' لا يساوي ' + formatNum(r.count) + ' × ' + formatNum(pr.price) + ' = ' + formatNum(exp) + '، اعتُمدت الكمية');
+            }
+            const items = qnBuildItems(pr, r, issues);
+            issues.forEach(x => bkMsg(lv, 'warn', x));
+            if (!items.length) { if (!lv.msgs.length) bkMsg(lv, 'bad', 'تعذّر بناء هذا السطر'); else lv.msgs.forEach(x => { x.kind = 'bad'; }); return finish(); }
+            lv.items = items;
+            if (!m.sure) bkMsg(lv, 'warn', 'تأكد من المنتج: «' + pr.name + '»' + (m.others.length ? ' (أو: ' + m.others.map(o => o.name).join('، ') + ')' : ''));
+            if (mods.discountWhole > 0) cv.globalDiscount += mods.discountWhole;
+            bkApplyMods(lv, mods, lv);
+            bkTags(lv, mods, r);
+            return finish();
+        }
+
+        function bkCompute(state) {
+            const out = { carts: [], bad: 0, warn: 0, invoices: 0, total: 0, debt: 0, stockMsgs: [] };
+            const all = [];
+            state.carts.forEach((cart, ci) => {
+                if (cart.deleted) return;
+                const cv = { ci, lines: [], items: [], globalDiscount: 0, total: 0, debt: 0 };
+                let prev = null;
+                cart.lines.forEach((ln, li) => {
+                    if (ln.ov.deleted) return;
+                    const lv = bkBuildLine(ln, prev, cv);
+                    lv.ci = ci; lv.li = li;
+                    cv.lines.push(lv);
+                    if (!lv.attached) prev = lv;
+                });
+                if (!cv.lines.length) return;
+                cv.lines.forEach(lv => lv.items.forEach(it => { cv.items.push(it); all.push(it); }));
+                out.carts.push(cv);
+            });
+            qnSimStock(all).forEach(x => { x.item.isNegativeSale = true; });
+            out.stockMsgs = qnStockMessages(all);
+            out.carts.forEach(cv => {
+                cv.lines.forEach(lv => {
+                    if (lv.items.some(it => it.isNegativeSale)) { bkMsg(lv, 'warn', 'المخزون غير كافٍ لهذا السطر: سيُباع بالسالب'); lv.status = lv.status === 'bad' ? 'bad' : 'warn'; }
+                    if (lv.status === 'bad') out.bad++; else if (lv.status === 'warn') out.warn++;
+                });
+                if (cv.items.length) {
+                    const bd = getSaleBreakdown({ items: cv.items, globalDiscount: cv.globalDiscount });
+                    cv.total = bd.total; cv.debt = bd.debtAmount;
+                    out.invoices++; out.total += bd.total; out.debt += bd.debtAmount;
+                }
+            });
+            return out;
+        }
+
+        /* ---------- the text box ---------- */
+        function bkLoadLast() {
+            try {
+                const rec = JSON.parse(localStorage.getItem(BK_LAST_KEY) || 'null');
+                if (rec && rec.batchId && sales.some(s => s.importBatchId === rec.batchId)) return rec;
+            } catch (e) {}
+            return null;
+        }
+        function openBulkBox() {
+            if (document.getElementById('qn-overlay') || document.getElementById('bk-overlay')) return;
+            bkOpenedAt = new Date();
+            let draft = '';
+            try {
+                const d = JSON.parse(localStorage.getItem(BK_DRAFT_KEY) || 'null');
+                if (d && d.day === new Date().toDateString()) draft = d.text || '';
+                else localStorage.removeItem(BK_DRAFT_KEY);
+            } catch (e) {}
+            const last = bkLoadLast();
+            const ov = document.createElement('div');
+            ov.id = 'bk-overlay';
+            ov.className = 'qn-overlay';
+            ov.innerHTML = '<div class="qn-box"><div class="qn-top"><button type="button" class="qn-x" id="bk-x"></button><div class="qn-title">مبيعات متعددة</div></div>' +
+                (last ? '<div class="qn-banner"><span>آخر استيراد: ' + last.count + ' فاتورة (' + new Date(last.at).toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' }) + ')</span><button type="button" class="btn btn-red" id="bk-cancel-last">إلغاء الاستيراد</button></div>' : '') +
+                '<textarea id="bk-text" placeholder="الصق أو اكتب المبيعات هنا.&#10;سطر لكل منتج، وسطر فارغ بين كل فاتورة والتي بعدها."></textarea>' +
+                '<div class="qn-hint">لن يُحفظ أي بيع قبل أن تراجع الفواتير وتؤكد.</div>' +
+                '<div class="qn-btns"><button type="button" class="btn btn-teal" id="bk-read">قراءة النص</button><button type="button" class="btn btn-red" id="bk-close">إغلاق</button></div></div>';
+            document.body.appendChild(ov);
+            const undock = qnDock(ov);
+            const ta = ov.querySelector('#bk-text');
+            ta.value = draft;
+            const saveDraft = function () { try { if (ta.value) localStorage.setItem(BK_DRAFT_KEY, JSON.stringify({ day: new Date().toDateString(), text: ta.value })); else localStorage.removeItem(BK_DRAFT_KEY); } catch (e) {} };
+            ta.addEventListener('input', saveDraft);
+            qnAttachClear(ov.querySelector('#bk-x'), ta, saveDraft);
+            const close = function () { ov.remove(); undock(); };
+            ov._bkClose = close;
+            ov.querySelector('#bk-close').addEventListener('click', close);
+            ov.querySelector('#bk-read').addEventListener('click', function () {
+                if (!ta.value.trim()) { try { ta.focus(); } catch (e) {} return; }
+                try { ta.blur(); } catch (e) {}
+                bkOpenReview(ta.value);
+            });
+            const cl = ov.querySelector('#bk-cancel-last');
+            if (cl) cl.addEventListener('click', bkCancelFlow);
+            const openedAt = Date.now();
+            let downOnOverlay = false;
+            ov.addEventListener('pointerdown', function (e) { downOnOverlay = (e.target === ov); });
+            ov.addEventListener('click', function (e) { if (e.target === ov && downOnOverlay && Date.now() - openedAt > 500) close(); downOnOverlay = false; });
+            try { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) {}
+        }
+        window.openBulkBox = openBulkBox;
+
+        /* ---------- the review screen ---------- */
+        function bkOpenReview(text) {
+            if (document.getElementById('bk-review')) return;
+            bkText = text;
+            bkState = bkParseText(text);
+            if (!bkState.carts.length) { showModal('تنبيه', 'لم أجد أي أسطر في النص.', false, () => {}); return; }
+            const rv = document.createElement('div');
+            rv.id = 'bk-review';
+            rv.className = 'bk-review';
+            rv.innerHTML = '<div class="bk-head"><div class="bk-title">مراجعة المبيعات</div><div class="bk-sum" id="bk-sum"></div></div><div class="bk-list" id="bk-list"></div>' +
+                '<div class="bk-foot"><button type="button" class="btn btn-red" id="bk-back">رجوع للنص</button><button type="button" class="btn btn-teal" id="bk-ok">تأكيد وإنشاء المبيعات</button></div>';
+            document.body.appendChild(rv);
+            document.body.classList.add('bk-open');
+            rv.querySelector('#bk-back').addEventListener('click', bkCloseReview);
+            rv.querySelector('#bk-ok').addEventListener('click', bkConfirm);
+            rv.querySelector('#bk-list').addEventListener('click', bkListClick);
+            bkRender();
+        }
+        function bkCloseReview() {
+            const rv = document.getElementById('bk-review');
+            if (rv) rv.remove();
+            if (!document.querySelector('.qn-overlay, .bk-review')) document.body.classList.remove('bk-open');
+        }
+        function bkRender() {
+            bkView = bkCompute(bkState);
+            const v = bkView;
+            const list = document.getElementById('bk-list');
+            if (!list) return;
+            const keep = list.scrollTop;
+            document.getElementById('bk-sum').innerHTML = v.invoices + ' فاتورة — الإجمالي ' + formatNum(v.total) + ' د.ل' + (v.debt > 0 ? ' (دين ' + formatNum(v.debt) + ' د.ل)' : '') +
+                (v.bad ? '<br><span style="color:#d32f2f; font-weight:700;">' + v.bad + ' سطر أحمر يحتاج تصحيحاً أو حذفاً</span>' : '') +
+                (v.warn ? '<br><span style="color:#b45f06; font-weight:700;">' + v.warn + ' سطر برتقالي: تأكد منه</span>' : '');
+            list.innerHTML = v.carts.map((cv, n) => {
+                const sub = [];
+                if (cv.globalDiscount > 0) sub.push('خصم على الفاتورة: ' + formatNum(cv.globalDiscount) + ' د.ل');
+                if (cv.debt > 0) sub.push('دين: ' + formatNum(cv.debt) + ' د.ل');
+                return '<div class="bk-card"><div class="bk-card-h"><span class="bk-card-t">فاتورة ' + (n + 1) + '</span><span class="bk-card-tot">' + formatNum(cv.total) + ' <small>د.ل</small></span><button type="button" class="del" data-act="del-cart" data-c="' + cv.ci + '">حذف الفاتورة</button></div>' +
+                    (sub.length ? '<div class="bk-card-sub">' + sub.join(' — ') + '</div>' : '') + cv.lines.map(bkLineHtml).join('') + '</div>';
+            }).join('');
+            list.scrollTop = keep;
+        }
+        function bkLineHtml(lv) {
+            const d = ' data-c="' + lv.ci + '" data-l="' + lv.li + '"';
+            let h = '<div class="bk-line st-' + lv.status + '">';
+            if (lv.attached) h += '<div class="bk-main bk-att">↑ ' + (lv.targetName ? 'يخص «' + escapeHtml(lv.targetName) + '»' : 'تعديل على الفاتورة') + '</div>';
+            lv.items.forEach(it => {
+                h += '<div class="bk-main"><b class="bk-amt">' + (it.isFree ? 'مجاني' : formatNum(it.total) + ' <small>د.ل</small>') + '</b><span class="bk-name">' + escapeHtml(it.name) + '</span> <span class="bk-qty">× ' + formatNum(it.qty) + ' ' + bkUnit(it) + '</span></div>';
+            });
+            if (lv.tags.length) h += '<div class="bk-tags">' + lv.tags.map(t => '<span class="bk-tag ' + t.k + '">' + escapeHtml(t.t) + '</span>').join('') + '</div>';
+            h += '<div class="bk-orig">«' + escapeHtml(lv.ln.raw) + '»</div>';
+            lv.msgs.forEach(m => { h += '<div class="bk-msg ' + m.kind + '">' + escapeHtml(m.text) + '</div>'; });
+            h += '<div class="bk-acts">';
+            if (lv.pickable) h += '<button type="button" data-act="pick"' + d + '>' + (lv.items.length ? 'تغيير المنتج' : 'اختيار المنتج') + '</button>';
+            if (lv.ambiguous) h += '<button type="button" data-act="bare"' + d + '>' + (lv.bareChoice === 'money' ? 'اعتبره كمية' : 'اعتبره مبلغاً بالدينار') + '</button>';
+            h += '<button type="button" class="del" data-act="del-line"' + d + '>حذف السطر</button></div></div>';
+            return h;
+        }
+        function bkListClick(e) {
+            const b = e.target.closest('[data-act]');
+            if (!b) return;
+            const c = parseInt(b.getAttribute('data-c'), 10), l = parseInt(b.getAttribute('data-l'), 10);
+            const act = b.getAttribute('data-act');
+            const cart = bkState.carts[c];
+            if (!cart) return;
+            if (act === 'del-cart') { cart.deleted = true; bkRender(); return; }
+            const ln = cart.lines[l];
+            if (!ln) return;
+            if (act === 'del-line') { ln.ov.deleted = true; bkRender(); }
+            else if (act === 'bare') { ln.ov.bareMode = ln.ov.bareMode === 'money' ? 'qty' : 'money'; bkRender(); }
+            else if (act === 'pick') bkOpenPicker(ln);
+        }
+        function bkOpenPicker(ln) {
+            const ov = document.createElement('div');
+            ov.className = 'qn-overlay bk-pick-ov';
+            ov.innerHTML = '<div class="qn-box"><div class="qn-title" style="margin-bottom:8px;">اختر المنتج</div><input type="text" class="bk-pick-search" id="bk-pick-q" placeholder="ابحث باسم المنتج"><div class="bk-pick-list" id="bk-pick-list"></div><div class="qn-btns" style="margin-top:8px;"><button type="button" class="btn btn-red" id="bk-pick-close">إلغاء</button></div></div>';
+            document.body.appendChild(ov);
+            const undock = qnDock(ov);
+            const close = function () { ov.remove(); undock(); };
+            const listEl = ov.querySelector('#bk-pick-list');
+            const q = ov.querySelector('#bk-pick-q');
+            const draw = function () {
+                const term = q.value;
+                let arr = term.trim() ? products.filter(p => matchesSearch(p.name, term)) : getMostSoldProducts();
+                arr = arr.slice(0, 40);
+                listEl.innerHTML = arr.map(p => '<div class="bk-pick-item" data-id="' + escapeHtml(String(p.id)) + '">' + escapeHtml(p.name) + '</div>').join('') || '<div class="bk-pick-item">لا توجد نتائج</div>';
+            };
+            q.addEventListener('input', draw);
+            draw();
+            listEl.addEventListener('click', function (e) {
+                const it = e.target.closest('.bk-pick-item[data-id]');
+                if (!it) return;
+                ln.ov.prodId = it.getAttribute('data-id');
+                close();
+                bkRender();
+            });
+            ov.querySelector('#bk-pick-close').addEventListener('click', close);
+            try { q.focus(); } catch (e) {}
+        }
+
+        /* ---------- confirming and creating the sales ---------- */
+        function bkHash(text) {
+            const s = normalizeSearchText(text);
+            let h = 5381;
+            for (let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+            return String(h);
+        }
+        function bkHashList() {
+            try {
+                const d = JSON.parse(localStorage.getItem(BK_HASH_KEY) || 'null');
+                if (d && d.day === new Date().toDateString() && Array.isArray(d.list)) return d.list;
+            } catch (e) {}
+            return [];
+        }
+        function bkConfirm() {
+            const v = bkView;
+            if (!v) return;
+            if (v.bad > 0) { showModal('أسطر تحتاج تصحيحاً', 'يوجد ' + v.bad + ' سطر باللون الأحمر. غيّر المنتج أو احذف السطر ثم أكّد.', false, () => {}); return; }
+            if (!v.invoices) { showModal('تنبيه', 'لا توجد فواتير لإنشائها.', false, () => {}); return; }
+            let msg = 'سيتم إنشاء ' + v.invoices + ' فاتورة بإجمالي ' + formatNum(v.total) + ' د.ل' + (v.debt > 0 ? ' (منها دين ' + formatNum(v.debt) + ' د.ل)' : '') + '.\nسيُسجَّل كل شيء بتاريخ اليوم.';
+            const warn = [];
+            if (v.warn) warn.push('يوجد ' + v.warn + ' سطر برتقالي، هل راجعتها؟');
+            v.stockMsgs.forEach(m => warn.push(m + ' — سيُباع بالسالب'));
+            if (bkHashList().includes(bkHash(bkText))) warn.push('تنبيه: نفس هذا النص تم استيراده من قبل اليوم، تأكد أنك لا تكرره.');
+            if (warn.length) msg += '<div class="rc-warn" style="margin-top:8px;"><b>تنبيه قبل التأكيد:</b><br>' + warn.map(x => escapeHtml(x)).join('<br>') + '</div>';
+            const go = () => bkExecute();
+            go.confirmLabel = 'تأكيد وإنشاء';
+            go.noOutsideDismiss = true;
+            go.tint = true;
+            showModal('تأكيد إنشاء المبيعات', msg, false, go);
+        }
+        /* same stock rules as finishing a normal sale */
+        function bkDeductStock(item) {
+            const prod = products.find(p => p.id === item.id);
+            if (!prod) return;
+            if (item.sellMode === 'fullbag') {
+                prod.bagsCount = (prod.bagsCount || 0) - item.qty;
+            } else if (item.sellMode === 'halfbag') {
+                const halfCount = Math.max(1, Math.floor(Number(item.qty) || 1));
+                if (item.halfSource === 'open') {
+                    prod.openBagKg = (prod.openBagKg || 0) - halfCount * item.halfKg;
+                } else {
+                    for (let h = 0; h < halfCount; h++) {
+                        if ((prod.bagsCount || 0) > 0) { prod.bagsCount -= 1; prod.openBagKg = (prod.openBagKg || 0) + item.halfKg; }
+                        else prod.openBagKg = (prod.openBagKg || 0) - item.halfKg;
+                    }
+                }
+            } else if (prod.unitType === 'weight') {
+                const kgToDeduct = Number(item.qty || 0) + (Number(item.qty || 0) > 0 ? Number(item.extraKg || 0) : 0);
+                const currentOpen = prod.openBagKg || 0;
+                if (currentOpen >= kgToDeduct) prod.openBagKg = currentOpen - kgToDeduct;
+                else {
+                    let remaining = kgToDeduct - currentOpen;
+                    prod.openBagKg = 0;
+                    const cap = prod.bagWeightKg || 1;
+                    while (remaining > 0 && (prod.bagsCount || 0) > 0) {
+                        prod.bagsCount -= 1;
+                        if (remaining <= cap) { prod.openBagKg = cap - remaining; remaining = 0; }
+                        else remaining -= cap;
+                    }
+                    if (remaining > 0) prod.openBagKg = -remaining;
+                }
+            } else {
+                prod.qty = (prod.qty || 0) - item.qty;
+            }
+        }
+        function bkExecute() {
+            const v = bkView;
+            if (!v || !v.invoices) return;
+            const batchId = cloudUuid();
+            const importedAt = new Date().toISOString();
+            const base = (bkOpenedAt || new Date()).getTime();
+            const daysArr = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+            const created = [];
+            let k = 0;
+            v.carts.forEach(cv => {
+                if (!cv.items.length) return;
+                const at = new Date(base + k); k++;
+                const items = cv.items.map(it => Object.assign({}, it));
+                const before = new Map();
+                items.forEach(item => {
+                    const prod = products.find(p => String(p.id) === String(item.id));
+                    if (prod && !before.has(String(prod.id))) before.set(String(prod.id), { qty: Number(prod.qty || 0), bagsCount: Number(prod.bagsCount || 0), openBagKg: Number(prod.openBagKg || 0) });
+                });
+                const rawTotal = items.reduce((a, i) => a + Number(i.total || 0), 0);
+                const gd = Math.min(Math.max(cv.globalDiscount, 0), rawTotal);
+                const rec = {
+                    id: cloudUuid(), timestamp: at.toISOString(), dayName: daysArr[at.getDay()], cashier: activeCashier,
+                    items, globalDiscount: gd, total: Math.max(0, rawTotal - gd), profit: 0, cartDebt: false,
+                    customerName: '', cartNote: '', debtorName: '', note: '', inventoryDeltas: [],
+                    importBatchId: batchId, importedAt
+                };
+                const bd = getSaleBreakdown(rec);
+                rec.profit = bd.cashProfit + bd.debtProfit;
+                items.forEach(bkDeductStock);
+                before.forEach((b, productId) => {
+                    const after = products.find(p => String(p.id) === String(productId));
+                    if (!after) return;
+                    const delta = {};
+                    ['qty', 'bagsCount', 'openBagKg'].forEach(f => {
+                        const val = Number(after[f] || 0) - Number(b[f] || 0);
+                        if (Math.abs(val) > 1e-12) delta[f] = val;
+                    });
+                    if (Object.keys(delta).length) rec.inventoryDeltas.push({ productId, inventoryDelta: delta });
+                });
+                created.push(rec);
+            });
+            created.forEach(r => sales.unshift(r));
+            safeSave(KEYS.PRODUCTS, products);
+            persistSales(created);
+            created.forEach(r => queueSaleForCloud(r));
+            try {
+                localStorage.setItem(BK_LAST_KEY, JSON.stringify({ batchId, at: importedAt, count: created.length, total: v.total }));
+                const hs = bkHashList(); hs.push(bkHash(bkText));
+                localStorage.setItem(BK_HASH_KEY, JSON.stringify({ day: new Date().toDateString(), list: hs }));
+                localStorage.removeItem(BK_DRAFT_KEY);
+            } catch (e) {}
+            const total = v.total, count = created.length;
+            bkCloseReview();
+            const ovT = document.getElementById('bk-overlay');
+            if (ovT && ovT._bkClose) ovT._bkClose();
+            renderInventory();
+            renderSales();
+            const done = () => {};
+            done.confirmLabel = 'تم';
+            done.cancelLabel = 'إلغاء الاستيراد';
+            done.onCancel = bkCancelFlow;
+            done.noOutsideDismiss = true;
+            showModal('تم إنشاء المبيعات', 'تم إنشاء ' + count + ' فاتورة بإجمالي ' + formatNum(total) + ' د.ل.\nإذا لاحظت خطأً في المنتجات يمكنك إلغاء هذا الاستيراد كله الآن (يحتاج الرقم السري للمدير).', false, done);
+        }
+
+        /* ---------- cancelling the last import ---------- */
+        function bkCancelFlow() {
+            const rec = bkLoadLast();
+            if (!rec) { showModal('تنبيه', 'لا يوجد استيراد أخير يمكن إلغاؤه.', false, () => {}); return; }
+            promptManagerPassword(() => {
+                const go = () => bkCancelExecute();
+                go.confirmLabel = 'نعم، ألغِ الاستيراد';
+                showModal('إلغاء آخر استيراد', 'سيتم حذف ' + rec.count + ' فاتورة أُنشئت في آخر استيراد وإرجاع المنتجات المباعة فيها إلى المخزون، وكأنها لم تحدث.\nهل أنت متأكد؟', false, go);
+            });
+        }
+        function bkCancelExecute() {
+            const rec = bkLoadLast();
+            if (!rec) return;
+            const targets = sales.filter(s => s.importBatchId === rec.batchId);
+            if (!targets.length) { try { localStorage.removeItem(BK_LAST_KEY); } catch (e) {} return; }
+            const touched = targets.filter(s => s.returnedAt || s.debtPaidAt || s.amendedAt);
+            if (touched.length) {
+                showModal('لا يمكن إلغاء الاستيراد', 'تم إرجاع أو تعديل أو سداد دين ' + touched.length + ' فاتورة من هذا الاستيراد بعد إنشائها، فلا يمكن إلغاؤه كله بأمان.\nتعامل مع الفواتير من سجل المبيعات.', false, () => {});
+                return;
+            }
+            const total = {};
+            targets.forEach(s => (s.inventoryDeltas || []).forEach(e => {
+                const acc = total[e.productId] || (total[e.productId] = {});
+                Object.entries(e.inventoryDelta || {}).forEach(([f, val]) => { acc[f] = (acc[f] || 0) - Number(val || 0); });
+            }));
+            const adjustment = Object.entries(total).map(([productId, inventoryDelta]) => ({ productId, inventoryDelta }));
+            if (adjustment.length) { applyInventoryDeltas(products, adjustment); safeSave(KEYS.PRODUCTS, products); }
+            const ids = new Set(targets.map(s => String(s.id)));
+            if (editingSaleId && ids.has(String(editingSaleId))) clearCart();
+            sales = sales.filter(s => !ids.has(String(s.id)));
+            ids.forEach(id => deletedSaleIds.add(id));
+            safeSave(KEYS.DELETED_SALES, Array.from(deletedSaleIds));
+            if (salesMode === 'idb') {
+                idbWriteChain = idbWriteChain.then(() => SalesStore.removeMany(Array.from(ids))).catch(err => { console.error('Error removing sales', err); showStorageErrorBanner(); });
+            } else safeSave(KEYS.SALES, sales);
+            queueCloudOperation({ id: 'sales-del-many:' + cloudUuid(), type: 'salesDeleteMany', payload: { ids: Array.from(ids), returnStock: true, adjustment }, createdAt: Date.now() });
+            try { localStorage.removeItem(BK_LAST_KEY); } catch (e) {}
+            renderInventory();
+            renderSales();
+            showModal('تم إلغاء الاستيراد', 'تم حذف ' + targets.length + ' فاتورة وإرجاع المنتجات إلى المخزون.', false, () => {});
+        }
     </script>
 </body>
 </html>
