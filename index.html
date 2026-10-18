@@ -1123,12 +1123,12 @@
         .pg-grid.g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 6px; }
         .pg-grid.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 8px; }
         .pg-cell { min-width: 0; margin-bottom: 10px; cursor: pointer; touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-        .pg-grid.g3 .pg-cell { margin-bottom: 12px; }
+        .pg-grid.g3 .pg-cell { margin-bottom: 8px; background-color: #d3dae1; border: 1px solid #c2cbd4; border-radius: 16px; padding: 6px; box-shadow: 0 2px 10px rgba(18, 40, 58, 0.07); }
         .pg-cell:active { opacity: .85; }
-        .pg-im { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 1 / 1; background: #e5f3f4; }
+        .pg-im { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 1 / 1; background: #e8ecf0; }
         .pg-grid.g3 .pg-im { border-radius: 12px; }
         .pg-im img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; -webkit-user-drag: none; }
-        .pg-ph { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+        .pg-ph { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: #e8ecf0; color: #8695a6; }
         .pg-ph svg { width: 52%; height: 52%; }
         .pg-pb { position: absolute; bottom: 3px; right: 3px; background: rgba(0,0,0,.72); color: #ffffff; font-size: 9.5px; font-weight: 700; border-radius: 6px; padding: 0 5px; line-height: 1.6; pointer-events: none; white-space: nowrap; }
         .pg-grid.g3 .pg-pb { bottom: 5px; right: 5px; font-size: 10.5px; border-radius: 8px; padding: 1px 7px; }
@@ -1149,7 +1149,7 @@
         .pa-sh { width: 100%; background: var(--card-bg); border-radius: 22px 22px 0 0; padding: 10px 16px calc(20px + env(safe-area-inset-bottom, 0px)); color: #12283a; }
         .pa-hn { width: 40px; height: 4px; border-radius: 2px; background: #cfdadf; margin: 0 auto 12px; }
         .pa-top { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
-        .pa-im { width: 64px; height: 64px; flex: none; border-radius: 12px; overflow: hidden; background: #e5f3f4; }
+        .pa-im { width: 64px; height: 64px; flex: none; border-radius: 12px; overflow: hidden; background: #e8ecf0; }
         .pa-im img { display: block; width: 100%; height: 100%; object-fit: cover; }
         .pa-nm { font-size: 16px; font-weight: 700; color: #12283a; line-height: 1.4; }
         .pa-ty { font-size: 12px; font-weight: 400; }
@@ -1158,17 +1158,18 @@
         .pa-bt { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .pa-bt .btn { padding: 12px 6px; font-size: 14px; border-radius: 12px; }
         .pf-pic-row { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
-        .pf-pic { width: 84px; height: 84px; flex: none; border-radius: 14px; overflow: hidden; background: #e5f3f4; display: flex; align-items: center; justify-content: center; color: var(--teal-primary); font-size: 11px; text-align: center; }
+        .pf-pic { width: 84px; height: 84px; flex: none; border-radius: 14px; overflow: hidden; background: #e8ecf0; display: flex; align-items: center; justify-content: center; color: #8695a6; font-size: 11px; text-align: center; }
         .pf-pic img { display: block; width: 100%; height: 100%; object-fit: cover; }
         .pf-pic svg { width: 40px; height: 40px; }
         .pf-btns { display: flex; flex-wrap: wrap; gap: 6px; }
         .pf-btns .btn { padding: 8px 10px; font-size: 13px; }
+        html[data-theme="dark"] .pg-grid.g3 .pg-cell { background-color: #243749; border-color: #324a5f; }
         html[data-theme="dark"] .pg-t, html[data-theme="dark"] .pa-nm { color: #e6eef5; }
         html[data-theme="dark"] .pg-d, html[data-theme="dark"] .pa-in { color: #a8b4bf; }
         html[data-theme="dark"] .pg-label { background: #1b2b38; color: #a8b4bf; }
         html[data-theme="dark"] .pa-sh { background: #16232f; color: #e6eef5; }
         html[data-theme="dark"] .pa-hn { background: #324a5f; }
-        html[data-theme="dark"] .pg-im, html[data-theme="dark"] .pa-im, html[data-theme="dark"] .pf-pic { background: #1f3b40; }
+        html[data-theme="dark"] .pg-im, html[data-theme="dark"] .pa-im, html[data-theme="dark"] .pf-pic, html[data-theme="dark"] .pg-ph { background: #1b2b38; color: #7f93a5; }
     </style>
 </head>
 <body onclick="handleGlobalClick(event)">
@@ -6272,20 +6273,19 @@
         function pgPicHtml(p) {
             const d = productPics[String(p.id)];
             if (d) return '<img src="' + d + '" alt="" draggable="false" decoding="async">';
-            const c = PG_COLORS[pgHash(p.id) % PG_COLORS.length];
-            return '<div class="pg-ph" style="background:' + c[0] + ';color:' + c[1] + '">' + PG_BOX + '</div>';
+            return '<div class="pg-ph">' + PG_BOX + '</div>';
         }
         function pgMainCell(p) {
             const isW = p.unitType === 'weight';
             const price = (isW ? formatNum(p.kgPrice) : formatNum(p.price)) + ' د.ل';
-            return `<div class="pg-cell" onclick='selectProductForPreCart(${JSON.stringify(String(p.id))})'><div class="pg-im">${pgPicHtml(p)}<span class="pg-pb">${price}</span></div><div class="pg-t">${escapeHtml(p.name)}</div><div class="pg-d">${isW ? 'بالوزن' : 'بالقطعة'}</div></div>`;
+            return `<div class="pg-cell" onclick='selectProductForPreCart(${JSON.stringify(String(p.id))})'><div class="pg-im">${pgPicHtml(p)}<span class="pg-pb">${price}</span></div><div class="pg-t">${escapeHtml(p.name)}</div></div>`;
         }
         function pgInvCell(p) {
             const isW = p.unitType === 'weight';
             const price = isW ? formatNum(p.kgPrice) + ' د.ل/كجم' : formatNum(p.price) + ' د.ل';
             const stock = isW ? `الشكائر: ${p.bagsCount || 0}<br>مفتوح: ${formatNum(p.openBagKg || 0)} كجم` : `الكمية: ${formatNum(p.qty)}`;
             const sel = invSelectMode && selProductIds.has(String(p.id));
-            return `<div class="pg-cell${sel ? ' sel' : ''}" data-id="${escapeHtml(String(p.id))}" onclick='invCellTap(${JSON.stringify(String(p.id))})'><div class="pg-im">${pgPicHtml(p)}<span class="pg-pb">${price}</span>${isW ? '<span class="pg-tag">بالوزن</span>' : ''}${invSelectMode ? '<span class="pg-sel">' + PG_CHECK + '</span>' : ''}</div><div class="pg-t">${escapeHtml(p.name)}</div><div class="pg-s">${stock}</div>${p.expiryDate ? `<div class="pg-x">انتهاء ${escapeHtml(p.expiryDate)}</div>` : ''}</div>`;
+            return `<div class="pg-cell${sel ? ' sel' : ''}" data-id="${escapeHtml(String(p.id))}" onclick='invCellTap(${JSON.stringify(String(p.id))})'><div class="pg-im">${pgPicHtml(p)}<span class="pg-pb">${price}</span>${invSelectMode ? '<span class="pg-sel">' + PG_CHECK + '</span>' : ''}</div><div class="pg-t">${escapeHtml(p.name)}</div><div class="pg-s">${stock}</div>${p.expiryDate ? `<div class="pg-x">انتهاء ${escapeHtml(p.expiryDate)}</div>` : ''}</div>`;
         }
         function ddMore() {
             const dd = document.getElementById('product-dropdown');
