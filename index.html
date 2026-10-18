@@ -1117,6 +1117,58 @@
         html[data-theme="dark"] #note-convert-title { color: #7fd6da; }
         .rc-warn { background: #fff4e5; border: 1px solid #f5c98a; color: #8a4b00; border-radius: 10px; padding: 8px 10px; margin: 0 0 8px; font-size: 13px; line-height: 1.55; text-align: right; }
         .rc-warn b { color: #b45f06; }
+
+        /* v58: picture grid for the product search and the inventory page */
+        .pg-grid { display: grid; }
+        .pg-grid.g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 6px; }
+        .pg-grid.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 8px; }
+        .pg-cell { min-width: 0; margin-bottom: 10px; cursor: pointer; touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+        .pg-grid.g3 .pg-cell { margin-bottom: 12px; }
+        .pg-cell:active { opacity: .85; }
+        .pg-im { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 1 / 1; background: #e5f3f4; }
+        .pg-grid.g3 .pg-im { border-radius: 12px; }
+        .pg-im img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; -webkit-user-drag: none; }
+        .pg-ph { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+        .pg-ph svg { width: 52%; height: 52%; }
+        .pg-pb { position: absolute; bottom: 3px; right: 3px; background: rgba(0,0,0,.72); color: #ffffff; font-size: 9.5px; font-weight: 700; border-radius: 6px; padding: 0 5px; line-height: 1.6; pointer-events: none; white-space: nowrap; }
+        .pg-grid.g3 .pg-pb { bottom: 5px; right: 5px; font-size: 10.5px; border-radius: 8px; padding: 1px 7px; }
+        .pg-tag { position: absolute; top: 5px; right: 5px; background: #FFD98A; color: #5A3E00; font-size: 9.5px; font-weight: 700; border-radius: 7px; padding: 0 6px; line-height: 1.6; pointer-events: none; }
+        .pg-t { font-size: 11px; font-weight: 700; line-height: 1.35; margin: 4px 1px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: #12283a; }
+        .pg-grid.g3 .pg-t { font-size: 12.5px; margin: 5px 2px 0; }
+        .pg-d { font-size: 10px; color: #5e726d; line-height: 1.4; margin: 1px 1px 0; }
+        .pg-s { font-size: 10.5px; font-weight: 700; color: var(--teal-primary); line-height: 1.5; margin: 1px 2px 0; }
+        .pg-x { font-size: 10px; font-weight: 700; color: #d32f2f; line-height: 1.5; margin: 0 2px; }
+        .pg-sel { position: absolute; top: 5px; left: 5px; width: 24px; height: 24px; border-radius: 50%; background: #ffffff; border: 2px solid #b8c4cd; display: flex; align-items: center; justify-content: center; color: #ffffff; pointer-events: none; }
+        .pg-sel svg { width: 14px; height: 14px; display: none; }
+        .pg-cell.sel .pg-im { outline: 3px solid var(--red-alert); outline-offset: -3px; }
+        .pg-cell.sel .pg-sel { background: var(--red-alert); border-color: var(--red-alert); }
+        .pg-cell.sel .pg-sel svg { display: block; }
+        .pg-label { font-size: 11px; color: #888888; padding: 4px 8px; background: #f9f9f9; margin-bottom: 8px; }
+        #pa-ov { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 9000; display: none; align-items: flex-end; }
+        #pa-ov.open { display: flex; }
+        .pa-sh { width: 100%; background: var(--card-bg); border-radius: 22px 22px 0 0; padding: 10px 16px calc(20px + env(safe-area-inset-bottom, 0px)); color: #12283a; }
+        .pa-hn { width: 40px; height: 4px; border-radius: 2px; background: #cfdadf; margin: 0 auto 12px; }
+        .pa-top { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+        .pa-im { width: 64px; height: 64px; flex: none; border-radius: 12px; overflow: hidden; background: #e5f3f4; }
+        .pa-im img { display: block; width: 100%; height: 100%; object-fit: cover; }
+        .pa-nm { font-size: 16px; font-weight: 700; color: #12283a; line-height: 1.4; }
+        .pa-ty { font-size: 12px; font-weight: 400; }
+        .pa-in { font-size: 12px; color: #666666; line-height: 1.6; }
+        .pa-in b { color: var(--teal-primary); }
+        .pa-bt { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .pa-bt .btn { padding: 12px 6px; font-size: 14px; border-radius: 12px; }
+        .pf-pic-row { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+        .pf-pic { width: 84px; height: 84px; flex: none; border-radius: 14px; overflow: hidden; background: #e5f3f4; display: flex; align-items: center; justify-content: center; color: var(--teal-primary); font-size: 11px; text-align: center; }
+        .pf-pic img { display: block; width: 100%; height: 100%; object-fit: cover; }
+        .pf-pic svg { width: 40px; height: 40px; }
+        .pf-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+        .pf-btns .btn { padding: 8px 10px; font-size: 13px; }
+        html[data-theme="dark"] .pg-t, html[data-theme="dark"] .pa-nm { color: #e6eef5; }
+        html[data-theme="dark"] .pg-d, html[data-theme="dark"] .pa-in { color: #a8b4bf; }
+        html[data-theme="dark"] .pg-label { background: #1b2b38; color: #a8b4bf; }
+        html[data-theme="dark"] .pa-sh { background: #16232f; color: #e6eef5; }
+        html[data-theme="dark"] .pa-hn { background: #324a5f; }
+        html[data-theme="dark"] .pg-im, html[data-theme="dark"] .pa-im, html[data-theme="dark"] .pf-pic { background: #1f3b40; }
     </style>
 </head>
 <body onclick="handleGlobalClick(event)">
@@ -1546,6 +1598,9 @@
         </div>
     </div>
 
+    <!-- v58: product buttons sheet (opens when a product is tapped on the inventory page) -->
+    <div id="pa-ov" onclick="closeProdSheet()"><div class="pa-sh" id="pa-sh" onclick="event.stopPropagation()"></div></div>
+
     <!-- NAVIGATION BAR -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('pos', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5 5.5 4h13L20 9.5"/><path d="M4 9.5a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0"/><path d="M5.5 12.5V20h13v-7.5"/><path d="M10 20v-4.5h4V20"/></svg><span>الرئيسية</span></div>
@@ -1951,6 +2006,16 @@
 
         let products = safeLoad(KEYS.PRODUCTS, []);
         let sales = safeLoad(KEYS.SALES, []);
+        /* v58: product pictures live in their own browser database (never inside the products list) */
+        let productPics = {};
+        let picDbPromise = null;
+        let pfPic = { data: '', dirty: false };
+        let ddItems = [], ddShown = 0, invItems = [], invShown = 0, invObserver = null;
+        const PG_CHUNK = 32;
+        const PG_COLORS = [['#FBE3D3','#D9783A'],['#D7EEE4','#2F8F6B'],['#FBEBCB','#C9892B'],['#DCEBF7','#3C86C6'],['#E6E3F5','#6A5BC4'],['#F9D9E4','#D2578A'],['#D3F0F2','#2E8E96'],['#E6F2CF','#5B7F1C']];
+        const PG_BOX = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg>';
+        const PG_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
         let stockLogs = safeLoad(KEYS.LOGS, []);
         const EDITS_KEY = 'pos_inventory_edits';
         let inventoryEdits = safeLoad(EDITS_KEY, []);
@@ -2285,24 +2350,14 @@
         function renderProductDropdown(itemsList, label) {
             const container = document.getElementById('product-dropdown');
             if (itemsList.length === 0) {
+                ddItems = []; ddShown = 0;
                 container.innerHTML = '<div style="padding:10px; color:#888; text-align:center;">لا توجد نتائج</div>';
                 return;
             }
-
-            container.innerHTML = `
-                <div style="font-size:11px; color:#888; padding:4px 8px; background:#f9f9f9;">${label}</div>
-                ${itemsList.map(p => `
-                    <div class="item-row" style="padding: 8px 10px; cursor:pointer;" onclick='selectProductForPreCart(${JSON.stringify(String(p.id))})'>
-                        <div>
-                            <strong>${p.name}</strong> 
-                            <span style="font-size:12px; color:#666;">
-                                (${p.unitType === 'weight' ? `${formatNum(p.kgPrice)} د.ل/كجم` : `${formatNum(p.price)} د.ل`})
-                            </span>
-                        </div>
-                        <button class="btn btn-orange" style="padding: 4px 8px; font-size:12px;">تحديد</button>
-                    </div>
-                `).join('')}
-            `;
+            ddItems = itemsList;
+            ddShown = Math.min(PG_CHUNK, itemsList.length);
+            container.innerHTML = `<div class="pg-label">${label}</div><div class="pg-grid g4" id="pg-dd">${itemsList.slice(0, ddShown).map(pgMainCell).join('')}</div>`;
+            container.scrollTop = 0;
         }
 
         function selectProductForPreCart(productId) {
@@ -3232,6 +3287,18 @@
                 const pType = p.unitType || (onConfirm.existingData ? 'unit' : 'weight');
 
                 inputContainer.innerHTML = `
+                    <label class="form-label">صورة المنتج (اختياري)</label>
+                    <div class="pf-pic-row">
+                        <div class="pf-pic" id="pf-pic-prev"></div>
+                        <div class="pf-btns">
+                            <button type="button" class="btn btn-teal" onclick="document.getElementById('pf-cam').click()">التقاط صورة</button>
+                            <button type="button" class="btn btn-teal" onclick="document.getElementById('pf-gal').click()">من المعرض</button>
+                            <button type="button" class="btn btn-red" id="pf-pic-rm" onclick="pfPicRemove()">إزالة</button>
+                        </div>
+                    </div>
+                    <input type="file" id="pf-cam" accept="image/*" capture="environment" hidden onchange="pfPicChosen(this)">
+                    <input type="file" id="pf-gal" accept="image/*" hidden onchange="pfPicChosen(this)">
+
                     <label class="form-label">اسم المنتج</label>
                     <input type="text" id="p-name" placeholder="" value="${p.name || ''}" data-existing-id="${p.id !== undefined && p.id !== null ? p.id : ''}" oninput="checkProductNameLive()">
                     <div id="p-name-hint" style="display:none; font-size:13px; line-height:1.6; margin:-4px 0 8px 0; font-weight:bold;"></div>
@@ -3295,6 +3362,7 @@
                 inputContainer.innerHTML = '';
             }
             
+            if (inputType === 'product_form') pfPaintPic();
             const confirmBtn = document.getElementById('modal-confirm-btn');
             if (confirmBtn) {
                 confirmBtn.onclick = () => {
@@ -5435,6 +5503,7 @@
                     const ids = new Set(list.map(p => String(p.id)));
                     products = products.filter(p => !ids.has(String(p.id)));
                     safeSave(KEYS.PRODUCTS, products);
+                    list.forEach(b => picDelete(b.id));
                     invSelectMode = false; selProductIds.clear();
                     updateInvSelectUI();
                     renderInventory();
@@ -5608,39 +5677,10 @@
                 container.innerHTML = '<p style="color:#888; text-align:center;">لا توجد منتجات مطابقة</p>';
                 return;
             }
-            container.innerHTML = visibleProducts.map(p => {
-                const isWeight = p.unitType === 'weight';
-                
-                let stockDisplayText = '';
-                if (isWeight) {
-                    const bags = p.bagsCount || 0;
-                    const openKg = p.openBagKg || 0;
-                    stockDisplayText = `الشكائر: ${bags} شكارة | المفتوح: ${formatNum(openKg)} كجم`;
-                } else {
-                    stockDisplayText = `الكمية: ${formatNum(p.qty)}`;
-                }
-
-                return `
-                    <div class="item-row">
-                        <div>
-                            ${invSelectMode ? `<label class="inv-sel"><input type="checkbox" ${selProductIds.has(String(p.id)) ? 'checked' : ''} onchange='toggleProductSel(${JSON.stringify(String(p.id))}, this.checked)'></label>` : ''}<strong>${p.name}</strong> (${isWeight ? 'بالوزن' : 'بالقطعة'})
-                            <div style="font-size:12px; color:#666;">
-                                ${isWeight ? `الكيلو: ${formatNum(p.kgPrice)} د.ل | الشكارة: ${formatNum(p.fullBagPrice)} د.ل` : `السعر: ${formatNum(p.price)} د.ل | الجملة: ${formatNum(p.wholesaleUnitPrice)} د.ل`}
-                                <br><span style="color:var(--teal-primary); font-weight:bold;">${stockDisplayText}</span>
-                                ${p.expiryDate ? `<br><span style="color:#d32f2f;">انتهاء: ${p.expiryDate}</span>` : ''}
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end;">
-                            <button class="btn btn-green" style="padding:4px 8px; font-size:12px;" onclick='requireManagerPass(() => editProduct(${JSON.stringify(String(p.id))}))'>تعديل</button>
-                            ${isWeight ? `
-                                <button class="btn btn-green" style="padding:4px 8px; font-size:12px;" onclick='openBagProduct(${JSON.stringify(String(p.id))})'>فتح شكارة</button>
-                                <button class="btn btn-green" style="padding:4px 8px; font-size:12px;" onclick='requireManagerPass(() => addPartialBagProduct(${JSON.stringify(String(p.id))}))'>إضافة جزء</button>
-                            ` : ''}
-                            <button class="btn btn-red" style="padding:4px 8px; font-size:12px;" onclick='requireManagerPass(() => deleteProduct(${JSON.stringify(String(p.id))}))'>حذف</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            invItems = visibleProducts;
+            invShown = Math.min(PG_CHUNK, visibleProducts.length);
+            container.innerHTML = `<div class="pg-grid g3" id="pg-inv">${visibleProducts.slice(0, invShown).map(pgInvCell).join('')}</div><div id="pg-inv-end" style="height:1px;"></div>`;
+            setupInvMore();
         }
 
         function openBagProduct(id) {
@@ -5699,6 +5739,7 @@
         /* SAFE DUPLICATE CHECK IN PRODUCT FORM MODAL */
         function showProductFormModal(productId, prefill) {
             const existing = productId ? products.find(p => String(p.id) === String(productId)) : null;
+            if (!prefill) pfPic = { data: existing ? (productPics[String(existing.id)] || '') : '', dirty: false };
             const callback = (data) => {
                 if (data && data.name) {
                     data.name = data.name.trim().replace(/\s+/g, ' ');
@@ -5756,6 +5797,7 @@
                     }
                     safeSave(KEYS.PRODUCTS, products);
                     safeSave(KEYS.LOGS, stockLogs);
+                    if (pfPic.dirty && receiptProd) { if (pfPic.data) picSave(receiptProd.id, pfPic.data); else picDelete(receiptProd.id); pfPic.dirty = false; }
                     renderInventory();
                     renderStockLogs();
 
@@ -5788,6 +5830,7 @@
                 const before = products.find(p => String(p.id) === String(id));
                 products = products.filter(p => String(p.id) !== String(id));
                 safeSave(KEYS.PRODUCTS, products);
+                picDelete(id);
                 if (before) { queueInventoryMutation(id, before, before, {}, { deleteProduct: true }); logInventoryEdit('delete', before, null); }
                 renderInventory();
             });
@@ -6011,6 +6054,7 @@
         }
 
         async function downloadBackupFile(data, opts) {
+            if (data && typeof data === 'object' && !('productPics' in data)) data.productPics = productPics;
             if (data && typeof data === 'object' && !('quickNotes' in data)) data.quickNotes = quickNotes;
             const silent = !!(opts && opts.silent);
             let pw = getBackupPassword();
@@ -6107,6 +6151,7 @@
                 try {
                     if (imported && (imported.products || imported.sales)) {
                         products = imported.products || [];
+                        if (imported.productPics && typeof imported.productPics === 'object') picReplaceAll(imported.productPics);
                         const importedSales = imported.sales || [];
                         sales = importedSales;
                         deletedSaleIds = new Set();
@@ -6139,6 +6184,172 @@
             };
             reader.readAsText(file);
         }
+
+        /* ---------- v58: product pictures (own database, small thumbnails, drawn in chunks) ---------- */
+        function picDb() {
+            if (!picDbPromise) {
+                picDbPromise = new Promise((resolve, reject) => {
+                    try {
+                        const r = indexedDB.open('pos_product_pics', 1);
+                        r.onupgradeneeded = () => { r.result.createObjectStore('pics', { keyPath: 'id' }); };
+                        r.onsuccess = () => resolve(r.result);
+                        r.onerror = () => reject(r.error);
+                    } catch (e) { reject(e); }
+                });
+            }
+            return picDbPromise;
+        }
+        function picTx(fn) {
+            return picDb().then(db => new Promise((resolve, reject) => {
+                const tx = db.transaction('pics', 'readwrite');
+                fn(tx.objectStore('pics'));
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+                tx.onabort = () => reject(tx.error || new Error('abort'));
+            })).catch(e => { console.error('Product pictures database error', e); });
+        }
+        function picSave(id, data) { productPics[String(id)] = data; return picTx(s => s.put({ id: String(id), data })); }
+        function picDelete(id) { delete productPics[String(id)]; return picTx(s => s.delete(String(id))); }
+        function picReplaceAll(map) {
+            const next = {};
+            Object.keys(map || {}).forEach(k => { if (typeof map[k] === 'string' && map[k]) next[String(k)] = map[k]; });
+            productPics = next;
+            picTx(s => { s.clear(); Object.keys(next).forEach(k => s.put({ id: k, data: next[k] })); }).then(refreshPicViews);
+        }
+        function picLoadAll() {
+            return picDb().then(db => new Promise(resolve => {
+                const req = db.transaction('pics').objectStore('pics').getAll();
+                req.onsuccess = () => { (req.result || []).forEach(r => { if (r && r.id && r.data) productPics[String(r.id)] = r.data; }); resolve(); };
+                req.onerror = () => resolve();
+            })).catch(() => {});
+        }
+        function refreshPicViews() {
+            try { renderInventory(); } catch (e) { /* ignore */ }
+            const dd = document.getElementById('product-dropdown');
+            if (dd && dd.querySelector('#pg-dd')) { const top = dd.scrollTop; filterProducts(); dd.scrollTop = top; }
+        }
+        /* square crop from the middle, 320 px, JPEG: about 15-25 KB per picture, the original is never kept */
+        function picFromFile(file) {
+            return new Promise((resolve, reject) => {
+                const url = URL.createObjectURL(file);
+                const im = new Image();
+                im.onload = () => {
+                    try {
+                        const w = im.naturalWidth, h = im.naturalHeight, s = Math.min(w, h);
+                        const out = Math.min(320, s);
+                        const c = document.createElement('canvas');
+                        c.width = out; c.height = out;
+                        const x = c.getContext('2d');
+                        x.fillStyle = '#ffffff'; x.fillRect(0, 0, out, out);
+                        x.drawImage(im, (w - s) / 2, (h - s) / 2, s, s, 0, 0, out, out);
+                        URL.revokeObjectURL(url);
+                        resolve(c.toDataURL('image/jpeg', 0.72));
+                    } catch (e) { URL.revokeObjectURL(url); reject(e); }
+                };
+                im.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image')); };
+                im.src = url;
+            });
+        }
+        function pfPaintPic() {
+            const box = document.getElementById('pf-pic-prev');
+            if (!box) return;
+            box.innerHTML = pfPic.data ? '<img src="' + pfPic.data + '" alt="">' : PG_BOX;
+            const rm = document.getElementById('pf-pic-rm');
+            if (rm) rm.style.display = pfPic.data ? '' : 'none';
+        }
+        function pfPicChosen(input) {
+            const f = input.files && input.files[0];
+            input.value = '';
+            if (!f) return;
+            const box = document.getElementById('pf-pic-prev');
+            if (box) box.textContent = 'جاري المعالجة…';
+            picFromFile(f).then(d => { pfPic = { data: d, dirty: true }; pfPaintPic(); })
+                .catch(() => { if (box) box.textContent = 'تعذر قراءة الصورة'; setTimeout(pfPaintPic, 1500); });
+        }
+        function pfPicRemove() { pfPic = { data: '', dirty: true }; pfPaintPic(); }
+
+        function pgHash(id) { let h = 0; const s = String(id); for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; }
+        function pgPicHtml(p) {
+            const d = productPics[String(p.id)];
+            if (d) return '<img src="' + d + '" alt="" draggable="false" decoding="async">';
+            const c = PG_COLORS[pgHash(p.id) % PG_COLORS.length];
+            return '<div class="pg-ph" style="background:' + c[0] + ';color:' + c[1] + '">' + PG_BOX + '</div>';
+        }
+        function pgMainCell(p) {
+            const isW = p.unitType === 'weight';
+            const price = (isW ? formatNum(p.kgPrice) : formatNum(p.price)) + ' د.ل';
+            return `<div class="pg-cell" onclick='selectProductForPreCart(${JSON.stringify(String(p.id))})'><div class="pg-im">${pgPicHtml(p)}<span class="pg-pb">${price}</span></div><div class="pg-t">${escapeHtml(p.name)}</div><div class="pg-d">${isW ? 'بالوزن' : 'بالقطعة'}</div></div>`;
+        }
+        function pgInvCell(p) {
+            const isW = p.unitType === 'weight';
+            const price = isW ? formatNum(p.kgPrice) + ' د.ل/كجم' : formatNum(p.price) + ' د.ل';
+            const stock = isW ? `الشكائر: ${p.bagsCount || 0}<br>مفتوح: ${formatNum(p.openBagKg || 0)} كجم` : `الكمية: ${formatNum(p.qty)}`;
+            const sel = invSelectMode && selProductIds.has(String(p.id));
+            return `<div class="pg-cell${sel ? ' sel' : ''}" data-id="${escapeHtml(String(p.id))}" onclick='invCellTap(${JSON.stringify(String(p.id))})'><div class="pg-im">${pgPicHtml(p)}<span class="pg-pb">${price}</span>${isW ? '<span class="pg-tag">بالوزن</span>' : ''}${invSelectMode ? '<span class="pg-sel">' + PG_CHECK + '</span>' : ''}</div><div class="pg-t">${escapeHtml(p.name)}</div><div class="pg-s">${stock}</div>${p.expiryDate ? `<div class="pg-x">انتهاء ${escapeHtml(p.expiryDate)}</div>` : ''}</div>`;
+        }
+        function ddMore() {
+            const dd = document.getElementById('product-dropdown');
+            const grid = document.getElementById('pg-dd');
+            if (!dd || !grid || ddShown >= ddItems.length) return;
+            if (dd.scrollTop + dd.clientHeight < dd.scrollHeight - 200) return;
+            const next = Math.min(ddShown + PG_CHUNK, ddItems.length);
+            grid.insertAdjacentHTML('beforeend', ddItems.slice(ddShown, next).map(pgMainCell).join(''));
+            ddShown = next;
+        }
+        function setupInvMore() {
+            if (invObserver) { invObserver.disconnect(); invObserver = null; }
+            const end = document.getElementById('pg-inv-end');
+            if (!end || invShown >= invItems.length || typeof IntersectionObserver === 'undefined') return;
+            invObserver = new IntersectionObserver(entries => {
+                if (!entries.some(e => e.isIntersecting)) return;
+                const grid = document.getElementById('pg-inv');
+                if (!grid || invShown >= invItems.length) return;
+                const next = Math.min(invShown + PG_CHUNK, invItems.length);
+                grid.insertAdjacentHTML('beforeend', invItems.slice(invShown, next).map(pgInvCell).join(''));
+                invShown = next;
+                if (invShown >= invItems.length) { invObserver.disconnect(); invObserver = null; }
+            }, { rootMargin: '700px' });
+            invObserver.observe(end);
+        }
+        function invCellTap(id) {
+            if (invSelectMode) {
+                const k = String(id);
+                const on = !selProductIds.has(k);
+                toggleProductSel(k, on);
+                const cells = document.querySelectorAll('#pg-inv .pg-cell');
+                for (let i = 0; i < cells.length; i++) if (cells[i].getAttribute('data-id') === k) cells[i].classList.toggle('sel', on);
+                return;
+            }
+            openProdSheet(id);
+        }
+        function openProdSheet(id) {
+            const p = products.find(x => String(x.id) === String(id));
+            if (!p) return;
+            const isW = p.unitType === 'weight';
+            const sid = JSON.stringify(String(p.id));
+            const priceLine = isW ? `الكيلو: ${formatNum(p.kgPrice)} د.ل | الشكارة: ${formatNum(p.fullBagPrice)} د.ل` : `السعر: ${formatNum(p.price)} د.ل | الجملة: ${formatNum(p.wholesaleUnitPrice)} د.ل`;
+            const stock = isW ? `الشكائر: ${p.bagsCount || 0} | المفتوح: ${formatNum(p.openBagKg || 0)} كجم` : `الكمية: ${formatNum(p.qty)}`;
+            const d = productPics[String(p.id)];
+            const pic = d ? '<img src="' + d + '" alt="">' : pgPicHtml(p);
+            const btns = `<button class="btn btn-green" onclick='prodSheetAct("edit", ${sid})'>تعديل</button>` +
+                (isW ? `<button class="btn btn-green" onclick='prodSheetAct("open", ${sid})'>فتح شكارة</button><button class="btn btn-green" onclick='prodSheetAct("part", ${sid})'>إضافة جزء</button>` : '') +
+                `<button class="btn btn-red" onclick='prodSheetAct("del", ${sid})'>حذف</button>`;
+            document.getElementById('pa-sh').innerHTML = `<div class="pa-hn"></div><div class="pa-top"><div class="pa-im">${pic}</div><div><div class="pa-nm">${escapeHtml(p.name)} <span class="pa-ty">(${isW ? 'بالوزن' : 'بالقطعة'})</span></div><div class="pa-in">${priceLine}<br><b>${stock}</b>${p.expiryDate ? `<br><span style="color:#d32f2f;">انتهاء: ${escapeHtml(p.expiryDate)}</span>` : ''}</div></div></div><div class="pa-bt">${btns}</div>`;
+            document.getElementById('pa-ov').classList.add('open');
+        }
+        function closeProdSheet() { const ov = document.getElementById('pa-ov'); if (ov) ov.classList.remove('open'); }
+        function prodSheetAct(kind, id) {
+            closeProdSheet();
+            if (kind === 'edit') requireManagerPass(() => editProduct(id));
+            else if (kind === 'open') openBagProduct(id);
+            else if (kind === 'part') requireManagerPass(() => addPartialBagProduct(id));
+            else if (kind === 'del') requireManagerPass(() => deleteProduct(id));
+        }
+        (function () {
+            const dd = document.getElementById('product-dropdown');
+            if (dd) dd.addEventListener('scroll', ddMore, { passive: true });
+            picLoadAll().then(refreshPicViews);
+        })();
     </script>
 
     <!-- Cloud Sync: Firebase -->
@@ -6934,7 +7145,7 @@
             document.addEventListener('pointerup', function (e) {
                 var c = tapCand; tapCand = null;
                 if (!c || e.pointerId !== c.id) return;
-                var t = e.target && e.target.closest ? e.target.closest('button, .btn, .mode-btn, .qty-btn, .nav-item, .item-row[onclick], .day-group-header, a[onclick]') : null;
+                var t = e.target && e.target.closest ? e.target.closest('button, .btn, .mode-btn, .qty-btn, .nav-item, .item-row[onclick], .pg-cell[onclick], .day-group-header, a[onclick]') : null;
                 if (t !== c.el || t.disabled) return;
                 try {
                     var vibMs = (typeof window.getVibrationMs === 'function') ? window.getVibrationMs() : 30;
@@ -6944,7 +7155,7 @@
             document.addEventListener('touchstart', function () {}, { passive: true });
             document.addEventListener('pointerdown', function (e) {
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
-                var t = e.target && e.target.closest ? e.target.closest('button, .btn, .mode-btn, .qty-btn, .nav-item, .item-row[onclick], .day-group-header, a[onclick]') : null;
+                var t = e.target && e.target.closest ? e.target.closest('button, .btn, .mode-btn, .qty-btn, .nav-item, .item-row[onclick], .pg-cell[onclick], .day-group-header, a[onclick]') : null;
                 if (!t || t.disabled) return;
                 tapCand = { el: t, x: e.clientX, y: e.clientY, id: e.pointerId };
                 try {
@@ -7224,7 +7435,7 @@
         /* v52: a tap always counts on the product list, the bottom tabs and popup buttons, even if the page shifts
            under the finger (keyboard opening/closing). Without this the browser can drop the first tap after a swipe. */
         (function () {
-            var SEL = '#product-dropdown .item-row, .bottom-nav .nav-item, #modal-buttons-box button';
+            var SEL = '#product-dropdown .item-row, #product-dropdown .pg-cell, .bottom-nav .nav-item, #modal-buttons-box button';
             var cand = null, synth = null;
             document.addEventListener('pointerdown', function (e) {
                 if (e.pointerType === 'mouse') { cand = null; return; }
