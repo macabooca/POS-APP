@@ -907,7 +907,7 @@
 
         /* cart line: amount first (bigger), then the name; quiet grey Edit button */
         .cart-line-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-        .cart-line-main { display: flex; align-items: baseline; gap: 9px; min-width: 0; flex: 1; }
+        .cart-line-main { display: flex; align-items: baseline; gap: 6px; min-width: 0; flex: 1; }
         .cart-line-amt { font-size: 20px; font-weight: 800; color: #000000; white-space: nowrap; flex: none; }
         html[data-theme="dark"] .cart-line-amt, html[data-theme="dark"] .hist-amt { color: #ffffff; }
         .cart-line-amt .cur { font-size: 14px; font-weight: 800; }
@@ -1060,7 +1060,7 @@
         .rc-row > span.rc-item strong { font-weight: 700; }
         .rc-row > span.rc-item .rc-amt { font-weight: 800; color: #000000; margin-inline-end: 9px; white-space: nowrap; }
         .rc-row > span.rc-item .rc-amt small { font-size: 12px; font-weight: 800; color: #000000; }
-        .quick-sale-btn.qs-holding { background-image: linear-gradient(#f6c48c, #f6c48c); background-repeat: no-repeat; background-position: right center; background-size: 0% 100%; animation: qsFill 3s linear forwards; }
+        .quick-sale-btn.qs-holding { background-image: linear-gradient(#f6c48c, #f6c48c); background-repeat: no-repeat; background-position: right center; background-size: 0% 100%; animation: qsFill 2s linear forwards; }
         html[data-theme="dark"] .quick-sale-btn.qs-holding { background-image: linear-gradient(#7a5226, #7a5226); }
         @keyframes qsFill { 0%, 12% { background-size: 0% 100%; } 100% { background-size: 100% 100%; } }
         body.bk-open .modal-overlay, body.bk-open #custom-modal { z-index: 10100; }
@@ -1170,6 +1170,22 @@
         html[data-theme="dark"] .pa-sh { background: #16232f; color: #e6eef5; }
         html[data-theme="dark"] .pa-hn { background: #324a5f; }
         html[data-theme="dark"] .pg-im, html[data-theme="dark"] .pa-im, html[data-theme="dark"] .pf-pic, html[data-theme="dark"] .pg-ph { background: #1b2b38; color: #7f93a5; }
+        /* v60: review filters + spacing, amount/name rows laid out like the cart (no cut letters), panel from the review screen */
+        .bk-sl { display: block; margin-top: 6px; padding: 3px 8px; border-radius: 9px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .bk-sl:first-child { margin-top: 5px; }
+        .bk-sl.on.f-all { background: rgba(19, 126, 132, 0.12); }
+        .bk-sl.on.f-bad { background: rgba(211, 47, 47, 0.12); }
+        .bk-sl.on.f-warn { background: rgba(242, 140, 40, 0.18); }
+        .bk-empty { text-align: center; color: var(--muted, #8695a6); padding: 26px 8px; font-weight: 700; }
+        .bk-main:not(.bk-att) { display: flex; align-items: baseline; gap: 6px; }
+        .bk-main .bk-amt { margin-inline-end: 0; flex: none; padding-inline: 1px; }
+        .bk-main .bk-nm { min-width: 0; flex: 1; overflow-wrap: anywhere; padding-inline: 1px; }
+        .rc-row > span.rc-item { display: flex; align-items: baseline; gap: 6px; }
+        .rc-row > span.rc-item .rc-amt { margin-inline-end: 0; flex: none; padding-inline: 1px; }
+        .rc-row > span.rc-item .rc-nm { min-width: 0; flex: 1; overflow-wrap: anywhere; padding-inline: 1px; }
+        .bk-acts button.dis { opacity: 0.45; }
+        .bk-tag.edit { background: #e6f2f3; color: #137e84; }
+        .bk-hide { visibility: hidden !important; pointer-events: none !important; }
     </style>
 </head>
 <body onclick="handleGlobalClick(event)">
@@ -2044,6 +2060,7 @@
         /* Sales history: which day groups are open (today is open by default). */
         /* Cart editing / debtor names */
         let editingCartIndex = null;
+        let bkPanelTarget = null; /* v60: set while the product panel is opened from the bulk-sales review */
         let editingSaleId = null;
         let quickNotes = safeLoad('pos_quick_notes', []);
         if (!Array.isArray(quickNotes)) quickNotes = [];
@@ -2727,6 +2744,7 @@
             activeProductObj = null;
             document.getElementById('selected-product-panel').style.display = 'none';
             document.body.classList.remove('panel-open');
+            if (bkPanelTarget) { const bkT = bkPanelTarget; bkPanelTarget = null; bkT.restore(); }
         }
 
         function confirmAddToCart() {
@@ -2778,7 +2796,7 @@
             const prod = activeProductObj;
 
             /* while editing a finished sale, stock is checked once when saving the changes */
-            if (editingSaleId) { processAddToCartExecution(false); return; }
+            if (editingSaleId || bkPanelTarget) { processAddToCartExecution(false); return; }
 
             if (prod.unitType === 'weight' && activeSelection.sellMode === 'retail') {
                 const openKg = prod.openBagKg || 0;
@@ -2884,6 +2902,16 @@
                 total: itemTotal,
                 note: note
             };
+            if (bkPanelTarget) {
+                /* v60: opened from the bulk-sales review: hand the edited line back, never touch the cart */
+                const bkT = bkPanelTarget;
+                bkPanelTarget = null;
+                swipeAddPending = false;
+                swipeFinishPending = false;
+                cancelProductSelection();
+                bkT.done(newCartItem);
+                return;
+            }
             if (editingCartIndex !== null && cart[editingCartIndex]) cart[editingCartIndex] = newCartItem;
             else cart.push(newCartItem);
 
@@ -2893,8 +2921,8 @@
             else if (finishFlow) { requestFinishSale(); }
         }
 
-        function editCartItem(idx) {
-            const item = cart[idx];
+        function editCartItem(idx, itemOverride) {
+            const item = itemOverride || cart[idx];
             if (!item) return;
             const prod = products.find(p => String(p.id) === String(item.id));
             if (!prod) {
@@ -5875,7 +5903,7 @@
             const buyer = (document.getElementById('cart-customer').value || '').trim();
             const cartDebt = !!document.getElementById('cart-debt').checked;
             const unitOf = (i) => i.unitType === 'weight' ? 'كجم' : (i.unitType === 'unit' ? 'قطعة' : 'شكارة');
-            const rows = cart.map(i => `<div class="rc-row"><span class="rc-item"><b class="rc-amt">${i.isFree ? 'مجاني' : formatNum(i.total) + ' <small>د.ل</small>'}</b><strong>${escapeHtml(i.name)}</strong> × ${formatNum(i.qty)} ${unitOf(i)}${i.discount > 0 ? ` <small>(خصم ${formatNum(i.discount)} د.ل)</small>` : ''}${(cartDebt || i.isDebt) && !i.isFree ? ' <span class="rc-tag">[دين]</span>' : ''}${(!cartDebt && !i.isDebt && !i.isFree && Number(i.partialDebt) > 0) ? ' <span class="rc-tag">[دين جزئي ' + formatNum(i.partialDebt) + ' د.ل]</span>' : ''}</span></div>`).join('');
+            const rows = cart.map(i => `<div class="rc-row"><span class="rc-item"><b class="rc-amt">${i.isFree ? 'مجاني' : formatNum(i.total) + ' <small>د.ل</small>'}</b><span class="rc-nm"><strong>${escapeHtml(i.name)}</strong> × ${formatNum(i.qty)} ${unitOf(i)}${i.discount > 0 ? ` <small>(خصم ${formatNum(i.discount)} د.ل)</small>` : ''}${(cartDebt || i.isDebt) && !i.isFree ? ' <span class="rc-tag">[دين]</span>' : ''}${(!cartDebt && !i.isDebt && !i.isFree && Number(i.partialDebt) > 0) ? ' <span class="rc-tag">[دين جزئي ' + formatNum(i.partialDebt) + ' د.ل]</span>' : ''}</span></span></div>`).join('');
             return `<div class="rc-paper rc-sale">
                 <div class="rc-rows">
                 <div class="rc-row"><span>التاريخ</span><b>${receiptNow(convertingNote ? convertingNote.ts : undefined)}</b></div>
@@ -7276,7 +7304,7 @@
                 qsHintTimer = setTimeout(hideQsHint, 900);
             }
             function hideQsHint() { clearTimeout(qsHintTimer); qsHint.classList.remove('show'); }
-            /* v57: a long press (about 3 seconds, finger not moving) opens the bulk-sales box */
+            /* v57: a long press (about 2 seconds, finger not moving) opens the bulk-sales box */
             var qsHoldTimer = null, qsHoldFired = false;
             function qsHoldCancel() {
                 if (qsHoldTimer) { clearTimeout(qsHoldTimer); qsHoldTimer = null; }
@@ -7294,7 +7322,7 @@
                     vib(40);
                     qsReset(true);
                     if (window.openBulkBox) window.openBulkBox();
-                }, 3000);
+                }, 2000);
             }
             makeSwipe(qs, {
                 onStart: function () { showQsHint(); qsHoldStart(); },
@@ -7899,7 +7927,7 @@
             drop: /^(بيع|بعت|باع|ببيع|بعته|بعتها|وبيع)$/
         };
         let bkOpenedAt = null;   /* imported sales get the day this box was opened, never another day */
-        let bkState = null, bkView = null, bkText = '';
+        let bkState = null, bkView = null, bkText = '', bkFilter = 'all';
 
         /* ---------- reading one line ---------- */
         function bkIsNum(w) { return /^\d+(\.\d+)?$/.test(w || ''); }
@@ -8117,6 +8145,18 @@
             if (!m) { bkMsg(lv, 'bad', 'لم أجد منتجاً مطابقاً لـ «' + r.name.join(' ') + '»'); return finish(); }
             lv.match = m;
             const pr = m.prod;
+            if (ov.panelItem && String(ov.panelItem.id) === String(pr.id)) {
+                const pi = Object.assign({}, ov.panelItem);
+                lv.items = [pi];
+                lv.tags.push({ k: 'edit', t: 'عُدِّل من لوحة المنتج' });
+                if (pi.isFree) lv.tags.push({ k: 'free', t: 'مجاني' });
+                if (pi.discount > 0 && !pi.isFree) lv.tags.push({ k: 'disc', t: 'خصم ' + formatNum(pi.discount) + ' د.ل' });
+                if (pi.isDebt && !pi.isFree) lv.tags.push({ k: 'debt', t: 'دين' + (pi.debtorName ? ': ' + pi.debtorName : '') });
+                if (Number(pi.partialDebt) > 0 && !pi.isFree && !pi.isDebt) lv.tags.push({ k: 'debt', t: 'دين جزئي ' + formatNum(pi.partialDebt) + ' د.ل' + (pi.partialDebtorName ? ' — ' + pi.partialDebtorName : '') });
+                if (pi.extraKg > 0) lv.tags.push({ k: 'extra', t: 'زيادة ' + formatNum(pi.extraKg * 1000) + ' جرام' });
+                if (mods.discountWhole > 0) cv.globalDiscount += mods.discountWhole;
+                return finish();
+            }
             if (pr.unitType !== 'weight') {
                 if (r.amount > 0 && r.bare !== null) { r.count = r.bare; r.bare = null; }
                 else if (r.bare !== null && !(r.amount > 0) && !(r.count > 0)) {
@@ -8255,6 +8295,16 @@
             rv.querySelector('#bk-back').addEventListener('click', bkCloseReview);
             rv.querySelector('#bk-ok').addEventListener('click', bkConfirm);
             rv.querySelector('#bk-list').addEventListener('click', bkListClick);
+            rv.querySelector('#bk-sum').addEventListener('click', function (e) {
+                const t = e.target.closest('[data-f]');
+                if (!t) return;
+                const f = t.getAttribute('data-f');
+                bkFilter = (f === bkFilter) ? 'all' : f;
+                bkRender();
+                const l = document.getElementById('bk-list');
+                if (l) l.scrollTop = 0;
+            });
+            bkFilter = 'all';
             bkRender();
         }
         function bkCloseReview() {
@@ -8268,16 +8318,23 @@
             const list = document.getElementById('bk-list');
             if (!list) return;
             const keep = list.scrollTop;
-            document.getElementById('bk-sum').innerHTML = v.invoices + ' فاتورة — الإجمالي ' + formatNum(v.total) + ' د.ل' + (v.debt > 0 ? ' (دين ' + formatNum(v.debt) + ' د.ل)' : '') +
-                (v.bad ? '<br><span style="color:#d32f2f; font-weight:700;">' + v.bad + ' سطر أحمر يحتاج تصحيحاً أو حذفاً</span>' : '') +
-                (v.warn ? '<br><span style="color:#b45f06; font-weight:700;">' + v.warn + ' سطر برتقالي: تأكد منه</span>' : '');
+            if (bkFilter === 'bad' && !v.bad) bkFilter = 'all';
+            if (bkFilter === 'warn' && !v.warn) bkFilter = 'all';
+            const sl = (f, html) => '<div class="bk-sl f-' + f + (bkFilter === f ? ' on' : '') + '" data-f="' + f + '">' + html + '</div>';
+            document.getElementById('bk-sum').innerHTML =
+                sl('all', v.invoices + ' فاتورة — الإجمالي ' + formatNum(v.total) + ' د.ل' + (v.debt > 0 ? ' (دين ' + formatNum(v.debt) + ' د.ل)' : '')) +
+                (v.bad ? sl('bad', '<span style="color:#d32f2f; font-weight:700;">' + v.bad + ' سطر أحمر يحتاج تصحيحاً أو حذفاً</span>') : '') +
+                (v.warn ? sl('warn', '<span style="color:#b45f06; font-weight:700;">' + v.warn + ' سطر برتقالي: تأكد منه</span>') : '');
+            const showLine = (lv) => bkFilter === 'all' || lv.status === bkFilter;
             list.innerHTML = v.carts.map((cv, n) => {
+                const shown = cv.lines.filter(showLine);
+                if (!shown.length) return '';
                 const sub = [];
                 if (cv.globalDiscount > 0) sub.push('خصم على الفاتورة: ' + formatNum(cv.globalDiscount) + ' د.ل');
                 if (cv.debt > 0) sub.push('دين: ' + formatNum(cv.debt) + ' د.ل');
                 return '<div class="bk-card"><div class="bk-card-h"><span class="bk-card-t">فاتورة ' + (n + 1) + '</span><span class="bk-card-tot">' + formatNum(cv.total) + ' <small>د.ل</small></span><button type="button" class="del" data-act="del-cart" data-c="' + cv.ci + '">حذف الفاتورة</button></div>' +
-                    (sub.length ? '<div class="bk-card-sub">' + sub.join(' — ') + '</div>' : '') + cv.lines.map(bkLineHtml).join('') + '</div>';
-            }).join('');
+                    (sub.length ? '<div class="bk-card-sub">' + sub.join(' — ') + '</div>' : '') + shown.map(bkLineHtml).join('') + '</div>';
+            }).join('') || '<div class="bk-empty">لا توجد أسطر في هذا التصنيف</div>';
             list.scrollTop = keep;
         }
         function bkLineHtml(lv) {
@@ -8285,13 +8342,14 @@
             let h = '<div class="bk-line st-' + lv.status + '">';
             if (lv.attached) h += '<div class="bk-main bk-att">↑ ' + (lv.targetName ? 'يخص «' + escapeHtml(lv.targetName) + '»' : 'تعديل على الفاتورة') + '</div>';
             lv.items.forEach(it => {
-                h += '<div class="bk-main"><b class="bk-amt">' + (it.isFree ? 'مجاني' : formatNum(it.total) + ' <small>د.ل</small>') + '</b><span class="bk-name">' + escapeHtml(it.name) + '</span> <span class="bk-qty">× ' + formatNum(it.qty) + ' ' + bkUnit(it) + '</span></div>';
+                h += '<div class="bk-main"><b class="bk-amt">' + (it.isFree ? 'مجاني' : formatNum(it.total) + ' <small class="cur">د.ل</small>') + '</b><span class="bk-nm"><span class="bk-name">' + escapeHtml(it.name) + '</span> <span class="bk-qty">× ' + formatNum(it.qty) + ' ' + bkUnit(it) + '</span></span></div>';
             });
             if (lv.tags.length) h += '<div class="bk-tags">' + lv.tags.map(t => '<span class="bk-tag ' + t.k + '">' + escapeHtml(t.t) + '</span>').join('') + '</div>';
             h += '<div class="bk-orig">«' + escapeHtml(lv.ln.raw) + '»</div>';
             lv.msgs.forEach(m => { h += '<div class="bk-msg ' + m.kind + '">' + escapeHtml(m.text) + '</div>'; });
             h += '<div class="bk-acts">';
             if (lv.pickable) h += '<button type="button" data-act="pick"' + d + '>' + (lv.items.length ? 'تغيير المنتج' : 'اختيار المنتج') + '</button>';
+            if (lv.pickable) h += '<button type="button" data-act="panel"' + d + (lv.match ? '' : ' class="dis"') + '>لوحة المنتج</button>';
             if (lv.ambiguous) h += '<button type="button" data-act="bare"' + d + '>' + (lv.bareChoice === 'money' ? 'اعتبره كمية' : 'اعتبره مبلغاً بالدينار') + '</button>';
             h += '<button type="button" class="del" data-act="del-line"' + d + '>حذف السطر</button></div></div>';
             return h;
@@ -8309,6 +8367,39 @@
             if (act === 'del-line') { ln.ov.deleted = true; bkRender(); }
             else if (act === 'bare') { ln.ov.bareMode = ln.ov.bareMode === 'money' ? 'qty' : 'money'; bkRender(); }
             else if (act === 'pick') bkOpenPicker(ln);
+            else if (act === 'panel') bkOpenPanel(c, l);
+        }
+        /* v60: open the product panel for one review line; saving comes back here with that line updated */
+        function bkSetReviewHidden(on) {
+            ['bk-review', 'bk-overlay'].forEach(function (id) {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('bk-hide', on);
+            });
+        }
+        function bkOpenPanel(c, l) {
+            const cart0 = bkState && bkState.carts[c];
+            const ln = cart0 && cart0.lines[l];
+            const cv = bkView && bkView.carts.find(x => x.ci === c);
+            const lv = cv && cv.lines.find(x => x.li === l);
+            if (!ln || !lv) return;
+            const pid = ln.ov.prodId || (lv.match && lv.match.prod && lv.match.prod.id);
+            const prod = pid ? products.find(p => String(p.id) === String(pid)) : null;
+            if (!prod) { showModal('اختر المنتج أولاً', 'هذا السطر لا يوجد له منتج بعد. اضغط «اختيار المنتج» واختر المنتج، ثم افتح لوحة المنتج.', false, () => {}); return; }
+            bkPanelTarget = {
+                restore: function () { bkSetReviewHidden(false); },
+                done: function (item) {
+                    ln.ov.prodId = String(item.id);
+                    ln.ov.panelItem = item;
+                    bkSetReviewHidden(false);
+                    bkRender();
+                }
+            };
+            bkSetReviewHidden(true);
+            if (lv.items.length) editCartItem(-1, lv.items[0]);
+            else selectProductForPreCart(prod.id);
+            const addBtn = document.getElementById('btn-add-to-cart');
+            if (addBtn) addBtn.textContent = 'حفظ التعديل';
+            if (!activeProductObj) { const t = bkPanelTarget; bkPanelTarget = null; if (t) t.restore(); }
         }
         function bkOpenPicker(ln) {
             const ov = document.createElement('div');
@@ -8331,6 +8422,7 @@
                 const it = e.target.closest('.bk-pick-item[data-id]');
                 if (!it) return;
                 ln.ov.prodId = it.getAttribute('data-id');
+                ln.ov.panelItem = null;
                 close();
                 bkRender();
             });
