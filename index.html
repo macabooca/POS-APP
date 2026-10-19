@@ -1186,6 +1186,18 @@
         .bk-acts button.dis { opacity: 0.45; }
         .bk-tag.edit { background: #e6f2f3; color: #137e84; }
         .bk-hide { visibility: hidden !important; pointer-events: none !important; }
+        .bk-slotrow { margin-top: 6px; }
+        .bk-slotacts { margin-top: 3px; margin-bottom: 4px; }
+        /* v61 */
+        .bk-orig { font-size: 13px; color: #4a5a6a; margin-top: 4px; overflow-wrap: anywhere; line-height: 1.5; }
+        .bk-orig-l { font-weight: 700; color: var(--muted, #8695a6); }
+        html[data-theme="dark"] .bk-orig { color: #c5d2de; }
+        .bk-ign { background: var(--card-bg, #ffffff); border: 1px dashed #b8c4cd; border-radius: 14px; padding: 6px 10px; margin-bottom: 10px; }
+        .bk-ign-h { width: 100%; text-align: right; border: none; background: transparent; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #6b7c8c; padding: 4px 0; cursor: pointer; }
+        .bk-ign-row { border-top: 1px solid var(--border-color, #e9eef2); padding: 7px 0; }
+        .bk-ign-t { font-size: 13px; overflow-wrap: anywhere; }
+        .bk-ign-r { font-size: 11.5px; color: var(--muted, #8695a6); margin: 2px 0 4px; }
+        .bk-ign-row button { border: 1px solid #cfe3e6; background: var(--card-bg, #ffffff); color: var(--teal-primary, #137e84); border-radius: 9px; padding: 3px 10px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
     </style>
 </head>
 <body onclick="handleGlobalClick(event)">
@@ -7705,7 +7717,7 @@
                     else if (QN_U.gurush.test(nx)) { r.extraGurush += n; i++; }
                     else if (QN_U.gram.test(nx)) { grams.push(n); i++; }
                     else if (QN_U.kilo.test(nx)) { r.kg += n; i++; }
-                    else if (QN_U.bag.test(nx)) { r.bagCount = n; i++; }
+                    else if (QN_U.bag.test(nx)) { r.bagCount = n; r.bagWord = true; i++; }
                     else if (QN_U.count.test(nx)) { r.count += n; i++; }
                     else if (r.bare === null) r.bare = n;
                     else r.notes.push('رقم زائد بدون وحدة: ' + t);
@@ -7918,16 +7930,16 @@
            nothing is saved until the person confirms. */
         const BK_DRAFT_KEY = 'pos_bulk_draft', BK_LAST_KEY = 'pos_last_import', BK_HASH_KEY = 'pos_bulk_hashes';
         const BK = {
-            disc: /^(سامحته|سامحتها|سامحتهم|سامحتو|سامحت|سماح|خصمت|خصم|خصمته|نقصته|نقصتها|نقصت|نزلته|نزلتها|نزلت|نزلتله|نزلتلو)$/,
+            disc: /^(سامحته|سامحتها|سامحتهم|سامحتو|سامحت|سماح|خصمت|خصم|خصمته|نقصته|نقصتها|نقصت|نزلته|نزلتها|نزلت|نزلتله|نزلتلو|سيب|سيبت|سيبته|سيبتله|سيبتلو|سامح|سامحني|سامحتله|سامحتلها|سامحتلو|سامحتهن|ماخذاش)$/,
             fill: /^(في|ب|ل|له|لو|لها|ليه|علي|من|مبلغ|بمبلغ|بقيمه|قيمه)$/,
             whole: /^(الفاتوره|فاتوره|للفاتوره|الاجمالي|اجمالي|المجموع|مجموع|الحساب|حساب|الكل|للكل|كل|كامل|كامله|كلها|كله)$/,
             free: /^(بلاش|ببلاش|مجاني|مجانا|مجانيه|هديه|عطيته|عطيتها|عطيتهم|عطيتلو|عطيتو|اعطيته|اعطيتها|اهديته|اهديتها)$/,
             debt: /^(دين|بالدين|سلف|بالسلف|اجل|بالاجل|ديون)$/,
-            bag: /^(شوال|اشوال|شوالات|شوالين|جوال|اجوال|اجوله|جوالات)$/,
+            bag: /^(شوال|اشوال|شوالات|اشوالات|شوالين|اشوالين|جوال|اجوال|اجوله|جوالات|جوالين|اجوالين)$/,
             drop: /^(بيع|بعت|باع|ببيع|بعته|بعتها|وبيع)$/
         };
         let bkOpenedAt = null;   /* imported sales get the day this box was opened, never another day */
-        let bkState = null, bkView = null, bkText = '', bkFilter = 'all';
+        let bkState = null, bkView = null, bkText = '', bkFilter = 'all', bkIgnOpen = false, bkReviewed = false;
 
         /* ---------- reading one line ---------- */
         function bkIsNum(w) { return /^\d+(\.\d+)?$/.test(w || ''); }
@@ -7937,13 +7949,53 @@
             return !!w && !bkIsNum(w) && w !== '+' && !QN_U.dinar.test(w) && !QN_U.gurush.test(w) && !QN_U.gram.test(w) &&
                 !QN_U.kilo.test(w) && !QN_U.count.test(w) && !QN_U.extra.test(w) && !QN_U.fill.test(w) && !BK.fill.test(w);
         }
-        function bkTokens(raw) {
+        /* v61: dual / plural forms, glued "و", empty-sack words, lines that are not sales */
+        const BK_DUAL = { 'ظرفين': 'ظرف', 'طرفين': 'طرف', 'حكتين': 'حكه', 'علبتين': 'علبه', 'كيسين': 'كيس', 'بالتين': 'باله', 'باليتين': 'باله', 'شرابتين': 'شرابه', 'وكالتين': 'وكاله', 'بونيتين': 'بونيه', 'صبايتين': 'صبايه', 'حضانتين': 'حضانه', 'قطعتين': 'قطعه', 'حبتين': 'حبه' };
+        const BK_PLURAL = { 'اظرف': 'ظرف', 'اضرف': 'ظرف', 'طروف': 'طرف', 'حكاكي': 'حكه', 'بالات': 'باله', 'شرابات': 'شرابه', 'وكالات': 'وكاله', 'بونيات': 'بونيه', 'صبايات': 'صبايه', 'حضانات': 'حضانه' };
+        const BK_BAGDUAL = /^(اشوالين|شوالين|جوالين|اجوالين)$/;
+        const BK_EMPTY = /^(فاضي|فاضيه|فاضيات|فاضين|فارغ|فارغه|فارغات)$/;
+        function bkProductWordSet() {
+            const set = new Set();
+            products.forEach(p => bkSq(p.name).split(' ').forEach(w => { if (w.length >= 3) set.add(bkStrip(w)); }));
+            return set;
+        }
+        function bkIgnoreReason(raw) {
+            const n = normalizeSearchText(raw);
+            if (/^(لعند|لحد|الي|الى|عند)?\s*(س|ساعه)\s*\d+([:.]\d+)?\s*$/.test(n)) return 'علامة وقت';
+            if (/^(فتحت|صكرت|جيت|وجيت|طلعت|وطلعت)(?=\s|$)/.test(n) && /\d/.test(n)) return 'ملاحظة وقت الدوام';
+            if (/^مجموع بيع ساجد/.test(n) || /^بيع ساجد\s*$/.test(n)) return 'ملخص ساجد';
+            const days = '(السبت|الاحد|الاثنين|الاتنين|الثلاثاء|التلاتاء|الاربعاء|الخميس|الجمعه)';
+            if (new RegExp('^\\d+\\s*ش\\s*\\d+').test(n) && new RegExp(days).test(n)) return 'عنوان يوم';
+            if (new RegExp('^' + days + '\\s*$').test(n)) return 'عنوان يوم';
+            if (/^تكمله(?=\s|$)/.test(n)) return 'عنوان تكملة';
+            if (/^(فالاغلب )?(ممكن )?في حاجه هنا(?=\s|$)/.test(n) && !/دينار/.test(n)) return 'ملاحظة: ربما نُسي بيع هنا';
+            if (/^ما طلعتش$/.test(n)) return 'ملاحظة';
+            if (/^في (قروش|غروش) زياده( واجد)?$/.test(n)) return 'زيادة بدون مبلغ';
+            return '';
+        }
+        function bkTokens(raw, wordSet) {
             let s = normalizeSearchText(raw).replace(/(\d)[,٫](\d)/g, '$1.$2').replace(/[،,;؛]/g, ' ').replace(/٫/g, '.');
             s = s.replace(/(\d)(?=[^\d\s.])/g, '$1 ').replace(/([^\d\s.])(?=\d)/g, '$1 ').replace(/\+/g, ' + ');
-            return s.split(' ').filter(Boolean).map(w => BK.bag.test(w) ? 'شكاره' : w).filter(w => !BK.drop.test(w));
+            const q = s.split(' ').filter(Boolean), out = [];
+            const keyword = w => BK.free.test(w) || BK.disc.test(w) || BK.debt.test(w) || BK.whole.test(w) || BK_DUAL[w] || BK_BAGDUAL.test(w) || /^(وحده|واحده|واحد)$/.test(w);
+            while (q.length) {
+                const w = q.shift();
+                if (w === 'ما' && q[0] === 'خذاش') { q.shift(); out.push('ماخذاش'); continue; }
+                if (w.length > 3 && w[0] === 'و' && !bkIsNum(w)) {
+                    const rest = w.slice(1);
+                    const inSet = wordSet && wordSet.has(bkStrip(bkSq(rest))) && !wordSet.has(bkStrip(bkSq(w)));
+                    if (keyword(rest) || inSet) { out.push('و'); q.unshift(rest); continue; }
+                }
+                if (/^(وحده|واحده|واحد)$/.test(w)) { out.push('1'); continue; }
+                if (BK_BAGDUAL.test(w)) { out.push('2', 'شكاره'); continue; }
+                if (BK_DUAL[w]) { out.push('2', BK_DUAL[w]); continue; }
+                if (BK_PLURAL[w]) { out.push(BK_PLURAL[w]); continue; }
+                out.push(BK.bag.test(w) ? 'شكاره' : w);
+            }
+            return out.filter(w => !BK.drop.test(w));
         }
-        function bkParseLine(raw) {
-            const t = bkTokens(raw);
+        function bkParseLine(raw, ws, tok) {
+            const t = tok || bkTokens(raw, ws);
             const used = new Set();
             const p = { raw, t, used, discount: 0, discountWhole: 0, discAssumed: false, discNoAmount: false, free: false, debt: null };
             /* discount: "سامحته في 1 دينار" (a word showing the whole bill makes it a whole-invoice discount) */
@@ -7989,11 +8041,29 @@
         function bkParseText(text) {
             const carts = [];
             let cur = null;
+            const ws = bkProductWordSet();
             String(text || '').split(/\r?\n/).forEach(raw => {
                 const line = raw.replace(/[\u200b-\u200f\u202a-\u202e\ufeff]/g, '').trim();
                 if (!line) { cur = null; return; }
                 if (!cur) { cur = { lines: [], deleted: false }; carts.push(cur); }
-                cur.lines.push({ raw: line, p: bkParseLine(line), ov: {} });
+                const ignored = bkIgnoreReason(line);
+                const p = bkParseLine(line, ws);
+                /* a paid sale and a free gift on the same line ("... وعطيته X بلاش") become two lines */
+                const t = p.t;
+                const f = t.findIndex(w => BK.free.test(w));
+                let split = false;
+                if (!ignored && f > 0) {
+                    const before = t.slice(0, f).filter(w => w !== 'و');
+                    const after = t.slice(f);
+                    const hasMoney = before.some((w, i) => bkIsNum(w) && bkIsMoney(before[i + 1]));
+                    const hasName = after.some(w => !BK.free.test(w) && bkIsWord(w));
+                    if (hasMoney && hasName && before.some(w => bkIsWord(w))) {
+                        split = true;
+                        cur.lines.push({ raw: line, p: bkParseLine(line, ws, before), ov: {}, ignored: '', partLabel: 'الجزء المدفوع من السطر' });
+                        cur.lines.push({ raw: line, p: bkParseLine(line, ws, after), ov: {}, ignored: '', partLabel: 'الجزء المجاني من السطر' });
+                    }
+                }
+                if (!split) cur.lines.push({ raw: line, p, ov: {}, ignored });
             });
             return { carts };
         }
@@ -8012,9 +8082,10 @@
             }
             return diff + (a.length - i) + (b.length - j) <= 1;
         }
-        function bkFindProduct(nameTokens) {
+        function bkFindProduct(nameTokens, hintList) {
             const toks = nameTokens.map(w => bkStrip(bkSq(w))).filter(w => w.length >= 2);
             if (!toks.length) return null;
+            const hs = (hintList || []).map(h => bkSq(h.v));
             const cands = [];
             products.forEach(p => {
                 const hay = bkSq(p.name);
@@ -8022,17 +8093,18 @@
                 let sc = 0;
                 toks.forEach(t => { if (hay.includes(t) || words.some(w => bkWordClose(w, t))) sc++; });
                 if (!sc) return;
-                const covered = w => toks.some(t => t === w || bkWordClose(t, w));
+                const hitList = hs.filter(h => words.some(w => w === h || (!/^\d/.test(h) && bkWordClose(w, h))));
+                const covered = w => toks.some(t => t === w || bkWordClose(t, w)) || hs.includes(w);
                 const extra = words.filter(w => !covered(w)).length;
-                cands.push({ p, sc, extra, exact: words.length > 0 && extra === 0 && sc === toks.length, len: String(p.name).length });
+                cands.push({ p, sc, extra, exact: words.length > 0 && extra === 0 && sc === toks.length, len: String(p.name).length, hit: hitList.length, hitList });
             });
             if (!cands.length) return null;
             const bestSc = Math.max.apply(null, cands.map(c => c.sc));
             if (bestSc < Math.ceil(toks.length / 2)) return null;
-            const top = cands.filter(c => c.sc === bestSc).sort((a, b) => (b.exact - a.exact) || (a.extra - b.extra) || (a.len - b.len));
-            const sure = bestSc === toks.length && (top.length === 1 || (top[0].exact && !top[1].exact));
+            const top = cands.filter(c => c.sc === bestSc).sort((a, b) => (b.hit - a.hit) || (b.exact - a.exact) || (a.extra - b.extra) || (a.len - b.len));
+            const sure = bestSc === toks.length && (top.length === 1 || top[0].hit > top[1].hit || (top[0].exact && !top[1].exact));
             const others = cands.filter(c => c !== top[0] && c.sc >= Math.ceil(toks.length / 2)).sort((a, b) => (b.sc - a.sc) || (a.extra - b.extra)).slice(0, 3).map(c => c.p);
-            return { prod: top[0].p, others, sure };
+            return { prod: top[0].p, others, sure, hit: top[0].hitList };
         }
 
         /* ---------- deciding what the debt words mean ---------- */
@@ -8106,12 +8178,117 @@
             if (gr > 0) tag('extra', 'زيادة ' + formatNum(gr) + ' جرام');
         }
 
+        /* v62: one line with several varieties ("حكتين قطط بوني حولي وبقر", "أظرف قطط 2 رويال حوت و 2 بيتكون حوت") */
+        const BK_TYPE = /^(حكه|ظرف|طرف|علبه|علب)$/;
+        const BK_ANIMAL = /^(قطط|كلاب|طيور|ارانب|عصافير)$/;
+        function bkTrySplit(core) {
+            const rest = core.slice();
+            let amount = 0;
+            for (let i = 0; i < rest.length - 1; i++) if (bkIsNum(rest[i]) && bkIsMoney(rest[i + 1])) { amount = parseFloat(rest[i]); rest.splice(i, 2); break; }
+            const ti = rest.findIndex(w => BK_TYPE.test(w));
+            if (ti < 0) return null;
+            const before = rest.slice(0, ti);
+            let headN = null;
+            if (before.length === 1 && bkIsNum(before[0])) headN = parseFloat(before[0]);
+            else if (before.length) return null;
+            const after = rest.slice(ti + 1);
+            if (after.some(w => bkIsGurush(w) || QN_U.extra.test(w) || QN_U.gram.test(w) || QN_U.kilo.test(w) || bkIsMoney(w))) return null;
+            const andN = after.filter(w => w === 'و').length, numN = after.filter(w => bkIsNum(w)).length;
+            if (!(andN >= 1 || numN >= 2)) return null;
+            const groups = [];
+            let cur = { count: null, toks: [] };
+            after.forEach(w => {
+                if (w === 'و') { if (cur.toks.length) groups.push(cur); cur = { count: null, toks: [] }; return; }
+                if (bkIsNum(w)) { if (cur.toks.length) { groups.push(cur); cur = { count: parseFloat(w), toks: [] }; } else cur.count = parseFloat(w); return; }
+                if (QN_U.fill.test(w)) return;
+                cur.toks.push(w);
+            });
+            if (cur.toks.length) groups.push(cur);
+            if (groups.length < 2) return null;
+            return { amount, headN, type: rest[ti], groups, prefixOnly: groups[0].count === null && groups[1].count !== null };
+        }
+        function bkResolveSplit(sp, ov) {
+            const typeUse = /^(علبه|علب)$/.test(sp.type) ? null : sp.type;
+            const g0 = sp.groups[0].toks;
+            const animal = g0.find(w => BK_ANIMAL.test(w)) || null;
+            const slots = [];
+            sp.groups.forEach((g, gi) => {
+                if (sp.prefixOnly && gi === 0) return;
+                const at = [];
+                if (sp.prefixOnly) {
+                    at.push([typeUse].concat(g0, g.toks));
+                    if (animal) at.push([typeUse, animal].concat(g.toks));
+                    at.push(g0.concat(g.toks));
+                    if (animal) at.push([animal].concat(g.toks));
+                } else if (gi === 0) {
+                    at.push([typeUse].concat(g.toks));
+                    at.push(g.toks.slice());
+                } else {
+                    for (let k = g0.length - 1; k >= 1; k--) at.push([typeUse].concat(g0.slice(0, k), g.toks));
+                    if (animal) at.push([typeUse, animal].concat(g.toks));
+                    for (let k = g0.length - 1; k >= 1; k--) at.push(g0.slice(0, k).concat(g.toks));
+                }
+                let best = null;
+                for (let a = 0; a < at.length; a++) {
+                    const m = bkFindProduct(at[a].filter(Boolean), null);
+                    if (!m) continue;
+                    if (m.sure) { best = m; break; }
+                    if (!best) best = m;
+                }
+                const k = slots.length;
+                const sov = ov.slots && ov.slots[k];
+                if (sov && sov.prodId) { const pr0 = products.find(x => String(x.id) === String(sov.prodId)); if (pr0) best = { prod: pr0, sure: true, others: [], hit: [] }; }
+                slots.push({ k, label: g.toks.join(' '), count: g.count !== null ? g.count : 1, m: best, item: null });
+            });
+            return slots;
+        }
+        /* numbers and unit words that come after the product name may be part of the product's own name ("10 لتر", "2 كيلو") */
+        function bkBuildHints(core) {
+            const hints = [];
+            let firstName = core.findIndex(w => bkIsWord(w));
+            if (firstName < 0) firstName = core.length;
+            for (let i = 0; i < core.length; i++) {
+                const w = core[i], nx = core[i + 1] || '';
+                if (bkIsNum(w)) {
+                    if (bkIsMoney(nx) || bkIsGurush(nx) || QN_U.gram.test(nx)) { i++; continue; }
+                    if (i > firstName) hints.push({ v: w, i });
+                    continue;
+                }
+                if (QN_U.count.test(w) || QN_U.kilo.test(w)) hints.push({ v: w, i });
+            }
+            return hints;
+        }
         function bkBuildLine(ln, prev, cv) {
             const p = ln.p;
-            const lv = { ln, status: 'ok', msgs: [], tags: [], items: [], attached: false, ambiguous: false, bareChoice: '', match: null, pickable: false, targetName: '' };
+            const lv = { ln, status: 'ok', msgs: [], tags: [], items: [], attached: false, ambiguous: false, bareChoice: '', match: null, pickable: false, targetName: '', slots: null };
             const dres = bkResolveDebt(p, !!(prev && prev.items.length));
-            const core = p.t.filter((w, i) => !p.used.has(i) && !dres.remove.has(i));
+            /* v63: a recorded total that differs from the written amount is red until the person accepts the inventory price */
+            const moneyMsg = (text) => {
+                if (ln.ov.accept) { if (!lv.tags.some(t => t.t === 'قبلتَ سعر المخزون')) lv.tags.push({ k: 'edit', t: 'قبلتَ سعر المخزون' }); return; }
+                if (!lv.msgs.some(m => m.text === text)) lv.msgs.push({ kind: 'bad', text });
+                lv.moneyBad = true;
+            };
+            let core = p.t.filter((w, i) => !p.used.has(i) && !dres.remove.has(i));
+            /* an extra written in dinars ("2.18 دينار زياده") is a free extra, never part of the price */
+            let extraDinar = 0;
+            {
+                const keep = [];
+                for (let i = 0; i < core.length; i++) {
+                    if (bkIsNum(core[i]) && bkIsMoney(core[i + 1]) && core[i + 2] && QN_U.extra.test(core[i + 2]) && core[i + 2] !== '+') { extraDinar += parseFloat(core[i]); i += 2; continue; }
+                    if (QN_U.extra.test(core[i]) && core[i] !== '+' && bkIsNum(core[i + 1]) && bkIsMoney(core[i + 2])) { extraDinar += parseFloat(core[i + 1]); i += 2; continue; }
+                    keep.push(core[i]);
+                }
+                core = keep;
+            }
             const r = qnParseLine(core.join(' '));
+            if (extraDinar > 0) {
+                r.extraGurush += extraDinar * 100;
+                bkMsg(lv, 'warn', 'زيادة مكتوبة بالدينار (' + formatNum(extraDinar) + ' د.ل) اعتُبرت زيادة مجانية ' + formatNum(extraDinar * 100) + ' قرش، ولم تُضف إلى السعر');
+            }
+            const left = [];
+            core.forEach((w, i) => { if ((bkIsMoney(w) || bkIsGurush(w) || QN_U.gram.test(w) || QN_U.kilo.test(w)) && !bkIsNum(core[i - 1] || '')) left.push(w); });
+            if (core.some(w => QN_U.extra.test(w) && w !== '+') && !(r.extraGurush > 0 || r.extraGrams > 0)) left.push('زياده (بدون مقدار)');
+            const flushLeft = () => { if (left.length) bkMsg(lv, 'warn', 'لم أستخدم هذه الأجزاء من السطر، راجعها: «' + left.join('، ') + '»'); };
             const mods = { discount: p.discount, discountWhole: p.discountWhole, free: p.free, whole: dres.whole, partial: dres.partial, debtor: dres.debtor, extraG: 0, extraGr: 0 };
             if (p.discNoAmount) bkMsg(lv, 'warn', 'كلمة الخصم بدون مبلغ، تم تجاهلها');
             if (p.discAssumed) bkMsg(lv, 'warn', 'مبلغ الخصم كُتب بدون «دينار»، اعتُبر بالدينار');
@@ -8132,19 +8309,89 @@
                         lv.targetName = prev.items[0].name;
                     }
                     bkTags(lv, mods, null);
+                    flushLeft();
                     return finish();
                 }
                 bkMsg(lv, 'bad', 'لم أفهم هذا السطر');
                 return finish();
             }
             const ov = ln.ov;
+            /* empty sacks ("أشوالين فاضيات"): never a free full bag of feed */
+            if (core.some(w => BK_EMPTY.test(w))) {
+                const eps = products.filter(pr => bkSq(pr.name).split(' ').some(w => BK_EMPTY.test(w)));
+                const pr0 = ov.prodId ? products.find(x => String(x.id) === String(ov.prodId)) : eps[0];
+                lv.pickable = true;
+                if (!pr0) { bkMsg(lv, 'bad', 'لا يوجد في المخزون منتج للأشوال الفاضية'); return finish(); }
+                lv.match = { prod: pr0, sure: true, others: [] };
+                const r2 = Object.assign({}, r, { name: ['فاضي'], bagWord: false, half: false, full: false, count: r.bagCount > 0 ? r.bagCount : r.count });
+                const iss = [];
+                const its = qnBuildItems(pr0, r2, iss);
+                iss.forEach(x => (/المبلغ /.test(x) ? moneyMsg(x) : bkMsg(lv, 'warn', x)));
+                const others = r.name.filter(t => !BK_EMPTY.test(t));
+                if (others.length) lv.tags.push({ k: 'edit', t: 'نوع الكيس: ' + others.join(' ') });
+                if (!its.length) { if (!lv.msgs.length) bkMsg(lv, 'bad', 'تعذّر بناء هذا السطر'); return finish(); }
+                lv.items = its;
+                if (eps.length > 1 && !ov.prodId) bkMsg(lv, 'warn', 'يوجد أكثر من منتج للأشوال الفاضية، تأكد من المنتج');
+                if (mods.discountWhole > 0) cv.globalDiscount += mods.discountWhole;
+                bkApplyMods(lv, mods, lv);
+                bkTags(lv, mods, null);
+                flushLeft();
+                if (r2.amount > 0 && !mods.free) { const tot = its.reduce((a, it) => a + it.total + (it.discount || 0), 0); if (Math.abs(tot - r2.amount) > 0.011 && !lv.msgs.some(m => /^المبلغ/.test(m.text))) moneyMsg('المبلغ المكتوب ' + formatNum(r2.amount) + ' والمسجل بسعر المخزون ' + formatNum(tot)); }
+                return finish();
+            }
+            /* a line with no number at all and not a gift is never turned into a sale */
+            if (!(r.amount > 0 || r.count > 0 || r.kg > 0 || r.gramsMain > 0 || r.bagCount > 0 || r.bare !== null || mods.free)) {
+                bkMsg(lv, 'bad', 'لا يوجد مبلغ ولا كمية في هذا السطر، لم أسجّله كبيع' + (dres.whole ? ' (سطر دين بدون مبلغ: سجّله يدوياً)' : ''));
+                return finish();
+            }
+            const sp = bkTrySplit(core);
+            if (sp) {
+                const slots = bkResolveSplit(sp, ov);
+                lv.slots = slots;
+                lv.pickable = true;
+                let totalCnt = 0;
+                slots.forEach(sl => {
+                    totalCnt += sl.count;
+                    if (!sl.m) { bkMsg(lv, 'bad', 'لم أجد منتجاً لـ «' + sl.label + '»'); return; }
+                    const pr = sl.m.prod;
+                    if (pr.unitType === 'weight' || !(Number(pr.price) > 0)) { bkMsg(lv, 'bad', '«' + pr.name + '» ليس منتجاً بالقطعة بسعر ثابت (لـ «' + sl.label + '»)'); return; }
+                    let item = qnBlankItem(pr, { unitType: 'unit', sellMode: 'retail', price: Number(pr.price), cost: pr.cost, qty: sl.count, total: sl.count * Number(pr.price) });
+                    const sov = ov.slots && ov.slots[sl.k];
+                    if (sov && sov.panelItem && String(sov.panelItem.id) === String(pr.id)) item = Object.assign({}, sov.panelItem);
+                    sl.item = item;
+                    if (!sl.m.sure) bkMsg(lv, 'warn', 'تأكد من المنتج لـ «' + sl.label + '»: «' + pr.name + '»' + (sl.m.others.length ? ' (أو: ' + sl.m.others.map(o => o.name).join('، ') + ')' : ''));
+                });
+                lv.items = slots.filter(sl => sl.item).map(sl => sl.item);
+                if (sp.headN !== null && Math.abs(sp.headN - totalCnt) > 1e-9) moneyMsg('العدد المكتوب (' + formatNum(sp.headN) + ') لا يساوي مجموع الأصناف (' + formatNum(totalCnt) + ')');
+                if (lv.items.length) {
+                    const first = lv.items[0];
+                    if (mods.free || mods.whole) lv.items.forEach(it => bkApplyMods({ items: [it] }, { discount: 0, discountWhole: 0, free: mods.free, whole: mods.whole, partial: null, debtor: mods.debtor, extraG: 0, extraGr: 0 }, lv));
+                    if (mods.discount > 0 || mods.partial !== null) {
+                        bkApplyMods({ items: [first] }, { discount: mods.discount, discountWhole: 0, free: false, whole: false, partial: mods.partial, debtor: mods.debtor, extraG: 0, extraGr: 0 }, lv);
+                        bkMsg(lv, 'warn', 'الخصم أو الدين الجزئي على سطر متعدد الأصناف طُبّق على أول صنف فقط، راجعه');
+                    }
+                }
+                if (mods.discountWhole > 0) cv.globalDiscount += mods.discountWhole;
+                bkTags(lv, mods, null);
+                flushLeft();
+                if (sp.amount > 0 && lv.items.length && !mods.free) {
+                    const tot = lv.items.reduce((a, it) => a + it.total + (it.discount || 0), 0);
+                    if (Math.abs(tot - sp.amount) > 0.011) moneyMsg('مجموع الأصناف بسعر المخزون ' + formatNum(tot) + ' لا يساوي المبلغ المكتوب ' + formatNum(sp.amount));
+                }
+                if (!lv.items.length && !lv.msgs.length) bkMsg(lv, 'bad', 'تعذّر بناء هذا السطر');
+                return finish();
+            }
+            const hints = bkBuildHints(core);
             let m = null;
-            if (ov.prodId) { const pr0 = products.find(x => String(x.id) === String(ov.prodId)); m = pr0 ? { prod: pr0, sure: true, others: [] } : null; }
-            else m = bkFindProduct(r.name);
+            if (ov.prodId) { const pr0 = products.find(x => String(x.id) === String(ov.prodId)); m = pr0 ? { prod: pr0, sure: true, others: [], hit: [] } : null; }
+            else m = bkFindProduct(r.name, hints);
             lv.pickable = true;
             if (!m) { bkMsg(lv, 'bad', 'لم أجد منتجاً مطابقاً لـ «' + r.name.join(' ') + '»'); return finish(); }
             lv.match = m;
             const pr = m.prod;
+            (m.hit || []).forEach(v => {
+                if (/^\d/.test(v)) { if (r.bare !== null && String(r.bare) === v) r.bare = null; else if (r.kg > 0 && String(r.kg) === v) r.kg = 0; }
+            });
             if (ov.panelItem && String(ov.panelItem.id) === String(pr.id)) {
                 const pi = Object.assign({}, ov.panelItem);
                 lv.items = [pi];
@@ -8157,8 +8404,12 @@
                 if (mods.discountWhole > 0) cv.globalDiscount += mods.discountWhole;
                 return finish();
             }
+            const isBagLine = pr.unitType === 'weight' && (r.bagWord || r.full || r.half);
             if (pr.unitType !== 'weight') {
-                if (r.amount > 0 && r.bare !== null) { r.count = r.bare; r.bare = null; }
+                if (r.amount > 0 && r.bare !== null) {
+                    if (r.count > 0) { left.push(String(r.bare)); r.bare = null; }
+                    else { r.count = r.bare; r.bare = null; }
+                }
                 else if (r.bare !== null && !(r.amount > 0) && !(r.count > 0)) {
                     lv.ambiguous = true;
                     const pp = Number(pr.price || 0);
@@ -8168,34 +8419,53 @@
                     else lv.bareChoice = 'qty';
                     bkMsg(lv, 'warn', 'الرقم ' + formatNum(lv.bareChoice === 'money' ? r.amount : r.bare) + ' بدون «دينار»: اعتُبر ' + (lv.bareChoice === 'money' ? 'مبلغاً بالدينار' : 'كمية') + ' (يمكنك تغييره)');
                 }
+            } else if (!isBagLine && (r.amount > 0 || r.kg > 0 || r.gramsMain > 0) && r.bare !== null) {
+                /* a whole number at the very end of a kg-product line is the extra gurush written without a word */
+                const lastTok = core[core.length - 1];
+                const priceRemark = core.some(w => /^(حسبته|حسبتله|حسبتلها|سعره|سعرها|الكيلو|غلطت)$/.test(w));
+                if (r.amount > 0 && Number.isInteger(r.bare) && r.bare >= 1 && r.bare <= 99 && lastTok === String(r.bare) && !priceRemark) {
+                    r.extraGurush += r.bare;
+                    bkMsg(lv, 'warn', 'الرقم ' + r.bare + ' في آخر السطر بدون كلمة: اعتُبر ' + r.bare + ' قرش زيادة (تأكد)');
+                    r.bare = null;
+                } else { left.push(String(r.bare)); r.bare = null; }
             }
             if (pr.unitType === 'weight' && (r.bagWord || r.full) && r.amount > 0 && !(r.bagCount > 0) && r.bare === null) {
                 const price = r.half ? Number(pr.halfBagPrice || 0) : Number(pr.fullBagPrice || 0);
                 if (price > 0) {
                     const n = r.amount / price, rn = Math.round(n);
                     if (Math.abs(n - rn) < 1e-6 && rn >= 1) r.bagCount = rn;
-                    else { r.bagCount = Math.max(1, rn); bkMsg(lv, 'warn', 'المبلغ ' + formatNum(r.amount) + ' لا يقابل عدداً صحيحاً من الشكائر (سعر الشكارة ' + formatNum(price) + ')، اعتُبر ' + r.bagCount); }
+                    else { r.bagCount = Math.max(1, rn); moneyMsg('المبلغ ' + formatNum(r.amount) + ' لا يقابل عدداً صحيحاً من الشكائر (سعر الشكارة ' + formatNum(price) + ')، سُجِّل بسعر المخزون'); }
                     r.amount = 0;
                 }
             }
+            r.notes.forEach(x => left.push(String(x).replace('رقم زائد بدون وحدة: ', '')));
             const issues = [];
             if (pr.unitType !== 'weight' && r.amount > 0 && r.count > 0) {
                 const exp = r.count * Number(pr.price || 0);
-                if (Math.abs(exp - r.amount) > 0.011) issues.push('المبلغ ' + formatNum(r.amount) + ' لا يساوي ' + formatNum(r.count) + ' × ' + formatNum(pr.price) + ' = ' + formatNum(exp) + '، اعتُمدت الكمية');
+                if (Math.abs(exp - r.amount) > 0.011) issues.push('المبلغ ' + formatNum(r.amount) + ' لا يساوي ' + formatNum(r.count) + ' × ' + formatNum(pr.price) + ' = ' + formatNum(exp) + '، اعتُمدت الكمية وسعر المخزون');
             }
             const items = qnBuildItems(pr, r, issues);
-            issues.forEach(x => bkMsg(lv, 'warn', x));
+            issues.forEach(x => (/المبلغ /.test(x) ? moneyMsg(x) : bkMsg(lv, 'warn', x)));
             if (!items.length) { if (!lv.msgs.length) bkMsg(lv, 'bad', 'تعذّر بناء هذا السطر'); else lv.msgs.forEach(x => { x.kind = 'bad'; }); return finish(); }
             lv.items = items;
             if (!m.sure) bkMsg(lv, 'warn', 'تأكد من المنتج: «' + pr.name + '»' + (m.others.length ? ' (أو: ' + m.others.map(o => o.name).join('، ') + ')' : ''));
+            /* words of the line that are not in the product's name */
+            const hay = bkSq(pr.name), pw = hay.split(' ').filter(Boolean).map(bkStrip);
+            r.name.forEach(t => { const tt = bkStrip(bkSq(t)); if (tt.length < 2) return; if (!(hay.includes(tt) || pw.some(w => bkWordClose(w, tt)))) left.push(t); });
+            if (isBagLine && (r.extraGurush > 0 || r.extraGrams > 0)) bkMsg(lv, 'warn', 'الزيادة على الشكارة لا تُحتسب تلقائياً، أضفها يدوياً إذا لزم');
             if (mods.discountWhole > 0) cv.globalDiscount += mods.discountWhole;
             bkApplyMods(lv, mods, lv);
             bkTags(lv, mods, r);
+            flushLeft();
+            if (r.amount > 0 && !items.some(it => it.isFree) && items.every(it => it.unitType !== 'weight' || it.sellMode !== 'retail')) {
+                const tot = items.reduce((a, it) => a + it.total + (it.discount || 0), 0);
+                if (Math.abs(tot - r.amount) > 0.011 && !lv.msgs.some(m2 => /^المبلغ/.test(m2.text))) moneyMsg('المبلغ المكتوب ' + formatNum(r.amount) + ' والمسجل بسعر المخزون ' + formatNum(tot));
+            }
             return finish();
         }
 
         function bkCompute(state) {
-            const out = { carts: [], bad: 0, warn: 0, invoices: 0, total: 0, debt: 0, stockMsgs: [] };
+            const out = { carts: [], bad: 0, warn: 0, invoices: 0, total: 0, debt: 0, stockMsgs: [], ignored: [] };
             const all = [];
             state.carts.forEach((cart, ci) => {
                 if (cart.deleted) return;
@@ -8203,6 +8473,7 @@
                 let prev = null;
                 cart.lines.forEach((ln, li) => {
                     if (ln.ov.deleted) return;
+                    if (ln.ignored && !ln.ov.keep) { out.ignored.push({ ci, li, raw: ln.raw, reason: ln.ignored }); return; }
                     const lv = bkBuildLine(ln, prev, cv);
                     lv.ci = ci; lv.li = li;
                     cv.lines.push(lv);
@@ -8305,6 +8576,8 @@
                 if (l) l.scrollTop = 0;
             });
             bkFilter = 'all';
+            bkIgnOpen = false;
+            bkReviewed = false;
             bkRender();
         }
         function bkCloseReview() {
@@ -8323,10 +8596,13 @@
             const sl = (f, html) => '<div class="bk-sl f-' + f + (bkFilter === f ? ' on' : '') + '" data-f="' + f + '">' + html + '</div>';
             document.getElementById('bk-sum').innerHTML =
                 sl('all', v.invoices + ' فاتورة — الإجمالي ' + formatNum(v.total) + ' د.ل' + (v.debt > 0 ? ' (دين ' + formatNum(v.debt) + ' د.ل)' : '')) +
-                (v.bad ? sl('bad', '<span style="color:#d32f2f; font-weight:700;">' + v.bad + ' سطر أحمر يحتاج تصحيحاً أو حذفاً</span>') : '') +
+                (v.bad ? sl('bad', '<span style="color:#d32f2f; font-weight:700;">' + v.bad + ' سطر أحمر: صحّحه أو احذفه أو اقبل سعر المخزون</span>') : '') +
                 (v.warn ? sl('warn', '<span style="color:#b45f06; font-weight:700;">' + v.warn + ' سطر برتقالي: تأكد منه</span>') : '');
             const showLine = (lv) => bkFilter === 'all' || lv.status === bkFilter;
-            list.innerHTML = v.carts.map((cv, n) => {
+            const ign = v.ignored || [];
+            const ignHtml = ign.length ? '<div class="bk-ign"><button type="button" class="bk-ign-h" data-act="ign-toggle">سطور متجاهلة (' + ign.length + ') ' + (bkIgnOpen ? '▲' : '▼') + '</button>' +
+                (bkIgnOpen ? ign.map(x => '<div class="bk-ign-row"><div class="bk-ign-t">' + escapeHtml(x.raw) + '</div><div class="bk-ign-r">' + escapeHtml(x.reason) + '</div><button type="button" data-act="ign-keep" data-c="' + x.ci + '" data-l="' + x.li + '">اعتبره سطراً عادياً</button></div>').join('') : '') + '</div>' : '';
+            list.innerHTML = ignHtml + v.carts.map((cv, n) => {
                 const shown = cv.lines.filter(showLine);
                 if (!shown.length) return '';
                 const sub = [];
@@ -8334,22 +8610,33 @@
                 if (cv.debt > 0) sub.push('دين: ' + formatNum(cv.debt) + ' د.ل');
                 return '<div class="bk-card"><div class="bk-card-h"><span class="bk-card-t">فاتورة ' + (n + 1) + '</span><span class="bk-card-tot">' + formatNum(cv.total) + ' <small>د.ل</small></span><button type="button" class="del" data-act="del-cart" data-c="' + cv.ci + '">حذف الفاتورة</button></div>' +
                     (sub.length ? '<div class="bk-card-sub">' + sub.join(' — ') + '</div>' : '') + shown.map(bkLineHtml).join('') + '</div>';
-            }).join('') || '<div class="bk-empty">لا توجد أسطر في هذا التصنيف</div>';
+            }).join('') || (ign.length ? '' : '<div class="bk-empty">لا توجد أسطر في هذا التصنيف</div>');
             list.scrollTop = keep;
         }
         function bkLineHtml(lv) {
             const d = ' data-c="' + lv.ci + '" data-l="' + lv.li + '"';
             let h = '<div class="bk-line st-' + lv.status + '">';
             if (lv.attached) h += '<div class="bk-main bk-att">↑ ' + (lv.targetName ? 'يخص «' + escapeHtml(lv.targetName) + '»' : 'تعديل على الفاتورة') + '</div>';
-            lv.items.forEach(it => {
+            if (lv.slots) lv.slots.forEach(sl => {
+                const dk = d + ' data-k="' + sl.k + '"';
+                if (sl.item) {
+                    const it = sl.item;
+                    h += '<div class="bk-main bk-slotrow"><b class="bk-amt">' + (it.isFree ? 'مجاني' : formatNum(it.total) + ' <small class="cur">د.ل</small>') + '</b><span class="bk-nm"><span class="bk-name">' + escapeHtml(it.name) + '</span> <span class="bk-qty">× ' + formatNum(it.qty) + ' ' + bkUnit(it) + '</span></span></div>';
+                } else {
+                    h += '<div class="bk-main bk-slotrow"><span class="bk-nm"><span class="bk-name" style="color:#d32f2f;">لم أجد: ' + escapeHtml(sl.label) + '</span> <span class="bk-qty">× ' + formatNum(sl.count) + '</span></span></div>';
+                }
+                h += '<div class="bk-acts bk-slotacts"><button type="button" data-act="pick"' + dk + '>' + (sl.item ? 'تغيير المنتج' : 'اختيار المنتج') + '</button><button type="button" data-act="panel"' + dk + (sl.m ? '' : ' class="dis"') + '>لوحة المنتج</button></div>';
+            });
+            else lv.items.forEach(it => {
                 h += '<div class="bk-main"><b class="bk-amt">' + (it.isFree ? 'مجاني' : formatNum(it.total) + ' <small class="cur">د.ل</small>') + '</b><span class="bk-nm"><span class="bk-name">' + escapeHtml(it.name) + '</span> <span class="bk-qty">× ' + formatNum(it.qty) + ' ' + bkUnit(it) + '</span></span></div>';
             });
             if (lv.tags.length) h += '<div class="bk-tags">' + lv.tags.map(t => '<span class="bk-tag ' + t.k + '">' + escapeHtml(t.t) + '</span>').join('') + '</div>';
-            h += '<div class="bk-orig">«' + escapeHtml(lv.ln.raw) + '»</div>';
+            h += '<div class="bk-orig"><span class="bk-orig-l">' + (lv.ln.partLabel ? escapeHtml(lv.ln.partLabel) + ' — ' : '') + 'النص الأصلي:</span> «' + escapeHtml(lv.ln.raw) + '»</div>';
             lv.msgs.forEach(m => { h += '<div class="bk-msg ' + m.kind + '">' + escapeHtml(m.text) + '</div>'; });
             h += '<div class="bk-acts">';
-            if (lv.pickable) h += '<button type="button" data-act="pick"' + d + '>' + (lv.items.length ? 'تغيير المنتج' : 'اختيار المنتج') + '</button>';
-            if (lv.pickable) h += '<button type="button" data-act="panel"' + d + (lv.match ? '' : ' class="dis"') + '>لوحة المنتج</button>';
+            if (lv.pickable && !lv.slots) h += '<button type="button" data-act="pick"' + d + '>' + (lv.items.length ? 'تغيير المنتج' : 'اختيار المنتج') + '</button>';
+            if (lv.pickable && !lv.slots) h += '<button type="button" data-act="panel"' + d + (lv.match ? '' : ' class="dis"') + '>لوحة المنتج</button>';
+            if (lv.moneyBad) h += '<button type="button" data-act="accept"' + d + '>اقبل سعر المخزون</button>';
             if (lv.ambiguous) h += '<button type="button" data-act="bare"' + d + '>' + (lv.bareChoice === 'money' ? 'اعتبره كمية' : 'اعتبره مبلغاً بالدينار') + '</button>';
             h += '<button type="button" class="del" data-act="del-line"' + d + '>حذف السطر</button></div></div>';
             return h;
@@ -8359,15 +8646,18 @@
             if (!b) return;
             const c = parseInt(b.getAttribute('data-c'), 10), l = parseInt(b.getAttribute('data-l'), 10);
             const act = b.getAttribute('data-act');
+            if (act === 'ign-toggle') { bkIgnOpen = !bkIgnOpen; bkRender(); return; }
             const cart = bkState.carts[c];
             if (!cart) return;
             if (act === 'del-cart') { cart.deleted = true; bkRender(); return; }
             const ln = cart.lines[l];
             if (!ln) return;
+            if (act === 'ign-keep') { ln.ov.keep = true; bkRender(); return; }
+            if (act === 'accept') { ln.ov.accept = true; bkRender(); return; }
             if (act === 'del-line') { ln.ov.deleted = true; bkRender(); }
             else if (act === 'bare') { ln.ov.bareMode = ln.ov.bareMode === 'money' ? 'qty' : 'money'; bkRender(); }
-            else if (act === 'pick') bkOpenPicker(ln);
-            else if (act === 'panel') bkOpenPanel(c, l);
+            else if (act === 'pick') bkOpenPicker(ln, b.hasAttribute('data-k') ? parseInt(b.getAttribute('data-k'), 10) : undefined);
+            else if (act === 'panel') bkOpenPanel(c, l, b.hasAttribute('data-k') ? parseInt(b.getAttribute('data-k'), 10) : undefined);
         }
         /* v60: open the product panel for one review line; saving comes back here with that line updated */
         function bkSetReviewHidden(on) {
@@ -8376,32 +8666,43 @@
                 if (el) el.classList.toggle('bk-hide', on);
             });
         }
-        function bkOpenPanel(c, l) {
+        function bkOpenPanel(c, l, slotK) {
             const cart0 = bkState && bkState.carts[c];
             const ln = cart0 && cart0.lines[l];
             const cv = bkView && bkView.carts.find(x => x.ci === c);
             const lv = cv && cv.lines.find(x => x.li === l);
             if (!ln || !lv) return;
-            const pid = ln.ov.prodId || (lv.match && lv.match.prod && lv.match.prod.id);
+            let pid, startItem, tgt = ln.ov;
+            if (slotK !== undefined && lv.slots) {
+                const sl = lv.slots[slotK];
+                ln.ov.slots = ln.ov.slots || {}; ln.ov.slots[slotK] = ln.ov.slots[slotK] || {};
+                tgt = ln.ov.slots[slotK];
+                pid = tgt.prodId || (sl && sl.m && sl.m.prod && sl.m.prod.id);
+                startItem = sl && sl.item;
+            } else {
+                pid = ln.ov.prodId || (lv.match && lv.match.prod && lv.match.prod.id);
+                startItem = lv.items[0];
+            }
             const prod = pid ? products.find(p => String(p.id) === String(pid)) : null;
             if (!prod) { showModal('اختر المنتج أولاً', 'هذا السطر لا يوجد له منتج بعد. اضغط «اختيار المنتج» واختر المنتج، ثم افتح لوحة المنتج.', false, () => {}); return; }
             bkPanelTarget = {
                 restore: function () { bkSetReviewHidden(false); },
                 done: function (item) {
-                    ln.ov.prodId = String(item.id);
-                    ln.ov.panelItem = item;
+                    tgt.prodId = String(item.id);
+                    tgt.panelItem = item;
                     bkSetReviewHidden(false);
                     bkRender();
                 }
             };
             bkSetReviewHidden(true);
-            if (lv.items.length) editCartItem(-1, lv.items[0]);
+            if (startItem) editCartItem(-1, startItem);
             else selectProductForPreCart(prod.id);
             const addBtn = document.getElementById('btn-add-to-cart');
             if (addBtn) addBtn.textContent = 'حفظ التعديل';
             if (!activeProductObj) { const t = bkPanelTarget; bkPanelTarget = null; if (t) t.restore(); }
         }
-        function bkOpenPicker(ln) {
+
+        function bkOpenPicker(ln, slotK) {
             const ov = document.createElement('div');
             ov.className = 'qn-overlay bk-pick-ov';
             ov.innerHTML = '<div class="qn-box"><div class="qn-title" style="margin-bottom:8px;">اختر المنتج</div><input type="text" class="bk-pick-search" id="bk-pick-q" placeholder="ابحث باسم المنتج"><div class="bk-pick-list" id="bk-pick-list"></div><div class="qn-btns" style="margin-top:8px;"><button type="button" class="btn btn-red" id="bk-pick-close">إلغاء</button></div></div>';
@@ -8421,8 +8722,10 @@
             listEl.addEventListener('click', function (e) {
                 const it = e.target.closest('.bk-pick-item[data-id]');
                 if (!it) return;
-                ln.ov.prodId = it.getAttribute('data-id');
-                ln.ov.panelItem = null;
+                let tgt = ln.ov;
+                if (slotK !== undefined) { ln.ov.slots = ln.ov.slots || {}; ln.ov.slots[slotK] = ln.ov.slots[slotK] || {}; tgt = ln.ov.slots[slotK]; }
+                tgt.prodId = it.getAttribute('data-id');
+                tgt.panelItem = null;
                 close();
                 bkRender();
             });
@@ -8444,14 +8747,29 @@
             } catch (e) {}
             return [];
         }
+        function bkShowWarnReview(v) {
+            const rows = [];
+            v.carts.forEach(cv => cv.lines.forEach(lv => {
+                if (lv.status !== 'warn') return;
+                rows.push('<div style="border-top:1px solid #e3e9ee; padding:7px 0;"><div style="font-weight:700; overflow-wrap:anywhere;">«' + escapeHtml(lv.ln.raw) + '»</div><div style="color:#b45f06; font-size:12.5px; margin-top:2px;">' + lv.msgs.map(m => escapeHtml(m.text)).join('<br>') + '</div></div>');
+            }));
+            const go = () => { bkReviewed = true; setTimeout(bkConfirm, 0); };
+            go.confirmLabel = 'راجعتها، تابع';
+            go.noOutsideDismiss = true;
+            go.tint = true;
+            showModal('أسطر برتقالية تحتاج مراجعتك (' + rows.length + ')', 'تأكد من كل سطر قبل إنشاء المبيعات:<div style="max-height:46vh; overflow-y:auto; margin-top:6px;">' + rows.join('') + '</div>', false, go);
+        }
         function bkConfirm() {
             const v = bkView;
             if (!v) return;
-            if (v.bad > 0) { showModal('أسطر تحتاج تصحيحاً', 'يوجد ' + v.bad + ' سطر باللون الأحمر. غيّر المنتج أو احذف السطر ثم أكّد.', false, () => {}); return; }
+            if (v.bad > 0) { showModal('أسطر تحتاج تصحيحاً', 'يوجد ' + v.bad + ' سطر باللون الأحمر. صحّحه أو احذف السطر أو اقبل سعر المخزون (حيث يظهر الزر) ثم أكّد.', false, () => {}); return; }
             if (!v.invoices) { showModal('تنبيه', 'لا توجد فواتير لإنشائها.', false, () => {}); return; }
+            if (v.warn > 0 && !bkReviewed) { bkShowWarnReview(v); return; }
+            bkReviewed = false;
             let msg = 'سيتم إنشاء ' + v.invoices + ' فاتورة بإجمالي ' + formatNum(v.total) + ' د.ل' + (v.debt > 0 ? ' (منها دين ' + formatNum(v.debt) + ' د.ل)' : '') + '.\nسيُسجَّل كل شيء بتاريخ اليوم.';
             const warn = [];
             if (v.warn) warn.push('يوجد ' + v.warn + ' سطر برتقالي، هل راجعتها؟');
+            if (v.ignored && v.ignored.length) warn.push('تم تجاهل ' + v.ignored.length + ' سطر (علامات وقت وعناوين وملاحظات)، تأكد أنه لا يوجد بيع بينها.');
             v.stockMsgs.forEach(m => warn.push(m + ' — سيُباع بالسالب'));
             if (bkHashList().includes(bkHash(bkText))) warn.push('تنبيه: نفس هذا النص تم استيراده من قبل اليوم، تأكد أنك لا تكرره.');
             if (warn.length) msg += '<div class="rc-warn" style="margin-top:8px;"><b>تنبيه قبل التأكيد:</b><br>' + warn.map(x => escapeHtml(x)).join('<br>') + '</div>';
