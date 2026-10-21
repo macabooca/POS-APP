@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pos-app-cache-v65';
+const CACHE_NAME = 'pos-app-cache-v66';
 
 const APP_FILES = [
   './',
@@ -25,6 +25,8 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  /* v66: the clock check (and anything that is not a normal GET) always goes to the network, never the cache */
+  if (event.request.method !== 'GET' || event.request.url.indexOf('clock=') !== -1) return;
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
