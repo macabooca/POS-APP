@@ -559,6 +559,10 @@
         #product-dropdown { margin-bottom: 0 !important; }
         #product-dropdown:not(:empty) { margin-top: 8px; }
         #product-dropdown .item-row { touch-action: manipulation; }
+        /* v67: the product box opens tall enough for two full rows (pictures and names); it floats over the top of the cart
+           (the cart does not move) and fades to transparent at its bottom edge while more rows can be scrolled */
+        #product-dropdown:not(:empty) { position: relative; z-index: 6; background: var(--card-bg); }
+        #product-dropdown.dd-fade { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 30px), transparent 100%); mask-image: linear-gradient(to bottom, #000 calc(100% - 30px), transparent 100%); }
         .search-wrap.glow-wrap::before { box-shadow: 0 0 10px rgba(66,133,244,.35); }
 
         /* Buttons */
@@ -988,6 +992,8 @@
         .sale-card:not(.sale-returned), .stat-tile { background-color: #dbe1e7; border-color: #ced5dc; }
         html[data-theme="dark"] #inventory-list .item-row { background-color: #243749; border-color: #324a5f; }
         html[data-theme="dark"] .sale-card:not(.sale-returned), html[data-theme="dark"] .stat-tile { background-color: #213344; border-color: #2d4457; }
+        /* v67: review sale cards use the same gray as the sales history cards */
+        html[data-theme="dark"] .bk-card { background-color: #213344; border-color: #2d4457; }
 
         /* receipt look (sale confirmation + product saved): white paper, hairline rows, zigzag bottom */
         .modal-box.modal-tint { background: #e5f3f4; }
@@ -1128,7 +1134,7 @@
         .bk-title { font-size: 19px; font-weight: 800; color: var(--navy, #12283a); }
         .bk-sum { font-size: 13px; color: var(--muted, #8695a6); margin-top: 3px; line-height: 1.5; }
         .bk-list { flex: 1; overflow-y: auto; padding: 4px 12px 12px; -webkit-overflow-scrolling: touch; }
-        .bk-card { background: var(--card-bg, #ffffff); border: 1px solid var(--border-color, #e3e9ee); border-radius: 16px; padding: 10px 12px; margin-bottom: 10px; }
+        .bk-card { background: #dbe1e7; border: 1px solid #ced5dc; border-radius: 16px; padding: 10px 12px; margin-bottom: 10px; }
         .bk-card-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
         .bk-card-t { font-weight: 800; color: var(--navy, #12283a); font-size: 15px; }
         .bk-card-tot { font-weight: 800; color: #000000; font-size: 15px; }
@@ -1241,7 +1247,7 @@
         .modal-box.modal-pf #modal-input-container { flex: 1 1 auto; min-height: 0; max-height: none; margin: 0; padding: 14px 14px 20px; overflow-y: auto; }
         .modal-box.modal-pf #modal-buttons-box { margin: 0; padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px)); background: #ffffff; border-top: 1px solid #d6dee4; gap: 10px; }
         .modal-box.modal-pf #modal-buttons-box .btn { flex: 1; padding: 13px 10px; font-size: 16px; min-width: 0; }
-        .modal-box.modal-pf #modal-buttons-box #modal-cancel-btn { order: -1; flex: 0.6; background-color: var(--red-alert); color: #ffffff; }
+        .modal-box.modal-pf #modal-buttons-box #modal-cancel-btn { flex: 1; background-color: var(--red-alert); color: #ffffff; }
         .modal-box.modal-pf #modal-input-container input:not([type="checkbox"]):not([type="hidden"]) { background: #ffffff; border: 1px solid #cdd7de; border-radius: 10px; width: 100%; box-sizing: border-box; margin-bottom: 12px; }
         .modal-box.modal-pf .form-label { color: #4d5d6a; font-size: 13px; margin: 0 0 4px; display: block; }
         .modal-box.modal-pf .pf-card { background: transparent; border: none; border-radius: 0; padding: 0; margin: 6px 0 4px; }
@@ -1661,8 +1667,8 @@
                     <div class="stat-tile"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/></svg></div><div class="stat-t">ديون سُددت (محسوبة ضمن المبيعات)</div><div class="stat-v"><span id="stat-today-debt-paid">0</span> <small>د.ل</small></div></div>
                 </div>
                 <div class="stats-grid">
-                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="9" width="17" height="11" rx="2"/><path d="M12 9v11M3.5 13h17"/><path d="M12 9c-1.5-4-5.5-4-5.5-1.6C6.5 9 9 9 12 9zM12 9c1.5-4 5.5-4 5.5-1.6C17.5 9 15 9 12 9z"/></svg></div><div class="stat-t">منتجات مجانية (قيمتها)</div><div class="stat-v"><span id="stat-today-free">0</span> <small>د.ل</small></div></div>
-                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18"/><circle cx="7.5" cy="7.5" r="2.3"/><circle cx="16.5" cy="16.5" r="2.3"/></svg></div><div class="stat-t">الخصومات (على المنتجات والفواتير)</div><div class="stat-v"><span id="stat-today-discounts">0</span> <small>د.ل</small></div></div>
+                    <div class="stat-tile stat-sm stat-tap" onclick="showStatsDiscFree('free')"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="9" width="17" height="11" rx="2"/><path d="M12 9v11M3.5 13h17"/><path d="M12 9c-1.5-4-5.5-4-5.5-1.6C6.5 9 9 9 12 9zM12 9c1.5-4 5.5-4 5.5-1.6C17.5 9 15 9 12 9z"/></svg></div><div class="stat-t">منتجات مجانية (قيمتها)</div><div class="stat-v"><span id="stat-today-free">0</span> <small>د.ل</small></div></div>
+                    <div class="stat-tile stat-sm stat-tap" onclick="showStatsDiscFree('discount')"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18"/><circle cx="7.5" cy="7.5" r="2.3"/><circle cx="16.5" cy="16.5" r="2.3"/></svg></div><div class="stat-t">الخصومات (على المنتجات والفواتير)</div><div class="stat-v"><span id="stat-today-discounts">0</span> <small>د.ل</small></div></div>
                     <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div><div class="stat-t">الربح قبل خصم المجاني والخصومات</div><div class="stat-v" style="color:#2e7d32;"><span id="stat-profit-before">0</span> <small>د.ل</small></div></div>
                     <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/></svg></div><div class="stat-t">الربح بعد خصم المجاني والخصومات</div><div class="stat-v" style="color:#2e7d32;"><span id="stat-profit-after">0</span> <small>د.ل</small></div></div>
                 </div>
@@ -2243,6 +2249,33 @@
             setTimeout(go, 350);
         }
 
+        /* v67: every time the product panel opens for a weight product, the cursor goes straight to the dinar amount box
+           (keyboard up). Tried again a moment later, and once more inside the browser's own tap event, in case the
+           first try did not bring the keyboard up. */
+        let panelAmountFocusAt = 0;
+        function focusPanelAmountBox(selectText) {
+            const panel = document.getElementById('selected-product-panel');
+            const wp = document.getElementById('panel-weight-controls');
+            const box = document.getElementById('sel-price-input');
+            if (!panel || panel.style.display === 'none' || !wp || wp.style.display === 'none' || !box) return;
+            if (document.activeElement === box) return;
+            try { box.focus({ preventScroll: true }); } catch (e) { try { box.focus(); } catch (e2) {} }
+            if (selectText) { try { box.select(); } catch (e) {} }
+        }
+        function openPanelOnAmountBox(selectText) {
+            panelAmountFocusAt = Date.now();
+            const prodAtOpen = activeProductObj;
+            focusPanelAmountBox(selectText);
+            const retry = () => {
+                if (activeProductObj !== prodAtOpen) return;
+                const a = document.activeElement;
+                if (a && a.tagName === 'INPUT' && a.id !== 'pos-search' && document.getElementById('selected-product-panel').contains(a)) return;
+                focusPanelAmountBox(selectText);
+            };
+            setTimeout(retry, 60);
+            setTimeout(retry, 220);
+        }
+
         function handlePosInputFocus(inputEl) {
             setTimeout(() => {
                 const panel = document.getElementById('selected-product-panel');
@@ -2478,12 +2511,13 @@
             const dr = dropdown.getBoundingClientRect();
             const room = Math.floor(visibleH - 8 - dr.top);
             if (dr.bottom <= visibleH - 6) return;
-            if (room >= 120) { dropdown.style.maxHeight = room + 'px'; return; }
+            if (room >= 120) { dropdown.style.maxHeight = room + 'px'; ddSyncOverlap(); return; }
             let delta = (dr.top + 130) - (visibleH - 6);
             const maxUp = card.getBoundingClientRect().top - 8;
             if (delta > maxUp) delta = maxUp;
             if (delta > 1) window.scrollBy({ top: delta, behavior: 'instant' });
             dropdown.style.maxHeight = Math.max(120, Math.floor(visibleH - 8 - dropdown.getBoundingClientRect().top)) + 'px';
+            ddSyncOverlap();
         }
 
         function filterProducts() {
@@ -2497,6 +2531,35 @@
             renderProductDropdown(matches, 'نتائج البحث');
         }
 
+        /* v67: two full rows in the product box, floating over the cart without moving it */
+        function ddSyncOverlap() {
+            const dd = document.getElementById('product-dropdown');
+            if (!dd) return;
+            if (!dd.firstElementChild) { dd.style.removeProperty('margin-bottom'); dd.classList.remove('dd-fade'); return; }
+            const flowH = Math.min(dd.scrollHeight, 200);   /* the height the box used to take in the page */
+            const cur = dd.offsetHeight;
+            if (cur > flowH) dd.style.setProperty('margin-bottom', (-(cur - flowH)) + 'px', 'important');
+            else dd.style.removeProperty('margin-bottom');
+            const more = dd.scrollHeight > dd.clientHeight + 2 && (dd.scrollTop + dd.clientHeight) < dd.scrollHeight - 2;
+            dd.classList.toggle('dd-fade', more);
+        }
+        function ddApplyTwoRows() {
+            const dd = document.getElementById('product-dropdown');
+            if (!dd || !dd.firstElementChild) return;
+            const cells = dd.querySelectorAll('#pg-dd .pg-cell');
+            if (!cells.length) { ddSyncOverlap(); return; }
+            const c = cells[Math.min(4, cells.length - 1)];
+            const h = Math.ceil(c.getBoundingClientRect().bottom - dd.getBoundingClientRect().top + dd.scrollTop) + 30;
+            dd.style.maxHeight = Math.max(200, h) + 'px';
+            ddSyncOverlap();
+        }
+        (function () {
+            const dd = document.getElementById('product-dropdown');
+            if (!dd) return;
+            dd.addEventListener('scroll', ddSyncOverlap, { passive: true });
+            new MutationObserver(ddSyncOverlap).observe(dd, { childList: true });
+        })();
+
         function renderProductDropdown(itemsList, label) {
             const container = document.getElementById('product-dropdown');
             if (itemsList.length === 0) {
@@ -2508,6 +2571,8 @@
             ddShown = Math.min(PG_CHUNK, itemsList.length);
             container.innerHTML = `<div class="pg-label">${label}</div><div class="pg-grid g4" id="pg-dd">${itemsList.slice(0, ddShown).map(pgMainCell).join('')}</div>`;
             container.scrollTop = 0;
+            container.style.maxHeight = '200px';
+            ddApplyTwoRows();
         }
 
         function selectProductForPreCart(productId) {
@@ -2552,10 +2617,7 @@
             document.body.classList.add('panel-open');
             placeProductPanelAtDefault();
             /* Weight products: open the amount (dinar) box and the keyboard at once, inside the same tap. */
-            if (prod.unitType === 'weight') {
-                const priceBox = document.getElementById('sel-price-input');
-                if (priceBox) { try { priceBox.focus({ preventScroll: true }); } catch (e) { priceBox.focus(); } }
-            }
+            if (prod.unitType === 'weight') openPanelOnAmountBox(false);
         }
 
         /* Cost of one whole bag = the bag cost entered for the product.
@@ -3118,6 +3180,7 @@
             document.body.classList.add('panel-open');
             calculateSelTotal();
             placeProductPanelAtDefault();
+            if (prod.unitType === 'weight' && item.sellMode === 'retail') openPanelOnAmountBox(true);
         }
 
         function removeFromCart(index) {
@@ -3460,7 +3523,6 @@
 
                 inputContainer.innerHTML = `
                     <div class="pf-top">
-                        <div class="pf-pic" id="pf-pic-prev"></div>
                         <div class="pf-top-r">
                             <label class="form-label">اسم المنتج</label>
                             <input type="text" id="p-name" placeholder="" value="${p.name || ''}" data-existing-id="${p.id !== undefined && p.id !== null ? p.id : ''}" oninput="checkProductNameLive()">
@@ -3470,6 +3532,7 @@
                                 <button type="button" class="mode-btn ${pType === 'unit' ? 'active' : ''}" id="p-type-btn-unit" title="بالقطعة (وحدات)" onclick="setProductType('unit')">بالقطعة</button>
                             </div>
                         </div>
+                        <div class="pf-pic" id="pf-pic-prev"></div>
                     </div>
                     <div id="p-name-hint" style="display:none; font-size:13px; line-height:1.6; margin:2px 0 8px 0; font-weight:bold;"></div>
                     <label class="form-label" style="margin-top:8px;">صورة المنتج (اختياري)</label>
@@ -4345,6 +4408,7 @@
                     freeValue: free ? qty * price : 0,
                     freeProfitImpact: (free && cost > 0) ? qty * price : 0,
                     discount: itemDisc + share,
+                    itemDisc: itemDisc, share: share,
                     discountProfitImpact: cost > 0 ? itemDisc + share : 0,
                     qtyK: 1
                 };
@@ -4355,7 +4419,7 @@
                 const part = (k, asDebt) => Object.assign({}, rec, {
                     item: asDebt ? Object.assign({}, i, { isDebt: true }) : i,
                     amount: rec.amount * k, profit: rec.profit * k,
-                    discount: rec.discount * k, discountProfitImpact: rec.discountProfitImpact * k, qtyK: k
+                    discount: rec.discount * k, itemDisc: rec.itemDisc * k, share: rec.share * k, discountProfitImpact: rec.discountProfitImpact * k, qtyK: k
                 });
                 return [part(1 - f, false), part(f, true)];
             });
@@ -4366,7 +4430,24 @@
                 lateProfit: 0, lateProfitBefore: 0, lateBagProfit: 0, lateOtherProfit: 0,
                 rev: 0, profit: 0, customers: 0, paid: 0, extraKg: 0, extraValue: 0, perDay: new Array(days).fill(0),
                 bagRev: 0, otherRev: 0, bagProfit: 0, otherProfit: 0, freeValue: 0, discountValue: 0, profitBefore: 0,
-                prod: new Map(), prodLate: new Map()
+                prod: new Map(), prodLate: new Map(), freeProd: new Map(), discProd: new Map(), cartDisc: 0
+            };
+            /* v67: free products and discounts per product (what the free / discount cards open) */
+            const valRow = (map, m) => {
+                const i = m.item;
+                const key = String(i.id);
+                let r = map.get(key);
+                if (!r) {
+                    const cur = products.find(p => String(p.id) === String(i.id));
+                    r = { key, name: (cur && cur.name) || i.name || '', value: 0, full: 0, half: 0, kg: 0, units: 0 };
+                    map.set(key, r);
+                }
+                const q = Number(i.qty || 0) * (m.qtyK === undefined ? 1 : m.qtyK);
+                if (i.sellMode === 'fullbag' || i.unitType === 'fullbag') r.full += q;
+                else if (i.sellMode === 'halfbag' || i.unitType === 'halfbag') r.half += q;
+                else if (i.unitType === 'weight') r.kg += q;
+                else r.units += q;
+                return r;
             };
             /* v66: the same money, per product (whole/half bags separately from all other products) */
             const prodRow = (map, m) => {
@@ -4399,6 +4480,9 @@
                 out.discountValue += m.discount;
                 out.profitBefore += m.profit + m.freeProfitImpact + m.discountProfitImpact;
                 addProd(m);
+                if (m.freeValue > 0) valRow(out.freeProd, m).value += m.freeValue;
+                if (m.itemDisc > 1e-9) valRow(out.discProd, m).value += m.itemDisc;
+                out.cartDisc += m.share || 0;
             };
             list.forEach(s => {
                 if (s.returnedAt) return;
@@ -4575,6 +4659,39 @@
                 '<div class="sp-period">' + escapeHtml(statsPeriodText()) + '</div>' +
                 '<div class="sp-list">' + list + '</div>' +
                 '<div class="split-row split-total"><span>المجموع</span><b>' + formatNum(total) + ' <small>د.ل</small></b></div>' +
+                '<div class="dp-foot"><button type="button" style="background:var(--red-alert);color:#fff;">إغلاق</button></div></div>';
+            ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('button')) ov.remove(); });
+            document.body.appendChild(ov);
+        }
+
+        /* v67: tap the free-products or discounts card: every product involved, how much of it, and the dinar value */
+        function showStatsDiscFree(kind) {
+            const st = statsSplit;
+            if (!st || !st.freeProd) return;
+            const isFree = kind === 'free';
+            const rows = Array.from((isFree ? st.freeProd : st.discProd).values()).filter(r => r.value > 1e-9);
+            rows.sort((a, b) => b.value - a.value);
+            const qtyText = r => {
+                const t = [];
+                if (r.full) t.push(formatNum(r.full) + ' شكارة كاملة');
+                if (r.half) t.push(formatNum(r.half) + ' نصف شكارة');
+                if (r.kg) t.push(formatNum(Math.round(r.kg * 1000) / 1000) + ' كجم');
+                if (r.units) t.push(formatNum(r.units) + ' قطعة');
+                return t.join(' — ');
+            };
+            const cart = isFree ? 0 : st.cartDisc;
+            const total = rows.reduce((a, r) => a + r.value, 0) + (cart > 1e-9 ? cart : 0);
+            const list = rows.map((r, n) => {
+                const sub = (isFree ? 'أُعطي مجاناً: ' : 'كمية عليها خصم: ') + escapeHtml(qtyText(r));
+                return '<div class="sp-row"><span class="sp-n">' + (n + 1) + '</span><span class="sp-t"><span class="sp-nm">' + escapeHtml(r.name) + '</span><span class="sp-sub">' + sub + '</span></span><b>' + formatNum(r.value) + ' <small>د.ل</small></b></div>';
+            }).join('') + (cart > 1e-9 ? '<div class="sp-row"><span class="sp-n">+</span><span class="sp-t"><span class="sp-nm">خصم على الفاتورة كاملة</span><span class="sp-sub">غير مرتبط بمنتج محدد</span></span><b>' + formatNum(cart) + ' <small>د.ل</small></b></div>' : '')
+                || '<div style="text-align:center; color:var(--muted); padding:16px 0;">' + (isFree ? 'لا توجد منتجات مجانية في هذه الفترة' : 'لا توجد خصومات في هذه الفترة') + '</div>';
+            const ov = document.createElement('div');
+            ov.className = 'dp-overlay';
+            ov.innerHTML = '<div class="dp-box sp-box"><div class="dp-title">' + (isFree ? 'المنتجات المجانية' : 'الخصومات') + ' — التفاصيل</div>' +
+                '<div class="sp-period">' + escapeHtml(statsPeriodText()) + '</div>' +
+                '<div class="sp-list">' + list + '</div>' +
+                '<div class="split-row split-total"><span>' + (isFree ? 'مجموع قيمتها' : 'مجموع الخصومات') + '</span><b>' + formatNum(total) + ' <small>د.ل</small></b></div>' +
                 '<div class="dp-foot"><button type="button" style="background:var(--red-alert);color:#fff;">إغلاق</button></div></div>';
             ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('button')) ov.remove(); });
             document.body.appendChild(ov);
@@ -5217,7 +5334,7 @@
                                     <div class="hist-name">
                                         <strong style="font-size:15.5px;">${i.name}</strong> × ${formatNum(i.qty)} ${i.unitType === 'weight' ? 'كجم' : (i.unitType === 'unit' ? 'قطعة' : 'شكارة')} 
                                         ${i.isNegativeSale ? '<span style="color:#d32f2f; font-weight:bold;">[مبيعات بالسالب]</span>' : ''} 
-                                        ${i.isFree ? '<span style="color:#2e7d32;">[مجاني]</span>' : ''} 
+                                        ${i.isFree ? `<span style="color:#2e7d32;">[مجاني: ${formatNum(Number(i.qty || 0) * Number(i.price || 0))} د.ل]</span>` : ''} 
                                         ${i.isDebt ? `<span style="color:#e65100; font-weight:bold;">[دين${i.debtorName ? ': ' + escapeHtml(i.debtorName) : ''}]</span>` : ''} 
                                         ${(!i.isDebt && !i.isFree && Number(i.partialDebt) > 0) ? `<span style="color:#e65100; font-weight:bold;">[دين جزئي: ${formatNum(i.partialDebt)} د.ل${i.partialDebtorName ? ' — ' + escapeHtml(i.partialDebtorName) : ''}]</span>` : ''} 
                                         ${i.halfSource === 'open' ? '<span style="color:#6a1b9a;">[من الوزن المفتوح]</span>' : ''} 
@@ -5346,7 +5463,7 @@
             (sale.items || []).forEach(i => {
                 parts.push(i.name, i.note, i.debtorName);
                 if (Number(i.discount || 0) > 0) parts.push('خصم', formatNum(i.discount));
-                if (i.isFree) parts.push('مجاني');
+                if (i.isFree) parts.push('مجاني', formatNum(Number(i.qty || 0) * Number(i.price || 0)));
                 if (Number(i.extraKg || 0) > 0) parts.push('إضافة');
             });
             if (bd.debtAmount > 1e-7) parts.push('دين', sale.debtPaidAt ? 'دين مسدد' : 'دين مستحق');
@@ -7443,7 +7560,7 @@
                 } else {
                     document.body.style.removeProperty('padding-bottom');
                     const dd = document.getElementById('product-dropdown');
-                    if (dd) dd.style.maxHeight = '200px';
+                    if (dd) { dd.style.maxHeight = '200px'; if (typeof ddApplyTwoRows === 'function') ddApplyTwoRows(); }
                 }
             }
 
@@ -7786,6 +7903,10 @@
                 var s = synth; synth = null;
                 if (Date.now() - s.at < 700 && Math.abs(e.clientX - s.x) < 30 && Math.abs(e.clientY - s.y) < 30) {
                     e.preventDefault(); e.stopImmediatePropagation();
+                    /* v67: if the keyboard did not come up from the first try, try again inside the browser's own tap event */
+                    if (Date.now() - panelAmountFocusAt < 1500 && !document.body.classList.contains('kb-open')) {
+                        try { const pb = document.getElementById('sel-price-input'); if (pb && document.activeElement === pb) pb.blur(); focusPanelAmountBox(false); } catch (e3) {}
+                    }
                 }
             }, true);
         })();
