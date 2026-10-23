@@ -972,7 +972,7 @@
         .cart-line-amt { font-size: 20px; font-weight: 800; color: #000000; white-space: nowrap; flex: none; }
         html[data-theme="dark"] .cart-line-amt, html[data-theme="dark"] .hist-amt { color: #ffffff; }
         .cart-line-amt .cur { font-size: 14px; font-weight: 800; }
-        .hist-amt .cur { font-size: 12px; font-weight: 800; }
+        .hist-amt .cur { font-size: 13.5px; font-weight: 800; }
         .cart-line-amt.free, html[data-theme="dark"] .cart-line-amt.free { color: #2e7d32; }
         .cart-line-name { font-size: 16px; font-weight: 700; overflow-wrap: anywhere; }
         .btn.cart-edit-btn { background-color: #8e979f; color: #ffffff; opacity: 0.4; padding: 2px 9px; font-size: 12px; }
@@ -980,8 +980,10 @@
         /* sales history: amount first, then the product; more room between products; total at bottom-left */
         .hist-line { display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px; }
         .hist-line:last-child { margin-bottom: 4px; }
-        .hist-amt { font-size: 17px; font-weight: 800; color: #000000; white-space: nowrap; flex: none; }
+        .hist-amt { font-size: 18.5px; font-weight: 800; color: #000000; white-space: nowrap; flex: none; }
         .hist-name { min-width: 0; overflow-wrap: anywhere; }
+        /* v69: every text of a sale except the amount, product name and total is 20% less opaque */
+        .hist-dim { opacity: 0.8; }
         .hist-total { display: flex; flex-direction: column; align-items: center; line-height: 1.25; text-align: center; }
         .hist-total small { font-size: 13px; color: var(--muted); font-weight: 700; position: relative; top: -4px; }
         .hist-btns { position: relative; top: 7px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
@@ -2294,6 +2296,7 @@
            (keyboard up). Tried again a moment later, and once more inside the browser's own tap event, in case the
            first try did not bring the keyboard up. */
         let panelAmountFocusAt = 0;
+        let panelAmountSelect = false;
         function focusPanelAmountBox(selectText) {
             const panel = document.getElementById('selected-product-panel');
             const wp = document.getElementById('panel-weight-controls');
@@ -2305,12 +2308,15 @@
         }
         function openPanelOnAmountBox(selectText) {
             panelAmountFocusAt = Date.now();
+            panelAmountSelect = !!selectText;
             const prodAtOpen = activeProductObj;
             focusPanelAmountBox(selectText);
             const retry = () => {
                 if (activeProductObj !== prodAtOpen) return;
+                /* v69: only the dinar amount box counts as 'already there'; if the cursor landed on any other box
+                   (e.g. the extra gurush box under the finger), move it back to the dinar amount box */
                 const a = document.activeElement;
-                if (a && a.tagName === 'INPUT' && a.id !== 'pos-search' && document.getElementById('selected-product-panel').contains(a)) return;
+                if (a && a.id === 'sel-price-input') return;
                 focusPanelAmountBox(selectText);
             };
             setTimeout(retry, 60);
@@ -2335,6 +2341,11 @@
             if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: 'instant' });
         }
         function handlePosInputFocus(inputEl) {
+            /* v69: right after the panel opens, a stray focus on another box goes back to the dinar amount box */
+            if (inputEl && inputEl.id !== 'sel-price-input' && Date.now() - panelAmountFocusAt < 400) {
+                const w = document.getElementById('panel-weight-controls');
+                if (w && w.style.display !== 'none') { focusPanelAmountBox(panelAmountSelect); return; }
+            }
             /* v68: while the panel has just opened by itself, the keyboard handler does the docking; no second slow scroll on top of it */
             if (Date.now() - panelAmountFocusAt < 1500) {
                 if (document.body.classList.contains('kb-open')) panelNearestNow();
@@ -5364,11 +5375,11 @@
             const debtorsText = debtorNames ? ` — على: ${escapeHtml(debtorNames)}` : '';
             if (hasDebt && !s.returnedAt) {
                 if (s.debtPaidAt) {
-                    debtBanner = `<div style="font-size:13px; color:#2e7d32; font-weight:bold; margin-top:4px;">✔ تم سداد الدين (${formatNum(bd.debtAmount)} د.ل)${debtorsText} — ${new Date(s.debtPaidAt).toLocaleString('ar-LY')} بواسطة ${s.debtPaidBy || 'غير محدد'}</div>`;
+                    debtBanner = `<div class="hist-dim" style="font-size:13px; color:#2e7d32; font-weight:bold; margin-top:4px;">✔ تم سداد الدين (${formatNum(bd.debtAmount)} د.ل)${debtorsText} — ${new Date(s.debtPaidAt).toLocaleString('ar-LY')} بواسطة ${s.debtPaidBy || 'غير محدد'}</div>`;
                 } else {
                     debtBanner = `<div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap; margin-top:4px;">
-                        <span style="font-size:13px; color:#e65100; font-weight:bold;">💳 ${s.cartDebt ? 'فاتورة دين' : 'يوجد دين'} — المبلغ المستحق: ${formatNum(bd.debtAmount)} د.ل (لم يُسدد)${debtorsText}</span>
-                        <button class="btn btn-green" style="padding:2px 8px; font-size:11px;" onclick='markSaleDebtPaid(${JSON.stringify(s.id)})'>تم السداد</button>
+                        <span class="hist-dim" style="font-size:13px; color:#e65100; font-weight:bold;">💳 ${s.cartDebt ? 'فاتورة دين' : 'يوجد دين'} — المبلغ المستحق: ${formatNum(bd.debtAmount)} د.ل (لم يُسدد)${debtorsText}</span>
+                        <button class="btn btn-green hist-dim" style="padding:2px 8px; font-size:11px;" onclick='markSaleDebtPaid(${JSON.stringify(s.id)})'>تم السداد</button>
                     </div>`;
                 }
             }
@@ -5381,20 +5392,20 @@
             return `
                     <div class="${cardClass}${salesSelectMode ? ' sel-mode' : ''}">
                         ${selBox}
-                        <div style="display:flex; justify-content:space-between; color:#666; font-size:12px;">
+                        <div class="hist-dim" style="display:flex; justify-content:space-between; color:#666; font-size:12px;">
                             <span>الوقت: ${timeStr}</span>
                             <span>الكاشير: ${s.cashier}</span>
                         </div>
-                        ${s.customerName ? `<div style="font-size:13px; color:var(--navy); font-weight:700; margin-top:3px;">👤 المشتري: ${escapeHtml(s.customerName)}</div>` : ''}
-                        ${s.fromNote ? `<div style="font-size:12.5px; color:var(--teal-primary); font-weight:700; margin-top:3px;">📝 محوّلة من ملاحظة سريعة${s.convertedAt && new Date(s.convertedAt).toDateString() !== new Date(s.timestamp).toDateString() ? ' — حُوّلت في ' + new Date(s.convertedAt).toLocaleString('ar-LY') : ''}<span style="display:block; font-weight:400; color:var(--muted); white-space:pre-wrap;">${escapeHtml(s.fromNote.text || '')}</span></div>` : ''}
-                        ${s.importBatchId ? `<div style="font-size:12.5px; color:var(--teal-primary); font-weight:700; margin-top:3px;">📋 مُدخلة من نص ملصوق (مبيعات متعددة)</div>` : ''}
-                        ${s.cartNote ? `<div style="font-size:13px; color:#ff8c00; font-weight:700; margin-top:3px;">📝 ملاحظة السلة: ${escapeHtml(s.cartNote)}</div>` : ''}
+                        ${s.customerName ? `<div class="hist-dim" style="font-size:13px; color:var(--navy); font-weight:700; margin-top:3px;">👤 المشتري: ${escapeHtml(s.customerName)}</div>` : ''}
+                        ${s.fromNote ? `<div class="hist-dim" style="font-size:12.5px; color:var(--teal-primary); font-weight:700; margin-top:3px;">📝 محوّلة من ملاحظة سريعة${s.convertedAt && new Date(s.convertedAt).toDateString() !== new Date(s.timestamp).toDateString() ? ' — حُوّلت في ' + new Date(s.convertedAt).toLocaleString('ar-LY') : ''}<span style="display:block; font-weight:400; color:var(--muted); white-space:pre-wrap;">${escapeHtml(s.fromNote.text || '')}</span></div>` : ''}
+                        ${s.importBatchId ? `<div class="hist-dim" style="font-size:12.5px; color:var(--teal-primary); font-weight:700; margin-top:3px;">📋 مُدخلة من نص ملصوق (مبيعات متعددة)</div>` : ''}
+                        ${s.cartNote ? `<div class="hist-dim" style="font-size:13px; color:#ff8c00; font-weight:700; margin-top:3px;">📝 ملاحظة السلة: ${escapeHtml(s.cartNote)}</div>` : ''}
                         <div style="margin: 8px 0 4px 0;">
                             ${s.items.map(i => `
                                 <div class="hist-line">
                                     <strong class="hist-amt">${i.isFree ? '0 <small class="cur">د.ل</small>' : `${formatNum(i.total)} <small class="cur">د.ل</small>`}</strong>
                                     <div class="hist-name">
-                                        <strong style="font-size:15.5px;">${i.name}</strong> × ${formatNum(i.qty)} ${i.unitType === 'weight' ? 'كجم' : (i.unitType === 'unit' ? 'قطعة' : 'شكارة')} 
+                                        <strong style="font-size:15.5px;">${i.name}</strong><span class="hist-dim"> × ${formatNum(i.qty)} ${i.unitType === 'weight' ? 'كجم' : (i.unitType === 'unit' ? 'قطعة' : 'شكارة')} 
                                         ${i.isNegativeSale ? '<span style="color:#d32f2f; font-weight:bold;">[مبيعات بالسالب]</span>' : ''} 
                                         ${i.isFree ? `<span style="color:#2e7d32;">[مجاني: ${formatNum(Number(i.qty || 0) * Number(i.price || 0))} د.ل]</span>` : ''} 
                                         ${i.isDebt ? `<span style="color:#e65100; font-weight:bold;">[دين${i.debtorName ? ': ' + escapeHtml(i.debtorName) : ''}]</span>` : ''} 
@@ -5402,26 +5413,26 @@
                                         ${i.halfSource === 'open' ? '<span style="color:#6a1b9a;">[من الوزن المفتوح]</span>' : ''} 
                                         ${(i.extraKg > 0 && i.qty > 0) ? `<span style="color:#6a1b9a;">[إضافة: ${formatNum(i.extraKg * 1000)} جرام (${formatNum(i.extraKg * i.price)} د.ل)]</span>` : ''} 
                                         ${i.discount > 0 ? `<span style="color:#d32f2f;">[خصم: ${formatNum(i.discount)} د.ل]</span>` : ''} 
-                                        ${i.note ? `<span style="color:#ff8c00;">[${i.note}]</span>` : ''}
+                                        ${i.note ? `<span style="color:#ff8c00;">[${i.note}]</span>` : ''}</span>
                                     </div>
                                 </div>
                             `).join('')}
                         </div>
-                        ${hasGlobalDiscount ? `<div style="font-size:12px; color:#d32f2f;">[خصم على الفاتورة: ${formatNum(s.globalDiscount)} د.ل]</div>` : ''}
+                        ${hasGlobalDiscount ? `<div class="hist-dim" style="font-size:12px; color:#d32f2f;">[خصم على الفاتورة: ${formatNum(s.globalDiscount)} د.ل]</div>` : ''}
                         
-                        <div style="font-size:13px; color:#ff8c00; margin-top:2px;">
+                        <div class="hist-dim" style="font-size:13px; color:#ff8c00; margin-top:2px;">
                             ملاحظة الفاتورة: ${s.note ? `<strong>${s.note}</strong>` : '<span style="color:#aaa;">لا توجد ملاحظة</span>'}
                         </div>
-                        ${(s.amendmentHistory || []).length ? `<div style="margin-top:4px;">${(s.amendmentHistory || []).map((a, n) => `<div style="font-size:12px; color:#1565c0; margin-top:3px;">✏️ تعديل ${n + 1} — ${new Date(a.at).toLocaleString('ar-LY')} بواسطة ${a.by || 'غير محدد'}: ${(a.changes || []).map(c => c.fromTotal !== undefined ? `${c.name} (إرجاع ${formatNum(c.returnedMoney)} د.ل: ${formatNum(c.fromTotal)} ← ${formatNum(c.toTotal)} د.ل${c.fromDiscount !== undefined && c.fromDiscount !== c.toDiscount ? ` | الخصم: ${formatNum(c.fromDiscount)} ← ${formatNum(c.toDiscount)} د.ل` : ''})` : (c.fromAmt !== undefined ? `${c.name} (${formatNum(c.fromAmt)} ← ${formatNum(c.toAmt)} د.ل)` : `${c.name} (${formatNum(c.fromQty)} ← ${formatNum(c.toQty)})`)).join('، ') || 'تم تحديث الفاتورة'}</div>`).join('')}</div>` : ''}
-                        ${s.returnedAt ? `<div style="font-size:12px; color:#d32f2f; font-weight:bold; margin-top:4px;">↩ تم إرجاع هذه الفاتورة بالكامل ${new Date(s.returnedAt).toLocaleString('ar-LY')} بواسطة ${s.returnedBy || 'غير محدد'} — المنتجات أعلاه أُعيدت إلى المخزون.</div>` : ''}
+                        ${(s.amendmentHistory || []).length ? `<div class="hist-dim" style="margin-top:4px;">${(s.amendmentHistory || []).map((a, n) => `<div style="font-size:12px; color:#1565c0; margin-top:3px;">✏️ تعديل ${n + 1} — ${new Date(a.at).toLocaleString('ar-LY')} بواسطة ${a.by || 'غير محدد'}: ${(a.changes || []).map(c => c.fromTotal !== undefined ? `${c.name} (إرجاع ${formatNum(c.returnedMoney)} د.ل: ${formatNum(c.fromTotal)} ← ${formatNum(c.toTotal)} د.ل${c.fromDiscount !== undefined && c.fromDiscount !== c.toDiscount ? ` | الخصم: ${formatNum(c.fromDiscount)} ← ${formatNum(c.toDiscount)} د.ل` : ''})` : (c.fromAmt !== undefined ? `${c.name} (${formatNum(c.fromAmt)} ← ${formatNum(c.toAmt)} د.ل)` : `${c.name} (${formatNum(c.fromQty)} ← ${formatNum(c.toQty)})`)).join('، ') || 'تم تحديث الفاتورة'}</div>`).join('')}</div>` : ''}
+                        ${s.returnedAt ? `<div class="hist-dim" style="font-size:12px; color:#d32f2f; font-weight:bold; margin-top:4px;">↩ تم إرجاع هذه الفاتورة بالكامل ${new Date(s.returnedAt).toLocaleString('ar-LY')} بواسطة ${s.returnedBy || 'غير محدد'} — المنتجات أعلاه أُعيدت إلى المخزون.</div>` : ''}
                         ${debtBanner}
 
                         <div style="display:flex; justify-content:space-between; align-items:center; gap:4px; flex-wrap:wrap; margin-top:6px;">
-                            <div class="hist-btns">
+                            <div class="hist-btns hist-dim">
                                 <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick='editSaleNote(${JSON.stringify(s.id)})'>✏️ ملاحظة</button>
                                 ${s.returnedAt ? `<span style="font-size:11px; color:#d32f2f;">تم الإرجاع</span><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='deleteSale(${JSON.stringify(s.id)})'>حذف البيع</button>` : `<button class="btn btn-green" style="padding:2px 8px; font-size:11px;" onclick='editSale(${JSON.stringify(s.id)})'>تعديل البيع</button><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='returnSale(${JSON.stringify(s.id)})'>إرجاع البيع</button>`}
                             </div>
-                            <div class="hist-total"><small>الإجمالي</small><strong style="color:var(--teal-primary); font-size:19px;">${formatNum(s.total)} د.ل</strong></div>
+                            <div class="hist-total"><small class="hist-dim">الإجمالي</small><strong style="color:var(--teal-primary); font-size:19px;">${formatNum(s.total)} د.ل</strong></div>
                         </div>
                     </div>
                 `;
