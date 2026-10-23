@@ -1323,9 +1323,47 @@
         .bk-ign-t { font-size: 13px; overflow-wrap: anywhere; }
         .bk-ign-r { font-size: 11.5px; color: var(--muted, #8695a6); margin: 2px 0 4px; }
         .bk-ign-row button { border: 1px solid #cfe3e6; background: var(--card-bg, #ffffff); color: var(--teal-primary, #137e84); border-radius: 9px; padding: 3px 10px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    
+        /* v68: price-change notifications (top of the screen, like phone notifications) */
+        #price-notices { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 8px); left: 8px; right: 8px; z-index: 9500; display: flex; flex-direction: column; gap: 8px; max-height: 50vh; overflow-y: auto; pointer-events: none; direction: rtl; -webkit-overflow-scrolling: touch; }
+        #price-notices:empty { display: none; }
+        .pn-card { pointer-events: auto; touch-action: pan-y; position: relative; background: #ffffff; color: #12283a; border: 1px solid #d6e2e8; border-right: 5px solid var(--teal-primary); border-radius: 16px; padding: 10px 40px 9px 12px; box-shadow: 0 6px 20px rgba(18, 40, 58, 0.22); flex: none; transition: transform .2s ease, opacity .2s ease; }
+        .pn-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+        .pn-title small { font-size: 11px; font-weight: 600; color: var(--muted); margin-inline-start: 6px; }
+        .pn-line { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; padding: 1px 0; }
+        .pn-f { color: var(--muted); }
+        .pn-old { color: #8a949c; text-decoration: line-through; }
+        .pn-new { font-weight: 800; color: #0f6b71; }
+        .pn-new small { font-size: 11px; font-weight: 600; }
+        .pn-time { font-size: 11px; color: var(--muted); margin-top: 4px; }
+        .pn-x { position: absolute; top: 6px; right: 8px; width: 28px; height: 28px; border: none; border-radius: 50%; background: #eef3f6; color: #4a5a6a; font-size: 18px; line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        html[data-theme="dark"] .pn-card { background: #213344; color: #e6eef5; border-color: #2d4457; border-right-color: var(--teal-primary); }
+        html[data-theme="dark"] .pn-x { background: #2d4457; color: #e6eef5; }
+        html[data-theme="dark"] .pn-new { color: #7fd6da; }
+        /* v68: statistics of each cashier / the manager (under the totals) */
+        .sc-title { font-size: 13px; font-weight: 800; color: var(--muted); margin: 4px 2px 8px; }
+        .sc-card { margin-bottom: 10px; }
+        .sc-name { font-weight: 800; font-size: 13px; color: var(--navy); margin: 0 2px 6px; }
+        html[data-theme="dark"] .sc-name { color: #e6eef5; }
+        /* v68: sales history, a header bar where the cashier (or the manager) changes */
+        .cashier-sep { display: flex; align-items: center; gap: 8px; margin: 14px 2px 8px; font-weight: 800; font-size: 14px; color: #0f6b71; }
+        .cashier-sep::before, .cashier-sep::after { content: ''; flex: 1; height: 2px; border-radius: 2px; background: currentColor; opacity: .35; }
+        .cashier-sep span { padding: 3px 14px; background: #dff0f1; border-radius: 999px; }
+        html[data-theme="dark"] .cashier-sep { color: #7fd6da; }
+        html[data-theme="dark"] .cashier-sep span { background: #1f4a50; }
+        /* v68: subtle wavy underline in the bulk-sales text box for text the review would not understand */
+        .bk-wrap { position: relative; display: flex; flex: 1 1 auto; min-height: 90px; min-width: 0; }
+        .bk-wrap textarea { scrollbar-width: none; }
+        .bk-wrap textarea::-webkit-scrollbar { display: none; }
+        .bk-mirror { position: absolute; top: 0; left: 0; right: 0; bottom: 0; box-sizing: border-box; padding: 10px 12px; border: 1px solid transparent; font-family: inherit; font-size: 18px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; overflow: hidden; pointer-events: none; color: transparent; z-index: 2; direction: rtl; }
+        .bk-u { text-decoration-line: underline; text-decoration-style: wavy; text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
+        .bk-u.bad { text-decoration-color: rgba(211, 47, 47, 0.6); }
+        .bk-u.warn { text-decoration-color: rgba(230, 130, 0, 0.8); }
     </style>
 </head>
 <body onclick="handleGlobalClick(event)">
+
+    <div id="price-notices" aria-live="polite"></div>
 
     <div id="storage-error-banner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:10000; background:#d53637; color:#ffffff; padding:calc(10px + env(safe-area-inset-top, 0px)) 14px 10px 14px; font-size:14px; font-weight:700; box-shadow:0 4px 14px rgba(0,0,0,0.3);">
         <div>⚠️ تعذّر حفظ آخر البيانات: مساحة التخزين ممتلئة! حمّل نسخة احتياطية الآن.</div>
@@ -1666,6 +1704,7 @@
                     <div class="stat-tile"><div class="stat-ic stat-ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3.2 3.2 0 0 1 0 5.6"/><path d="M18 14.4c1.8.8 3 2.6 3 5.6"/></svg></div><div class="stat-t">عدد المشترين</div><div class="stat-v"><span id="stat-today-customers">0</span></div></div>
                     <div class="stat-tile"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/></svg></div><div class="stat-t">ديون سُددت (محسوبة ضمن المبيعات)</div><div class="stat-v"><span id="stat-today-debt-paid">0</span> <small>د.ل</small></div></div>
                 </div>
+                <div id="stats-cashiers"></div>
                 <div class="stats-grid">
                     <div class="stat-tile stat-sm stat-tap" onclick="showStatsDiscFree('free')"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="9" width="17" height="11" rx="2"/><path d="M12 9v11M3.5 13h17"/><path d="M12 9c-1.5-4-5.5-4-5.5-1.6C6.5 9 9 9 12 9zM12 9c1.5-4 5.5-4 5.5-1.6C17.5 9 15 9 12 9z"/></svg></div><div class="stat-t">منتجات مجانية (قيمتها)</div><div class="stat-v"><span id="stat-today-free">0</span> <small>د.ل</small></div></div>
                     <div class="stat-tile stat-sm stat-tap" onclick="showStatsDiscFree('discount')"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18"/><circle cx="7.5" cy="7.5" r="2.3"/><circle cx="16.5" cy="16.5" r="2.3"/></svg></div><div class="stat-t">الخصومات (على المنتجات والفواتير)</div><div class="stat-v"><span id="stat-today-discounts">0</span> <small>د.ل</small></div></div>
@@ -2234,7 +2273,9 @@
 
         /* Opens the product panel in the same place on screen whether or not the cart has items
            (the panel sits above the cart, so scrolling to the top puts it where it is with an empty cart). */
+        let panelOpenedAt = 0;
         function placeProductPanelAtDefault() {
+            panelOpenedAt = Date.now();
             const go = () => {
                 const panel = document.getElementById('selected-product-panel');
                 if (!panel || panel.style.display === 'none') return;
@@ -2276,7 +2317,29 @@
             setTimeout(retry, 220);
         }
 
+        /* v68: the same 'bring it into view' the old delayed scroll did, but done at once (no slide) */
+        function panelNearestNow() {
+            const panel = document.getElementById('selected-product-panel');
+            if (!panel || panel.style.display === 'none') return;
+            const r = panel.getBoundingClientRect();
+            const vis = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            if (r.bottom > vis - 12) window.scrollBy({ top: r.bottom - (vis - 12), behavior: 'instant' });
+            else if (r.top < 0) window.scrollBy({ top: r.top, behavior: 'instant' });
+        }
+        function panelScrollToDefaultNow() {
+            const panel = document.getElementById('selected-product-panel');
+            if (!panel || panel.style.display === 'none') return;
+            if (document.body.classList.contains('kb-open')) return;
+            const a = document.activeElement;
+            if (a && a.id && a.id !== 'pos-search' && panel.contains(a)) return;
+            if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: 'instant' });
+        }
         function handlePosInputFocus(inputEl) {
+            /* v68: while the panel has just opened by itself, the keyboard handler does the docking; no second slow scroll on top of it */
+            if (Date.now() - panelAmountFocusAt < 1500) {
+                if (document.body.classList.contains('kb-open')) panelNearestNow();
+                return;
+            }
             setTimeout(() => {
                 const panel = document.getElementById('selected-product-panel');
                 if (panel) {
@@ -2533,15 +2596,11 @@
 
         /* v67: two full rows in the product box, floating over the cart without moving it */
         function ddSyncOverlap() {
+            /* v68: no fade and no floating over the cart: the box simply takes the height of its two rows */
             const dd = document.getElementById('product-dropdown');
             if (!dd) return;
-            if (!dd.firstElementChild) { dd.style.removeProperty('margin-bottom'); dd.classList.remove('dd-fade'); return; }
-            const flowH = Math.min(dd.scrollHeight, 200);   /* the height the box used to take in the page */
-            const cur = dd.offsetHeight;
-            if (cur > flowH) dd.style.setProperty('margin-bottom', (-(cur - flowH)) + 'px', 'important');
-            else dd.style.removeProperty('margin-bottom');
-            const more = dd.scrollHeight > dd.clientHeight + 2 && (dd.scrollTop + dd.clientHeight) < dd.scrollHeight - 2;
-            dd.classList.toggle('dd-fade', more);
+            dd.style.removeProperty('margin-bottom');
+            dd.classList.remove('dd-fade');
         }
         function ddApplyTwoRows() {
             const dd = document.getElementById('product-dropdown');
@@ -2549,7 +2608,7 @@
             const cells = dd.querySelectorAll('#pg-dd .pg-cell');
             if (!cells.length) { ddSyncOverlap(); return; }
             const c = cells[Math.min(4, cells.length - 1)];
-            const h = Math.ceil(c.getBoundingClientRect().bottom - dd.getBoundingClientRect().top + dd.scrollTop) + 30;
+            const h = Math.ceil(c.getBoundingClientRect().bottom - dd.getBoundingClientRect().top + dd.scrollTop) + 10;
             dd.style.maxHeight = Math.max(200, h) + 'px';
             ddSyncOverlap();
         }
@@ -4299,6 +4358,7 @@
                     localStorage.setItem(KEYS.ACTIVE_CASHIER, activeCashier);
                     localStorage.setItem(KEYS.ACTIVE_ROLE, 'cashier');
                     document.getElementById('active-cashier-display').innerText = activeCashier;
+                    if (typeof renderPriceNotices === 'function') renderPriceNotices();
                 } else if (pin === managerPin) {
                     activeCashier = 'المدير';
                     isManagerRole = true;
@@ -4306,6 +4366,7 @@
                     localStorage.setItem(KEYS.ACTIVE_CASHIER, activeCashier);
                     localStorage.setItem(KEYS.ACTIVE_ROLE, 'manager');
                     document.getElementById('active-cashier-display').innerText = activeCashier;
+                    if (typeof renderPriceNotices === 'function') renderPriceNotices();
                 } else {
                     const retry = () => promptShiftLogin();
                     if (mustRegister) retry.nonDismissible = true;
@@ -4603,8 +4664,8 @@
 
         let statsSplit = null;
         /* Tap the sales or profit card: show whole/half bags and all other products separately. */
-        function showStatsSplit(kind) {
-            const st = statsSplit;
+        function showStatsSplit(kind, stArg) {
+            const st = stArg || statsSplit;
             if (!st) return;
             const isProfit = kind === 'profit';
             const bag = isProfit ? st.bagProfit : st.bagRev;
@@ -4612,14 +4673,14 @@
             const total = isProfit ? st.profit : st.rev;
             const ov = document.createElement('div');
             ov.className = 'dp-overlay';
-            ov.innerHTML = `<div class="dp-box"><div class="dp-title">${isProfit ? 'الأرباح' : 'المبيعات'} — التفاصيل</div>
+            ov.innerHTML = `<div class="dp-box"><div class="dp-title">${isProfit ? 'الأرباح' : 'المبيعات'} — التفاصيل${st._who ? ' (' + escapeHtml(st._who) + ')' : ''}</div>
                 <div class="split-row split-tap" data-g="bag"><span>الشكائر الكاملة ونصف الشكائر <i class="split-go">‹</i></span><b>${formatNum(bag)} <small>د.ل</small></b></div>
                 <div class="split-row split-tap" data-g="other"><span>باقي المنتجات <i class="split-go">‹</i></span><b>${formatNum(other)} <small>د.ل</small></b></div>
                 <div class="split-row split-total"><span>المجموع</span><b>${formatNum(total)} <small>د.ل</small></b></div>
                 <div class="dp-foot"><button type="button" style="background:var(--red-alert);color:#fff;">إغلاق</button></div></div>`;
             ov.addEventListener('click', e => {
                 const g = e.target.closest('.split-tap');
-                if (g) { showStatsProducts(kind, g.getAttribute('data-g')); return; }
+                if (g) { showStatsProducts(kind, g.getAttribute('data-g'), st); return; }
                 if (e.target === ov || e.target.closest('button')) ov.remove();
             });
             document.body.appendChild(ov);
@@ -4629,8 +4690,8 @@
             return pick('stats-period-label') || (statsPeriod === 'day' ? pick('stats-day-text') : '') || (statsPeriod === 'month' ? pick('stats-month-text') : '');
         }
         /* v66: each product's sales and profit in the chosen period, best first */
-        function showStatsProducts(kind, group) {
-            const st = statsSplit;
+        function showStatsProducts(kind, group, stArg) {
+            const st = stArg || statsSplit;
             if (!st || !st.prod) return;
             const isProfit = kind === 'profit';
             const isBag = group === 'bag';
@@ -4655,7 +4716,7 @@
             }).join('') || '<div style="text-align:center; color:var(--muted); padding:16px 0;">لا توجد مبيعات في هذه الفترة</div>';
             const ov = document.createElement('div');
             ov.className = 'dp-overlay';
-            ov.innerHTML = '<div class="dp-box sp-box"><div class="dp-title">' + (isProfit ? 'أرباح ' : 'مبيعات ') + (isBag ? 'الشكائر الكاملة ونصف الشكائر' : 'باقي المنتجات') + '</div>' +
+            ov.innerHTML = '<div class="dp-box sp-box"><div class="dp-title">' + (isProfit ? 'أرباح ' : 'مبيعات ') + (isBag ? 'الشكائر الكاملة ونصف الشكائر' : 'باقي المنتجات') + (st._who ? ' (' + escapeHtml(st._who) + ')' : '') + '</div>' +
                 '<div class="sp-period">' + escapeHtml(statsPeriodText()) + '</div>' +
                 '<div class="sp-list">' + list + '</div>' +
                 '<div class="split-row split-total"><span>المجموع</span><b>' + formatNum(total) + ' <small>د.ل</small></b></div>' +
@@ -4719,6 +4780,7 @@
             document.getElementById('stat-today-sales').innerText = formatNum(st.rev);
             document.getElementById('stat-today-profit').innerText = formatNum(st.profit);
             statsSplit = st;
+            if (typeof renderStatsCashiers === 'function') renderStatsCashiers(list, r);
             document.getElementById('stat-today-free').innerText = formatNum(st.freeValue);
             document.getElementById('stat-today-discounts').innerText = formatNum(st.discountValue);
             document.getElementById('stat-profit-before').innerText = formatNum(st.profitBefore);
@@ -5376,7 +5438,16 @@
         }
 
         function renderGroupRows(g) {
-            return g.rows.map(x => x.n ? renderNoteCard(x.n) : renderSaleCard(x.s, saleTimeLabel(x.s))).join('');
+            /* v68: a header bar each time the cashier (or the manager) changes between consecutive sales */
+            let lastWho = null, html = '';
+            g.rows.forEach(x => {
+                if (x.s) {
+                    const who = x.s.cashier ? String(x.s.cashier) : 'غير محدد';
+                    if (who !== lastWho) { html += '<div class="cashier-sep"><span>' + (who === 'المدير' ? 'المدير' : 'الكاشير: ' + escapeHtml(who)) + '</span></div>'; lastWho = who; }
+                }
+                html += x.n ? renderNoteCard(x.n) : renderSaleCard(x.s, saleTimeLabel(x.s));
+            });
+            return html;
         }
 
         function renderSalesNow() {
@@ -5799,6 +5870,7 @@
                 inventoryEdits.unshift({ id: cloudUuid(), ts: Date.now(), productId: String(prod.id || ''), name: prod.name || '', action, changes, by: activeCashier });
                 safeSave(EDITS_KEY, inventoryEdits);
                 renderInventoryEdits();
+                if (typeof priceNoticesFromEdit === 'function') priceNoticesFromEdit(action, before, after);
             } catch (e) { console.error('Could not log the inventory edit', e); }
         }
 
@@ -7128,6 +7200,27 @@
                 return true;
             }
 
+            if (op.type === 'priceNotice') {
+                const n = op.payload || {};
+                await cloudDb.runTransaction(async transaction => {
+                    const snap = await transaction.get(cloudStateRef);
+                    const st = snap.exists ? (snap.data() || {}) : {};
+                    const list = pnMerge(Array.isArray(st.priceNotices) ? st.priceNotices : [], n);
+                    const ids = new Set(list.map(x => x.id));
+                    const dis = st.priceNoticeDismissed && typeof st.priceNoticeDismissed === 'object' ? st.priceNoticeDismissed : {};
+                    const cleaned = {};
+                    Object.keys(dis).forEach(k => { cleaned[k] = (Array.isArray(dis[k]) ? dis[k] : []).filter(id => ids.has(id)); });
+                    transaction.set(cloudStateRef, { priceNotices: list, priceNoticeDismissed: cleaned }, { merge: true });
+                });
+                return true;
+            }
+
+            if (op.type === 'priceNoticeDismiss') {
+                const d = op.payload || {};
+                await cloudStateRef.set({ priceNoticeDismissed: { [d.key]: firebase.firestore.FieldValue.arrayUnion(d.id) } }, { merge: true });
+                return true;
+            }
+
             if (op.type === 'settings') {
                 await cloudStateRef.set({
                     cashiers: op.payload.cashiers || [],
@@ -7381,6 +7474,7 @@
                         localStorage.setItem(KEYS.MANAGER_PIN, managerPin);
                     }
                     applyRemoteSalesClear(data.salesClearedAt);
+                    if (typeof pnMergeFromCloud === 'function') pnMergeFromCloud(data);
                 }
 
                 if (salesSnap) await mergeSalesFromCloud(salesSnap.docs.map(d => d.data()));
@@ -7415,6 +7509,7 @@
                         localStorage.setItem(KEYS.MANAGER_PIN, managerPin);
                     }
                     applyRemoteSalesClear(data.salesClearedAt);
+                    if (typeof pnMergeFromCloud === 'function') pnMergeFromCloud(data);
                     renderInventory();
                 } finally {
                     cloudApplyingRemote = false;
@@ -7535,12 +7630,20 @@
     <script>
         (function setupKeyboardDetection() {
             let restingHeight = window.innerHeight;
+            let closeTimer = 0;
 
-            function onResize() {
+            function onResize(applyClose) {
                 const h = window.innerHeight;
                 if (h > restingHeight) restingHeight = h;
 
                 const keyboardOpen = (restingHeight - h) > 150;
+                clearTimeout(closeTimer);
+                /* v68: the keyboard often closes for a moment when a product is picked and then opens again on the amount box;
+                   wait a moment before treating it as closed, so the panel does not go down and up */
+                if (!keyboardOpen && applyClose !== true && document.body.classList.contains('kb-open') && Date.now() - panelAmountFocusAt < 1500) {
+                    closeTimer = setTimeout(function () { onResize(true); }, 180);
+                    return;
+                }
                 document.body.classList.toggle('kb-open', keyboardOpen);
 
                 if (keyboardOpen) {
@@ -7561,6 +7664,8 @@
                     document.body.style.removeProperty('padding-bottom');
                     const dd = document.getElementById('product-dropdown');
                     if (dd) { dd.style.maxHeight = '200px'; if (typeof ddApplyTwoRows === 'function') ddApplyTwoRows(); }
+                    /* v68: a product was just picked: go to the default place in the same moment the keyboard goes, not a moment later */
+                    if (Date.now() - panelOpenedAt < 1500 && typeof panelScrollToDefaultNow === 'function') panelScrollToDefaultNow();
                 }
             }
 
@@ -9150,7 +9255,7 @@
             ov.className = 'qn-overlay';
             ov.innerHTML = '<div class="qn-box"><div class="qn-top"><button type="button" class="qn-x" id="bk-x"></button><div class="qn-title">مبيعات متعددة</div></div>' +
                 (last ? '<div class="qn-banner"><span>آخر استيراد: ' + last.count + ' فاتورة (' + new Date(last.at).toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' }) + ')</span><button type="button" class="btn btn-red" id="bk-cancel-last">إلغاء الاستيراد</button></div>' : '') +
-                '<textarea id="bk-text" placeholder="الصق أو اكتب المبيعات هنا.&#10;سطر لكل منتج، وسطر فارغ بين كل فاتورة والتي بعدها."></textarea>' +
+                '<div class="bk-wrap"><textarea id="bk-text" placeholder="الصق أو اكتب المبيعات هنا.&#10;سطر لكل منتج، وسطر فارغ بين كل فاتورة والتي بعدها."></textarea><div class="bk-mirror" id="bk-mirror" aria-hidden="true"></div></div>' +
                 '<div class="qn-hint">لن يُحفظ أي بيع قبل أن تراجع الفواتير وتؤكد.</div>' +
                 '<div class="qn-btns"><button type="button" class="btn btn-teal" id="bk-read">قراءة النص</button><button type="button" class="btn btn-red" id="bk-close">إغلاق</button></div></div>';
             document.body.appendChild(ov);
@@ -9159,7 +9264,8 @@
             ta.value = draft;
             const saveDraft = function () { try { if (ta.value) localStorage.setItem(BK_DRAFT_KEY, JSON.stringify({ day: new Date().toDateString(), text: ta.value })); else { localStorage.removeItem(BK_DRAFT_KEY); localStorage.removeItem(BK_EDITS_KEY); } } catch (e) {} };
             ta.addEventListener('input', saveDraft);
-            qnAttachClear(ov.querySelector('#bk-x'), ta, saveDraft);
+            qnAttachClear(ov.querySelector('#bk-x'), ta, function () { saveDraft(); if (ov._bkUl) ov._bkUl(); });
+            { const mir = ov.querySelector('#bk-mirror'); if (mir && typeof bkAttachUnderline === 'function') ov._bkUl = bkAttachUnderline(ta, mir); }
             const close = function () { ov.remove(); undock(); };
             ov._bkClose = close;
             ov.querySelector('#bk-close').addEventListener('click', close);
@@ -9689,6 +9795,300 @@
             if (undone.length) msgs.push('وتم إرجاع ' + undone.length + ' دين إلى حالة «غير مسدد».');
             if (skippedPaid) msgs.push('ولم يُلغَ سداد ' + skippedPaid + ' دين لأنه تغيّر بعد الاستيراد (أُرجع أو عُدّل).');
             showModal(targets.length ? 'تم إلغاء الاستيراد' : 'تم إلغاء السداد', msgs.join('\n'), false, () => {});
+        }
+    </script>
+
+    <script>
+        /* ===== v68: price-change notifications, per-cashier statistics, bulk-text underline ===== */
+
+        /* ---- price-change notifications ---- */
+        const PN_KEY = 'pos_price_notices', PN_DIS_KEY = 'pos_price_notice_dismissed', PN_TTL = 2 * 86400000;
+        const PN_FIELDS = [['price', 'سعر البيع'], ['wholesaleUnitPrice', 'سعر الجملة'], ['kgPrice', 'سعر الكيلو'], ['fullBagPrice', 'سعر الشكارة الكاملة'], ['halfBagPrice', 'سعر نصف الشكارة']];
+        let pnList = safeLoad(PN_KEY, []);
+        if (!Array.isArray(pnList)) pnList = [];
+        let pnDismissed = safeLoad(PN_DIS_KEY, {});
+        if (!pnDismissed || typeof pnDismissed !== 'object' || Array.isArray(pnDismissed)) pnDismissed = {};
+        let pnSig = null;
+
+        function pnKey(name) {
+            return 'a' + encodeURIComponent(String(name || '')).replace(/\./g, '%2E').replace(/\*/g, '%2A').replace(/~/g, '%7E');
+        }
+        function pnCombine(older, newer) {
+            const map = new Map();
+            (older.changes || []).forEach(c => map.set(c.f, { f: c.f, from: Number(c.from), to: Number(c.to) }));
+            (newer.changes || []).forEach(c => {
+                const ex = map.get(c.f);
+                map.set(c.f, { f: c.f, from: ex ? ex.from : Number(c.from), to: Number(c.to) });
+            });
+            return Array.from(map.values());
+        }
+        /* one notice per product: a second change to the same product keeps the first old price and shows the latest new price */
+        function pnMerge(arr, n) {
+            const out = [];
+            let ex = null;
+            const now = Date.now();
+            (arr || []).forEach(x => {
+                if (!x || !x.id || !(now - Number(x.ts) < PN_TTL)) return;
+                if (String(x.pid) === String(n.pid)) { if (!ex || Number(x.ts) > Number(ex.ts)) ex = x; }
+                else out.push(x);
+            });
+            if (!ex) out.push(n);
+            else if (ex.id === n.id) out.push(ex);
+            else {
+                const older = Number(ex.ts) <= Number(n.ts) ? ex : n;
+                const newer = older === ex ? n : ex;
+                out.push({ id: newer.id, pid: String(n.pid), name: newer.name || n.name || '', ts: Math.max(Number(ex.ts), Number(n.ts)), by: newer.by || '', changes: pnCombine(older, newer) });
+            }
+            return out;
+        }
+        function pnPrune() {
+            const now = Date.now();
+            pnList = pnList.filter(x => x && x.id && now - Number(x.ts) < PN_TTL);
+            const ids = new Set(pnList.map(x => x.id));
+            Object.keys(pnDismissed).forEach(k => {
+                pnDismissed[k] = (Array.isArray(pnDismissed[k]) ? pnDismissed[k] : []).filter(id => ids.has(id));
+                if (!pnDismissed[k].length) delete pnDismissed[k];
+            });
+        }
+        function pnSave() {
+            pnPrune();
+            safeSave(PN_KEY, pnList);
+            safeSave(PN_DIS_KEY, pnDismissed);
+        }
+        /* called when a product is edited: only selling prices count (never the cost) */
+        function priceNoticesFromEdit(action, before, after) {
+            try {
+                if (!before || !after || action === 'create' || action === 'delete') return;
+                const ch = [];
+                PN_FIELDS.forEach(([f, label]) => {
+                    const a = Number(before[f]), b = Number(after[f]);
+                    if (a > 0 && b > 0 && Math.abs(a - b) > 1e-9) ch.push({ f: label, from: a, to: b });
+                });
+                if (!ch.length) return;
+                const n = { id: 'pn-' + cloudUuid(), pid: String(after.id || before.id || ''), name: after.name || before.name || '', ts: Date.now(), by: activeCashier, changes: ch };
+                pnList = pnMerge(pnList, n);
+                const merged = pnList.find(x => x.id === n.id) || n;
+                pnSave();
+                renderPriceNotices();
+                queueCloudOperation({ id: 'price-notice:' + n.id, type: 'priceNotice', payload: merged, createdAt: Date.now() });
+            } catch (e) { console.error('Could not create the price notice', e); }
+        }
+        function pnMergeFromCloud(data) {
+            try {
+                if (!data) return;
+                let changed = false;
+                if (Array.isArray(data.priceNotices)) {
+                    const have = new Set(pnList.map(x => x.id));
+                    data.priceNotices.filter(n => n && n.id && n.pid !== undefined && Number(n.ts) > 0).sort((a, b) => Number(a.ts) - Number(b.ts)).forEach(n => {
+                        if (have.has(n.id)) return;
+                        pnList = pnMerge(pnList, n);
+                        have.add(n.id);
+                        changed = true;
+                    });
+                }
+                if (data.priceNoticeDismissed && typeof data.priceNoticeDismissed === 'object') {
+                    Object.keys(data.priceNoticeDismissed).forEach(k => {
+                        const ids = data.priceNoticeDismissed[k];
+                        if (!Array.isArray(ids)) return;
+                        const arr = pnDismissed[k] || (pnDismissed[k] = []);
+                        ids.forEach(id => { if (!arr.includes(id)) { arr.push(id); changed = true; } });
+                    });
+                }
+                if (changed) pnSave();
+                renderPriceNotices();
+            } catch (e) { console.error('Could not merge the price notices', e); }
+        }
+        function pnDismiss(id) {
+            const key = pnKey(activeCashier);
+            const arr = pnDismissed[key] || (pnDismissed[key] = []);
+            if (!arr.includes(id)) arr.push(id);
+            safeSave(PN_DIS_KEY, pnDismissed);
+            queueCloudOperation({ id: 'price-notice-dismiss:' + cloudUuid(), type: 'priceNoticeDismiss', payload: { key, id }, createdAt: Date.now() });
+            renderPriceNotices();
+        }
+        function pnTimeText(ts) {
+            const d = new Date(ts), n = new Date();
+            const sd = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+            const diff = Math.round((sd(n) - sd(d)) / 86400000);
+            const tm = d.toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' });
+            return (diff <= 0 ? 'اليوم' : (diff === 1 ? 'أمس' : d.toLocaleDateString('ar-LY'))) + ' — ' + tm;
+        }
+        function pnBind(card) {
+            let sx = 0, sy = 0, dx = 0, drag = false, decided = false, pid = null, t0 = 0;
+            card.addEventListener('pointerdown', e => {
+                if (e.target.closest('.pn-x')) return;
+                sx = e.clientX; sy = e.clientY; dx = 0; drag = true; decided = false; pid = e.pointerId; t0 = Date.now();
+                card.style.transition = 'none';
+            });
+            card.addEventListener('pointermove', e => {
+                if (!drag || e.pointerId !== pid) return;
+                const mx = e.clientX - sx, my = e.clientY - sy;
+                if (!decided) {
+                    if (Math.abs(mx) < 8 && Math.abs(my) < 8) return;
+                    decided = true;
+                    if (Math.abs(my) > Math.abs(mx)) { drag = false; card.style.transition = ''; card.style.transform = ''; return; }
+                    try { card.setPointerCapture(pid); } catch (err) {}
+                }
+                dx = mx;
+                card.style.transform = 'translateX(' + dx + 'px)';
+                card.style.opacity = String(Math.max(0.15, 1 - Math.abs(dx) / 260));
+            });
+            const end = () => {
+                if (!drag) return;
+                drag = false;
+                card.style.transition = '';
+                const fast = Math.abs(dx) / Math.max(1, Date.now() - t0) > 0.5;
+                if (Math.abs(dx) > 90 || (Math.abs(dx) > 40 && fast)) {
+                    card.style.transform = 'translateX(' + (dx > 0 ? '120%' : '-120%') + ')';
+                    card.style.opacity = '0';
+                    setTimeout(() => pnDismiss(card.getAttribute('data-id')), 190);
+                } else { card.style.transform = ''; card.style.opacity = ''; }
+            };
+            card.addEventListener('pointerup', end);
+            card.addEventListener('pointercancel', end);
+            const x = card.querySelector('.pn-x');
+            if (x) x.addEventListener('click', e => {
+                e.stopPropagation();
+                card.style.opacity = '0'; card.style.transform = 'translateY(-8px)';
+                setTimeout(() => pnDismiss(card.getAttribute('data-id')), 170);
+            });
+        }
+        function renderPriceNotices() {
+            const box = document.getElementById('price-notices');
+            if (!box) return;
+            pnPrune();
+            const acc = (typeof activeCashier === 'string') ? activeCashier : '';
+            if (!acc || acc === 'غير محدد') { if (pnSig !== '') { box.innerHTML = ''; pnSig = ''; } return; }
+            const dis = new Set(pnDismissed[pnKey(acc)] || []);
+            const items = pnList
+                .filter(n => n && !dis.has(n.id))
+                .map(n => ({ n, ch: (n.changes || []).filter(c => Number(c.from) !== Number(c.to)) }))
+                .filter(x => x.ch.length)
+                .sort((a, b) => Number(b.n.ts) - Number(a.n.ts));
+            const sig = acc + '#' + items.map(x => x.n.id + ':' + x.ch.map(c => c.f + c.from + c.to).join(',')).join('|');
+            if (sig === pnSig) return;
+            pnSig = sig;
+            box.innerHTML = items.map(x => {
+                const lines = x.ch.map(c => '<div class="pn-line"><span class="pn-f">' + escapeHtml(c.f) + '</span><span><bdi class="pn-old">' + formatNum(Number(c.from)) + '</bdi> ← <bdi class="pn-new">' + formatNum(Number(c.to)) + ' <small>د.ل</small></bdi></span></div>').join('');
+                return '<div class="pn-card" data-id="' + escapeHtml(String(x.n.id)) + '"><button type="button" class="pn-x" aria-label="إغلاق">×</button>' +
+                    '<div class="pn-title">' + escapeHtml(x.n.name || '') + '<small>تغيّر السعر</small></div>' + lines +
+                    '<div class="pn-time">' + escapeHtml(pnTimeText(Number(x.n.ts))) + '</div></div>';
+            }).join('');
+            box.querySelectorAll('.pn-card').forEach(pnBind);
+        }
+        document.addEventListener('DOMContentLoaded', () => { renderPriceNotices(); });
+        setInterval(renderPriceNotices, 60000);
+
+        /* ---- statistics of each cashier / the manager (under the totals) ---- */
+        let statsByCashier = [];
+        function statsCashierOf(s) { return (s && s.cashier) ? String(s.cashier) : 'غير محدد'; }
+        function renderStatsCashiers(list, r) {
+            const box = document.getElementById('stats-cashiers');
+            if (!box) return;
+            try {
+                const groups = new Map();
+                (list || []).forEach(s => { const k = statsCashierOf(s); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(s); });
+                const rows = [];
+                groups.forEach((arr, name) => {
+                    const cst = computeStats(arr, r.from, r.to, r.days);
+                    if (!cst.customers && Math.abs(cst.rev) < 1e-9 && Math.abs(cst.profit) < 1e-9 && Math.abs(cst.paid) < 1e-9) return;
+                    cst._who = name;
+                    rows.push({ name, st: cst });
+                });
+                rows.sort((a, b) => b.st.rev - a.st.rev);
+                statsByCashier = rows;
+                if (!rows.length) { box.innerHTML = ''; return; }
+                box.innerHTML = '<div class="sc-title">حسب الكاشير</div>' + rows.map((x, i) =>
+                    '<div class="sc-card"><div class="sc-name">' + escapeHtml(x.name) + '</div><div class="stats-grid" style="margin-bottom:0;">' +
+                    '<div class="stat-tile stat-sm stat-tap" onclick="showStatsSplit(\'sales\', statsByCashier[' + i + '].st)"><div class="stat-t">المبيعات</div><div class="stat-v">' + formatNum(x.st.rev) + ' <small>د.ل</small></div><div class="stat-hint">اضغط للتفاصيل</div></div>' +
+                    '<div class="stat-tile stat-sm stat-tap" onclick="showStatsSplit(\'profit\', statsByCashier[' + i + '].st)"><div class="stat-t">الأرباح</div><div class="stat-v" style="color:#2e7d32;">' + formatNum(x.st.profit) + ' <small>د.ل</small></div><div class="stat-hint">اضغط للتفاصيل</div></div>' +
+                    '</div></div>').join('');
+            } catch (e) { console.error('Could not draw the cashier statistics', e); box.innerHTML = ''; }
+        }
+
+        /* ---- bulk-text box: wavy underline under what the review would not understand ---- */
+        function bkAttachUnderline(ta, mirror) {
+            let cache = new Map(), timer = 0;
+            const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const isNum = w => /^\d+(\.\d+)?$/.test(w);
+            const paint = () => {
+                const lines = ta.value.split('\n');
+                mirror.innerHTML = lines.map(line => {
+                    const ranges = cache.get(line);
+                    if (!ranges || !ranges.length) return esc(line);
+                    let out = '', pos = 0;
+                    ranges.forEach(rg => { out += esc(line.slice(pos, rg.s)) + '<span class="bk-u ' + rg.c + '">' + esc(line.slice(rg.s, rg.e)) + '</span>'; pos = rg.e; });
+                    return out + esc(line.slice(pos));
+                }).join('\n') + '\n ';
+                mirror.scrollTop = ta.scrollTop;
+            };
+            const compute = () => {
+                timer = 0;
+                const text = ta.value;
+                const next = new Map();
+                if (text.trim() && text.length <= 40000) {
+                    try {
+                        const state = bkParseText(text);
+                        const res = bkCompute(state);
+                        const lvByLn = new Map(), rvByLn = new Map();
+                        res.carts.forEach(cv => cv.lines.forEach(lv => lvByLn.set(lv.ln, lv)));
+                        res.repays.forEach(rv => rvByLn.set(rv.ln, rv));
+                        const flat = [];
+                        state.carts.forEach(c => c.lines.forEach(ln => flat.push(ln)));
+                        let idx = 0;
+                        text.split('\n').forEach(line => {
+                            const key = line.replace(/[\u200b-\u200f\u202a-\u202e\ufeff]/g, '').trim();
+                            if (!key) return;
+                            if (!(idx < flat.length && flat[idx].raw === key)) return;
+                            const group = [flat[idx++]];
+                            while (idx < flat.length && flat[idx].raw === key && flat[idx].partLabel && group[group.length - 1].partLabel) group.push(flat[idx++]);
+                            let bad = false, discWord = false;
+                            const words = [];
+                            group.forEach(ln => {
+                                const rv = rvByLn.get(ln), lv = lvByLn.get(ln);
+                                if (rv) { if (rv.status === 'bad') bad = true; return; }
+                                if (!lv) return;
+                                if (lv.status === 'bad') bad = true;
+                                else if (lv.status === 'warn') lv.msgs.forEach(m => {
+                                    if (m.text === 'كلمة الخصم بدون مبلغ، تم تجاهلها') discWord = true;
+                                    const mm = /لم أستخدم هذه الأجزاء من السطر، راجعها: «(.*)»/.exec(m.text);
+                                    if (mm) mm[1].split('، ').forEach(w => { if (w) words.push(w); });
+                                });
+                            });
+                            const ranges = [];
+                            if (bad) {
+                                ranges.push({ s: line.length - line.trimStart().length, e: line.trimEnd().length, c: 'bad' });
+                            } else if (words.length || discWord) {
+                                const nw = new Set(words.map(w => normalizeSearchText(w)));
+                                const found = [];
+                                const re = /\S+/g;
+                                let m;
+                                while ((m = re.exec(line))) found.push({ s: m.index, e: m.index + m[0].length, wn: normalizeSearchText(m[0]) });
+                                const numSeen = new Set();
+                                for (let i = found.length - 1; i >= 0; i--) {
+                                    const x = found[i];
+                                    if (!x.wn) continue;
+                                    let hit = false;
+                                    if (discWord && typeof BK !== 'undefined' && BK.disc.test(x.wn)) hit = true;
+                                    else if (isNum(x.wn)) { if (nw.has(x.wn) && !numSeen.has(x.wn)) { hit = true; numSeen.add(x.wn); } }
+                                    else if (nw.has(x.wn)) hit = true;
+                                    else nw.forEach(tk => { if (tk.length >= 2 && !isNum(tk) && x.wn.includes(tk)) hit = true; });
+                                    if (hit) ranges.push({ s: x.s, e: x.e, c: 'warn' });
+                                }
+                                ranges.sort((a, b) => a.s - b.s);
+                            }
+                            if (ranges.length) next.set(line, ranges);
+                        });
+                    } catch (e) { console.error('Could not check the text', e); }
+                }
+                cache = next;
+                paint();
+            };
+            const refresh = () => { paint(); clearTimeout(timer); timer = setTimeout(compute, 400); };
+            ta.addEventListener('input', refresh);
+            ta.addEventListener('scroll', () => { mirror.scrollTop = ta.scrollTop; }, { passive: true });
+            setTimeout(compute, 80);
+            return refresh;
         }
     </script>
 </body>
