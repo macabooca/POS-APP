@@ -4403,6 +4403,9 @@
         function showTab(tab, element) {
             document.querySelectorAll('.view-page').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            /* v69: the sales list is normally already drawn in the background, so the page just appears complete (no delay, no flash);
+               only if something changed a moment ago (not drawn yet) it is drawn here, before the page appears */
+            if (tab === 'sales' && (!salesListFresh || salesListDay !== new Date().toDateString())) { try { renderSalesNow(); } catch (e) { console.warn(e); } }
             document.getElementById(`view-${tab}`).style.display = 'block';
             
             const checkoutBar = document.querySelector('.fixed-checkout-bar');
@@ -4412,7 +4415,6 @@
 
             document.body.classList.toggle('pos-active', tab === 'pos');
             if (element) element.classList.add('active');
-            if (tab === 'sales') requestAnimationFrame(() => setTimeout(() => { if (document.getElementById('view-sales').style.display !== 'none') renderSalesNow(); }, 0));
         }
 
         /* ---------- Statistics (v35): today / a chosen day / last 7 days / last 30 days ---------- */
@@ -5442,9 +5444,22 @@
         const SALES_SEARCH_CAP = 300;
 
         /* The history is only drawn while its page is open (it is drawn when you open it). */
+        let salesListFresh = false, salesListDay = '', salesPrerenderTimer = 0;
         function renderSales() {
             const view = document.getElementById('view-sales');
-            if (view && view.style.display === 'none') return;
+            if (view && view.style.display === 'none') {
+                /* v69: while the page is closed, draw the list quietly in the background when the phone is idle */
+                salesListFresh = false;
+                clearTimeout(salesPrerenderTimer);
+                salesPrerenderTimer = setTimeout(() => {
+                    const run = () => {
+                        const v = document.getElementById('view-sales');
+                        if (v && v.style.display === 'none' && !salesListFresh) { try { renderSalesNow(); } catch (e) {} }
+                    };
+                    if (window.requestIdleCallback) requestIdleCallback(run, { timeout: 3000 }); else run();
+                }, 1200);
+                return;
+            }
             renderSalesNow();
         }
 
@@ -5462,6 +5477,7 @@
         }
 
         function renderSalesNow() {
+            salesListFresh = true; salesListDay = new Date().toDateString();
             if (typeof renderQuickNotes === 'function') renderQuickNotes();
             const container = document.getElementById('sales-list');
             const searchBox = document.getElementById('sales-search');
