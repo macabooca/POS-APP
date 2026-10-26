@@ -1361,6 +1361,111 @@
         .bk-u { text-decoration-line: underline; text-decoration-style: wavy; text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
         .bk-u.bad { text-decoration-color: rgba(211, 47, 47, 0.6); }
         .bk-u.warn { text-decoration-color: rgba(230, 130, 0, 0.8); }
+        /* ===== v70 ===== */
+        .bk-note-card { border-style: dashed; border-color: var(--teal-primary); }
+        .bk-note-body { white-space: pre-wrap; font-size: 14px; font-weight: 700; color: #12283a; background: #fff8e1; border-radius: 10px; padding: 8px 10px; margin-top: 6px; }
+        .bk-note-hint { font-size: 12px; color: var(--muted); margin-top: 5px; }
+        .bk-note-sec { margin-top: 8px; border-top: 1px dashed #b8c3cc; padding-top: 6px; }
+        .bk-note-sec-t { font-size: 12.5px; font-weight: 800; color: var(--teal-primary); margin-bottom: 4px; }
+        .bk-note-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #fff8e1; border-radius: 9px; padding: 6px 8px; margin-bottom: 4px; font-size: 13.5px; font-weight: 700; color: #12283a; }
+        .bk-note-row small { color: var(--muted); font-weight: 600; flex: none; }
+        .bk-note-row button { flex: none; border: 1px solid #f3c5c5; background: #fff; color: #d32f2f; border-radius: 9px; padding: 3px 9px; font-size: 12px; font-weight: 700; font-family: inherit; }
+        html[data-theme="dark"] .bk-note-body, html[data-theme="dark"] .bk-note-row { background: #3a3220; color: #f1e7cc; }
+        .sync-cf-ov { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 10200; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .sync-cf-box { background: var(--card-bg, #fff); color: var(--text-color, #12283a); border-radius: 20px; width: 100%; max-width: 420px; max-height: 85vh; display: flex; flex-direction: column; padding: 14px; direction: rtl; box-shadow: 0 12px 40px rgba(0,0,0,.3); }
+        .sync-cf-head { font-weight: 800; font-size: 17px; text-align: center; color: #d32f2f; margin-bottom: 10px; }
+        .sync-cf-list { overflow-y: auto; flex: 1 1 auto; min-height: 0; margin-bottom: 10px; }
+        .sync-cf-item { border-radius: 12px; padding: 9px 10px; margin-bottom: 8px; border: 1px solid #f3c5c5; background: #fdecec; }
+        .sync-cf-item.warn { border-color: #f5d39b; background: #fff4e0; }
+        .sync-cf-t { font-weight: 800; font-size: 14.5px; margin-bottom: 4px; color: #12283a; }
+        .sync-cf-x { font-size: 13.5px; line-height: 1.6; white-space: pre-wrap; color: #33414d; }
+        html[data-theme="dark"] .sync-cf-item { background: #3a2224; border-color: #6b3a3d; }
+        html[data-theme="dark"] .sync-cf-item.warn { background: #3a3020; border-color: #6b5530; }
+        html[data-theme="dark"] .sync-cf-t, html[data-theme="dark"] .sync-cf-x { color: #e6eef5; }
+        .sync-cf-box .btn { width: 100%; padding: 12px; font-size: 16px; }
+        .pg-cell.pg-inactive { opacity: 0.5; }
+        .pg-cell.pg-press { transform: scale(0.97); transition: transform .3s; }
+        .pg-off { position: absolute; top: 5px; right: 5px; background: rgba(60,60,60,.85); color: #fff; font-size: 10.5px; font-weight: 800; border-radius: 8px; padding: 2px 6px; }
+        .act-ov { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 10060; display: flex; align-items: flex-end; }
+        .act-sh { width: 100%; background: var(--card-bg, #fff); border-radius: 22px 22px 0 0; padding: 12px 14px calc(16px + env(safe-area-inset-bottom, 0px)); direction: rtl; }
+        .act-t { text-align: center; font-weight: 800; font-size: 15.5px; color: var(--navy); margin-bottom: 10px; }
+        .act-t small { color: var(--muted); font-weight: 700; }
+        .act-b { display: block; width: 100%; border: none; background: #e3f4f2; color: var(--teal-primary); font-family: inherit; font-size: 16px; font-weight: 800; border-radius: 14px; padding: 13px; margin-bottom: 8px; cursor: pointer; }
+        .act-b.red { background: #fdecec; color: #d32f2f; }
+        .act-b.cancel { background: var(--red-alert, #d32f2f); color: #fff; }
+        html[data-theme="dark"] .act-b { background: #1b3a3e; } html[data-theme="dark"] .act-b.red { background: #3a2224; color: #ff8a80; } html[data-theme="dark"] .act-b.cancel { background: var(--red-alert, #d32f2f); color: #fff; }
+        .pa-gal { display: flex; gap: 8px; overflow-x: auto; margin: 10px 0 2px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+        .pa-gal img { height: 150px; max-width: 80%; flex: none; border-radius: 12px; object-fit: cover; scroll-snap-align: start; background: #e8ecf0; }
+        .pa-det { margin: 10px 0 2px; border-top: 1px solid var(--border-color, #e3e9ee); padding-top: 6px; }
+        .pa-dr { display: flex; justify-content: space-between; gap: 8px; font-size: 13.5px; padding: 3px 0; color: var(--muted); }
+        .pa-dr b { color: var(--navy); }
+        .pa-notes { font-size: 13.5px; color: var(--navy); white-space: pre-wrap; line-height: 1.6; margin-top: 4px; }
+        .pa-notes span { display: block; color: var(--muted); font-size: 12px; font-weight: 700; }
+        .pic-viewer { position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 10100; display: flex; align-items: center; justify-content: center; padding: 10px; }
+        .pic-viewer img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+        .pf-pic-tap { position: relative; cursor: pointer; flex-direction: column; gap: 2px; }
+        .pf-pic-hint { font-size: 10.5px; color: #6f7f8f; font-weight: 700; line-height: 1.25; padding: 0 4px; }
+        .pf-pic-badge { position: absolute; bottom: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; display: flex; align-items: center; justify-content: center; }
+        .pf-pic-badge svg { width: 15px; height: 15px; }
+        .pf-pic.pf-pic-tap img { position: absolute; inset: 0; }
+        .pf-extras { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 8px; }
+        .pf-x { flex: none; width: 64px; height: 64px; border-radius: 12px; overflow: hidden; border: 1px solid #d5dde4; background: #ffffff; padding: 0; cursor: pointer; font-family: inherit; }
+        .pf-x img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .pf-x-add { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--teal-primary); border: 1.5px dashed var(--teal-primary); background: rgba(19,126,132,.06); }
+        .pf-x-add span { font-size: 22px; font-weight: 800; line-height: 1; }
+        .pf-x-add small { font-size: 9.5px; font-weight: 700; }
+        html[data-theme="dark"] .pf-x { background: #1b2b38; border-color: #2d4457; }
+        .pc-tile { display: flex; align-items: center; gap: 10px; width: 100%; text-align: right; background: #dbe1e7; border: 1px solid #ced5dc; border-radius: 16px; padding: 12px; margin: 0 0 12px; font-family: inherit; cursor: pointer; box-shadow: 0 2px 10px rgba(18, 40, 58, 0.06); }
+        html[data-theme="dark"] .pc-tile { background: #213344; border-color: #2d4457; }
+        .pc-tile .stat-ic { margin: 0; flex: none; }
+        .pc-tile-t { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+        .pc-tile-t b { color: var(--navy); font-size: 14.5px; }
+        .pc-tile-t small { color: var(--muted); font-size: 12px; }
+        .pc-tile-go { font-size: 22px; color: var(--teal-primary); font-weight: 800; }
+        .pc-ov { position: fixed; inset: 0; background: var(--bg-color, #f4f7f9); z-index: 10040; overflow-y: auto; padding: calc(10px + env(safe-area-inset-top, 0px)) 12px calc(16px + env(safe-area-inset-bottom, 0px)); direction: rtl; }
+        .pc-box { max-width: 680px; margin: 0 auto; }
+        .pc-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .pc-head b { font-size: 17px; color: var(--navy); }
+        .pc-head .btn { padding: 6px 14px; }
+        .pc-tabs, .pc-ranges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+        .pc-metric { display: flex; gap: 6px; margin-bottom: 8px; }
+        .pc-metric .mode-btn { flex: 1; }
+        .pc-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 6px; }
+        .pc-bw { display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; font-size: 13.5px; font-weight: 800; }
+        .pc-best { color: #2e7d32; } .pc-worst { color: #d32f2f; }
+        .pc-chart { background: var(--card-bg, #fff); border: 1px solid var(--border-color, #e3e9ee); border-radius: 16px; padding: 10px 6px; overflow-x: auto; }
+        .pc-bars { display: flex; align-items: stretch; gap: 4px; direction: rtl; min-height: 240px; }
+        .pc-bars.many .pc-col { min-width: 24px; }
+        .pc-col { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; cursor: pointer; }
+        .pc-col.sel .pc-l { color: var(--teal-primary); font-weight: 800; }
+        .pc-col.sel .pc-track { background: rgba(19,126,132,.08); border-radius: 6px; }
+        .pc-v { font-size: 10px; color: var(--muted); height: 14px; white-space: nowrap; font-weight: 700; }
+        .pc-track { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; min-height: 190px; }
+        .pc-bar { width: 72%; max-width: 34px; background: var(--teal-primary); border-radius: 6px 6px 2px 2px; }
+        .pc-bar.best { background: #2e7d32; } .pc-bar.worst { background: #d32f2f; }
+        .pc-l { font-size: 10.5px; color: var(--muted); margin-top: 4px; white-space: nowrap; }
+        .pc-pick { font-size: 13.5px; font-weight: 800; color: var(--navy); margin-top: 8px; min-height: 20px; }
+        .pc-empty { text-align: center; color: var(--muted); padding: 40px 0; }
+        .ml-group-t { font-size: 12.5px; font-weight: 800; color: var(--muted); margin: 12px 4px 6px; }
+        .ml-group { background: var(--card-bg, #fff); border: 1px solid var(--border-color, #e3e9ee); border-radius: 16px; overflow: hidden; }
+        .ml-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 12px; border: none; background: transparent; font-family: inherit; text-align: right; cursor: pointer; color: var(--navy); border-bottom: 1px solid var(--border-color, #e9eef2); }
+        .ml-group > .ml-row:last-child { border-bottom: none; }
+        .ml-ic { width: 32px; height: 32px; flex: none; border-radius: 10px; background: #e3f4f2; color: var(--teal-primary); display: flex; align-items: center; justify-content: center; }
+        html[data-theme="dark"] .ml-ic { background: #1b3a3e; }
+        .ml-ic svg { width: 19px; height: 19px; }
+        .ml-t { flex: 1; font-size: 15px; font-weight: 700; }
+        .ml-val { font-size: 13px; color: var(--muted); font-weight: 700; }
+        .ml-chev { width: 18px; height: 18px; color: var(--muted); flex: none; }
+        .ml-switch { position: relative; width: 46px; height: 28px; flex: none; }
+        .ml-switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 1; }
+        .ml-switch i { position: absolute; inset: 0; border-radius: 14px; background: #c9d2da; transition: background .2s; }
+        .ml-switch i::after { content: ""; position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: right .2s; }
+        .ml-switch input:checked + i { background: var(--teal-primary); }
+        .ml-switch input:checked + i::after { right: 21px; }
+        .more-sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-weight: 800; color: var(--navy); font-size: 16px; }
+        .more-back { display: flex; align-items: center; gap: 2px; border: none; background: #e3f4f2; color: var(--teal-primary); font-family: inherit; font-weight: 800; font-size: 14px; border-radius: 10px; padding: 6px 10px; cursor: pointer; }
+        .more-back svg { width: 16px; height: 16px; }
+        html[data-theme="dark"] .more-back { background: #1b3a3e; }
     </style>
 </head>
 <body onclick="handleGlobalClick(event)">
@@ -1468,6 +1573,15 @@
                         <button class="qty-btn" onclick="adjustSelQty(-1)">-</button>
                         <input type="number" id="sel-unit-qty-input" placeholder="" onfocus="this.select(); handlePosInputFocus(this)" oninput="onSelUnitQtyChange(this.value)" style="margin:0; text-align:center;">
                         <button class="qty-btn" onclick="adjustSelQty(1)">+</button>
+                    </div>
+                </div>
+
+                <div id="custom-kg-box" style="display:none; margin-bottom:8px;">
+                    <label class="checkbox-container" style="margin-top:0;"><input type="checkbox" id="sel-custom-kg-check" onchange="onCustomKgCheck()"> وزن مخصص</label>
+                    <div id="custom-kg-row" style="display:none; margin-top:6px;">
+                        <span class="form-label">الوزن الفعلي (كجم)</span>
+                        <input type="number" id="sel-custom-kg" placeholder="" onfocus="handlePosInputFocus(this)" oninput="applyCustomKg()" style="margin:0;">
+                        <div id="custom-kg-info" style="font-size:11px; color:var(--muted); margin-top:4px;"></div>
                     </div>
                 </div>
 
@@ -1592,6 +1706,13 @@
                     </label>
                 </div>
                 <input type="text" id="cart-note" placeholder="اكتب الملاحظة" style="display:none;">
+                <div class="cart-checks-grid">
+                    <label class="checkbox-container cart-check">
+                        <input type="checkbox" id="cart-transfer" onchange="onCartTransferChange(this)">
+                        <span>تحويل مصرفي</span>
+                    </label>
+                </div>
+                <div id="cart-transfer-info" style="display:none; font-size:13px; color:var(--teal-primary); font-weight:700; margin-top:2px;"></div>
             </div>
         </div>
 
@@ -1705,8 +1826,15 @@
                     <div class="stat-tile stat-tap" onclick="showStatsSplit('profit')"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div><div class="stat-t">الأرباح</div><div class="stat-v" style="color:#2e7d32;"><span id="stat-today-profit">0</span> <small>د.ل</small></div><div class="stat-hint">اضغط للتفاصيل</div></div>
                     <div class="stat-tile"><div class="stat-ic stat-ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3.2 3.2 0 0 1 0 5.6"/><path d="M18 14.4c1.8.8 3 2.6 3 5.6"/></svg></div><div class="stat-t">عدد المشترين</div><div class="stat-v"><span id="stat-today-customers">0</span></div></div>
                     <div class="stat-tile"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 10"/></svg></div><div class="stat-t">ديون سُددت (محسوبة ضمن المبيعات)</div><div class="stat-v"><span id="stat-today-debt-paid">0</span> <small>د.ل</small></div></div>
+                    <div class="stat-tile"><div class="stat-ic stat-ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4.5 21 10"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3.5 20.5h17"/></svg></div><div class="stat-t">تحويلات مصرفية (محسوبة ضمن المبيعات)</div><div class="stat-v"><span id="stat-transfer">0</span> <small>د.ل</small></div></div>
+                    <div class="stat-tile"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6.5" width="18" height="11" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6.5 9.5v5M17.5 9.5v5"/></svg></div><div class="stat-t">النقد في الدرج (المبيعات بدون التحويلات)</div><div class="stat-v"><span id="stat-cash-drawer">0</span> <small>د.ل</small></div></div>
                 </div>
                 <div id="stats-cashiers"></div>
+                <button type="button" class="pc-tile" onclick="openPerfCharts()">
+                    <span class="stat-ic stat-ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V11M9.5 20V5M15 20V9M20.5 20V14"/><path d="M2.5 20.5h19"/></svg></span>
+                    <span class="pc-tile-t"><b>أداء الساعات والأيام والأسابيع والأشهر</b><small>رسوم بيانية بالأعمدة للمبيعات والأرباح — اضغط للعرض</small></span>
+                    <span class="pc-tile-go">‹</span>
+                </button>
                 <div class="stats-grid">
                     <div class="stat-tile stat-sm stat-tap" onclick="showStatsDiscFree('free')"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="9" width="17" height="11" rx="2"/><path d="M12 9v11M3.5 13h17"/><path d="M12 9c-1.5-4-5.5-4-5.5-1.6C6.5 9 9 9 12 9zM12 9c1.5-4 5.5-4 5.5-1.6C17.5 9 15 9 12 9z"/></svg></div><div class="stat-t">منتجات مجانية (قيمتها)</div><div class="stat-v"><span id="stat-today-free">0</span> <small>د.ل</small></div></div>
                     <div class="stat-tile stat-sm stat-tap" onclick="showStatsDiscFree('discount')"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18"/><circle cx="7.5" cy="7.5" r="2.3"/><circle cx="16.5" cy="16.5" r="2.3"/></svg></div><div class="stat-t">الخصومات (على المنتجات والفواتير)</div><div class="stat-v"><span id="stat-today-discounts">0</span> <small>د.ل</small></div></div>
@@ -1735,17 +1863,42 @@
     <div id="view-more" class="view-page" style="display: none;">
         <div class="card">
             <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18.5" cy="12" r="1.3"/></svg></span>الإعدادات (خاص بالمدير)</h3>
-            <div style="font-weight:700; margin-bottom:6px;">مظهر التطبيق</div>
-            <div class="theme-choice">
+            <!-- v70: a settings list like other apps; each row opens its own page -->
+            <div id="more-list">
+                <div class="ml-group-t">المظهر والاستخدام</div>
+                <div class="ml-group">
+                    <label class="ml-row ml-switch-row"><span class="ml-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></span><span class="ml-t">الوضع الداكن</span><span class="ml-switch"><input type="checkbox" id="ml-dark" onchange="setTheme(this.checked ? 'dark' : 'light')"><i></i></span></label>
+                    <button type="button" class="ml-row" onclick="openMoreSec('bright')"><span class="ml-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg></span><span class="ml-t">سطوع التطبيق</span><span class="ml-val" id="ml-v-bright"></span><svg class="ml-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+                    <button type="button" class="ml-row" onclick="openMoreSec('vibe')"><span class="ml-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7.5" y="3.5" width="9" height="17" rx="2"/><path d="M4 8.5v7M20 8.5v7M1.8 10.5v3M22.2 10.5v3"/></svg></span><span class="ml-t">قوة الاهتزاز عند الضغط</span><span class="ml-val" id="ml-v-vibe"></span><svg class="ml-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+                </div>
+                <div class="ml-group-t">الأمان والحسابات</div>
+                <div class="ml-group">
+                    <button type="button" class="ml-row" onclick="openMoreSec('bio')"><span class="ml-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 11v4M8.5 7.5a5 5 0 0 1 8.5 3.5v2.5M7 12v1.5a5 5 0 0 0 2 4M12 21a9 9 0 0 1-6-2.5M17 16.5a9 9 0 0 1-1.5 3"/><path d="M5 9.5a7.5 7.5 0 0 1 13.5-3"/></svg></span><span class="ml-t">البصمة لكلمة سر المدير</span><span class="ml-val" id="ml-v-bio"></span><svg class="ml-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+                    <button type="button" class="ml-row" onclick="openMoreSec('pw')"><span class="ml-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="3.5"/><path d="M10.5 12.5 20 3M16 7l2.5 2.5M13.5 9.5 16 12"/></svg></span><span class="ml-t">كلمات السر وحسابات الكاشيرين</span><svg class="ml-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+                </div>
+                <div class="ml-group-t">البيانات</div>
+                <div class="ml-group">
+                    <button type="button" class="ml-row" onclick="openMoreSec('storage')"><span class="ml-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6M4.5 12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3"/></svg></span><span class="ml-t">مساحة التخزين</span><span class="ml-val" id="ml-v-storage"></span><svg class="ml-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+                    <button type="button" class="ml-row" onclick="openMoreSec('bk')"><span class="ml-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg></span><span class="ml-t">النسخ الاحتياطي والاستعادة</span><svg class="ml-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+                    <button type="button" class="ml-row" onclick="openMoreSec('cloud')"><span class="ml-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8.5 4.8 4.8 0 0 1 17.5 18z"/></svg></span><span class="ml-t">المزامنة السحابية</span><span class="ml-val" id="ml-v-cloud"></span><svg class="ml-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+                </div>
+            </div>
+            <div style="display:none;"><div class="theme-choice">
                 <button class="chip-btn" id="theme-btn-light" onclick="setTheme('light')">فاتح</button>
                 <button class="chip-btn" id="theme-btn-dark" onclick="setTheme('dark')">داكن</button>
             </div>
-            <div style="font-weight:700; margin:14px 0 6px;">سطوع التطبيق: <span id="brightness-text">100%</span></div>
+            </div>
+            <div class="more-sec" id="more-sec-bright" style="display:none;">
+                <div class="more-sec-head"><button type="button" class="more-back" onclick="closeMoreSec()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg> رجوع</button><span>سطوع التطبيق</span></div>
+                <div style="font-weight:700; margin:14px 0 6px;">سطوع التطبيق: <span id="brightness-text">100%</span></div>
             <input type="range" id="brightness-range" min="30" max="100" step="5" value="100" oninput="setBrightness(this.value)">
             <div style="font-size:12px; color:var(--muted); margin:4px 0 14px;">يخفّف إضاءة شاشة التطبيق فقط (لا يغيّر سطوع الهاتف نفسه).</div>
 
-            <hr style="margin: 15px 0; border-color: #eee;">
-            <div style="font-weight:700; margin-bottom:6px;">قوة الاهتزاز عند الضغط: <span id="vibration-level-text"></span></div>
+            
+            </div>
+            <div class="more-sec" id="more-sec-vibe" style="display:none;">
+                <div class="more-sec-head"><button type="button" class="more-back" onclick="closeMoreSec()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg> رجوع</button><span>قوة الاهتزاز</span></div>
+                <div style="font-weight:700; margin-bottom:6px;">قوة الاهتزاز عند الضغط: <span id="vibration-level-text"></span></div>
             <div class="vibe-levels" id="vibe-levels">
                 <button class="chip-btn" onclick="setVibrationLevel(0)">إيقاف</button>
                 <button class="chip-btn" onclick="setVibrationLevel(1)">1</button>
@@ -1756,19 +1909,20 @@
             </div>
             <div style="font-size:12px; color:var(--muted); margin:4px 0 14px;">1 = خفيف جداً، 5 = قوي. (لا يعمل الاهتزاز على أجهزة آيفون)</div>
 
-            <hr style="margin: 15px 0; border-color: #eee;">
-            <div style="font-weight:700; margin-bottom:6px;">البصمة لكلمة سر المدير</div>
+            
+            </div>
+            <div class="more-sec" id="more-sec-bio" style="display:none;">
+                <div class="more-sec-head"><button type="button" class="more-back" onclick="closeMoreSec()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg> رجوع</button><span>البصمة لكلمة سر المدير</span></div>
+                <div style="font-weight:700; margin-bottom:6px;">البصمة لكلمة سر المدير</div>
             <div id="bio-status" style="font-size:13px; color:var(--muted); margin-bottom:8px;"></div>
             <button class="btn btn-teal" id="bio-toggle-btn" style="width:100%; margin-bottom:6px;" onclick="toggleManagerBiometric()">تفعيل البصمة</button>
             <div style="font-size:12px; color:var(--muted); margin-bottom:10px;">تنبيه: الهاتف يقبل أي بصمة محفوظة فيه (أو قفل الشاشة)، فإذا كانت بصمة الكاشير محفوظة على نفس الهاتف ستعمل أيضاً. كلمة السر تبقى متاحة دائماً.</div>
 
-            <hr style="margin: 15px 0; border-color: #eee;">
-            <p style="margin:0 0 4px;">مساحة التخزين المستخدمة: <strong id="stat-storage">0%</strong></p>
-            <p id="stat-storage-db-row" style="display:none; margin:0;">حجم ما يستخدمه التطبيق من مساحة الجهاز: <strong id="stat-storage-db">-</strong></p>
-
-            <hr style="margin: 15px 0; border-color: #eee;">
-            <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="3.5"/><path d="M10.5 12.5 20 3M16 7l2.5 2.5M13.5 9.5 16 12"/></svg></span>إدارة كلمات السر والحسابات</h3>
-            <div class="cashier-item">
+            
+            </div>
+            <div class="more-sec" id="more-sec-pw" style="display:none;">
+                <div class="more-sec-head"><button type="button" class="more-back" onclick="closeMoreSec()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg> رجوع</button><span>كلمات السر وحسابات الكاشيرين</span></div>
+                <div class="cashier-item">
                 <div>
                     <strong>المدير</strong>
                     <div style="font-size:12px; color:#777;">كلمة السر: <span id="manager-pin-display" dir="ltr" data-shown="0">••••</span></div>
@@ -1778,18 +1932,32 @@
             <button class="btn btn-teal" style="width: 100%; margin-bottom: 8px;" onclick="changeManagerPassword()">تغيير كلمة سر المدير</button>
             <button class="btn btn-teal" style="width: 100%; margin-bottom: 15px;" onclick="manageCashierAccounts()">إدارة حسابات وكلمات سر الكاشيرين</button>
 
-            <hr style="margin: 15px 0; border-color: #eee;">
-            <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg></span>النسخ الاحتياطي والاطلاع</h3>
-            <button class="btn btn-teal" style="width: 100%; margin-bottom: 8px;" onclick="exportBackup()">تحميل نسخة احتياطية (.json)</button>
+            
+            </div>
+            <div class="more-sec" id="more-sec-storage" style="display:none;">
+                <div class="more-sec-head"><button type="button" class="more-back" onclick="closeMoreSec()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg> رجوع</button><span>مساحة التخزين</span></div>
+                <p style="margin:0 0 4px;">مساحة التخزين المستخدمة: <strong id="stat-storage">0%</strong></p>
+            <p id="stat-storage-db-row" style="display:none; margin:0;">حجم ما يستخدمه التطبيق من مساحة الجهاز: <strong id="stat-storage-db">-</strong></p>
+
+            
+            </div>
+            <div class="more-sec" id="more-sec-bk" style="display:none;">
+                <div class="more-sec-head"><button type="button" class="more-back" onclick="closeMoreSec()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg> رجوع</button><span>النسخ الاحتياطي والاستعادة</span></div>
+                <button class="btn btn-teal" style="width: 100%; margin-bottom: 8px;" onclick="exportBackup()">تحميل نسخة احتياطية (.json)</button>
             
             <input type="file" id="restore-file" accept=".json, application/json, text/plain" style="display:none" onchange="importBackup(event)">
             <button class="btn btn-teal" style="width: 100%;" onclick="requireManagerPass(() => document.getElementById('restore-file').click())">استعادة نسخة احتياطية (.json)</button>
             <button class="btn btn-teal" style="width: 100%; margin-top: 8px;" onclick="requireManagerPass(() => openBackupPasswordManager())">كلمة سر تشفير النسخ الاحتياطي</button>
 
-            <hr style="margin: 15px 0; border-color: #eee;">
-            <h3 class="card-title"><span class="title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8.5 4.8 4.8 0 0 1 17.5 18z"/></svg></span>المزامنة السحابية (بين الأجهزة)</h3>
-            <div id="cloud-sync-status" style="margin-bottom: 10px; font-size: 14px;"></div>
+            
+            </div>
+            <div class="more-sec" id="more-sec-cloud" style="display:none;">
+                <div class="more-sec-head"><button type="button" class="more-back" onclick="closeMoreSec()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg> رجوع</button><span>المزامنة السحابية</span></div>
+                <div id="cloud-sync-status" style="margin-bottom: 10px; font-size: 14px;"></div>
             <button class="btn btn-teal" style="width: 100%;" onclick="requireManagerPass(() => openCloudSyncManager())">إعداد / إدارة المزامنة السحابية</button>
+        
+            </div>
+            
         </div>
     </div>
 
@@ -2205,6 +2373,8 @@
         let productPics = {};
         let picDbPromise = null;
         let pfPic = { data: '', dirty: false };
+        let pfExtras = { list: [], dirty: false };
+        let pfPicTarget = { kind: 'main' };
         let ddItems = [], ddShown = 0, invItems = [], invShown = 0, invObserver = null;
         const PG_CHUNK = 32;
         const PG_COLORS = [['#FBE3D3','#D9783A'],['#D7EEE4','#2F8F6B'],['#FBEBCB','#C9892B'],['#DCEBF7','#3C86C6'],['#E6E3F5','#6A5BC4'],['#F9D9E4','#D2578A'],['#D3F0F2','#2E8E96'],['#E6F2CF','#5B7F1C']];
@@ -2512,7 +2682,7 @@
                 });
             });
 
-            return [...products].sort((a, b) => {
+            return products.filter(p => !p.inactive).sort((a, b) => {
                 const countA = salesCountMap[a.id] || 0;
                 const countB = salesCountMap[b.id] || 0;
                 return countB - countA;
@@ -2601,7 +2771,7 @@
                 return;
             }
 
-            const matches = sortBySoldRank(products.filter(p => matchesSearch(p.name, query)));
+            const matches = sortBySoldRank(products.filter(p => !p.inactive && matchesSearch(p.name, query)));
             renderProductDropdown(matches, 'نتائج البحث');
         }
 
@@ -2697,6 +2867,81 @@
             return bagCost > 0 ? bagCost : 0;
         }
 
+        /* v70: a whole bag or half bag sold with a custom (real) weight.
+           Price and cost follow the bag rate (bag price / bag weight), never the kilo price.
+           Stock: a whole bag takes its real weight from the open weight first, then opens bags (like a weight sale);
+           a half bag from a new bag opens one bag and leaves the rest open, from the open weight takes its real weight. */
+        function customBagDeduct(prod, item) {
+            const kg = Number(item && item.customKg) || 0;
+            if (!(kg > 0) || !prod || (item.sellMode !== 'fullbag' && item.sellMode !== 'halfbag')) return false;
+            const cap = Number(prod.bagWeightKg || 0) || 1;
+            const n = Math.max(1, Math.floor(Number(item.qty) || 1));
+            for (let k = 0; k < n; k++) {
+                if (item.sellMode === 'halfbag') {
+                    if (item.halfSource === 'open') prod.openBagKg = Number(prod.openBagKg || 0) - kg;
+                    else if (Number(prod.bagsCount || 0) > 0) { prod.bagsCount = Number(prod.bagsCount) - 1; prod.openBagKg = Number(prod.openBagKg || 0) + Math.max(0, cap - kg); }
+                    else prod.openBagKg = Number(prod.openBagKg || 0) - kg;
+                    continue;
+                }
+                let remaining = kg;
+                const open = Number(prod.openBagKg || 0);
+                if (open >= remaining) { prod.openBagKg = open - remaining; continue; }
+                remaining -= Math.max(0, open);
+                if (open > 0) prod.openBagKg = 0;
+                while (remaining > 0 && Number(prod.bagsCount || 0) > 0) {
+                    prod.bagsCount = Number(prod.bagsCount) - 1;
+                    if (remaining <= cap) { prod.openBagKg = Number(prod.openBagKg || 0) + cap - remaining; remaining = 0; }
+                    else remaining -= cap;
+                }
+                if (remaining > 0) prod.openBagKg = Number(prod.openBagKg || 0) - remaining;
+            }
+            if (Math.abs(Number(prod.openBagKg || 0)) < 1e-9) prod.openBagKg = 0;
+            return true;
+        }
+        function customKgBase(prod, mode) {
+            const w = Number(prod.bagWeightKg || 0);
+            if (mode === 'halfbag') return { kg: w / 2, price: Number(prod.halfBagPrice || 0), cost: getWholeBagCost(prod) / 2, label: 'نصف شكارة' };
+            return { kg: w, price: Number(prod.fullBagPrice || 0), cost: getWholeBagCost(prod), label: 'شكارة كاملة' };
+        }
+        function syncCustomKgBox() {
+            const box = document.getElementById('custom-kg-box');
+            if (!box) return;
+            const sel = activeSelection;
+            const ok = !!sel && !!activeProductObj && (sel.sellMode === 'halfbag' || (sel.sellMode === 'fullbag' && Number(sel.qty) === 1));
+            box.style.display = ok ? 'block' : 'none';
+            const chk = document.getElementById('sel-custom-kg-check');
+            if (!ok && chk && chk.checked) { chk.checked = false; document.getElementById('sel-custom-kg').value = ''; applyCustomKg(); }
+            document.getElementById('custom-kg-row').style.display = (ok && chk && chk.checked) ? 'block' : 'none';
+        }
+        function onCustomKgCheck() {
+            const chk = document.getElementById('sel-custom-kg-check');
+            if (!chk.checked) document.getElementById('sel-custom-kg').value = '';
+            syncCustomKgBox();
+            applyCustomKg();
+            if (chk.checked) { const inp = document.getElementById('sel-custom-kg'); try { inp.focus(); } catch (e) {} }
+        }
+        function applyCustomKg() {
+            const sel = activeSelection, prod = activeProductObj;
+            if (!sel || !prod || (sel.sellMode !== 'fullbag' && sel.sellMode !== 'halfbag')) return;
+            const b = customKgBase(prod, sel.sellMode);
+            const chk = document.getElementById('sel-custom-kg-check');
+            const kg = (chk && chk.checked) ? (parseFloat(document.getElementById('sel-custom-kg').value) || 0) : 0;
+            const info = document.getElementById('custom-kg-info');
+            if (kg > 0 && b.kg > 0) {
+                sel.customKg = kg;
+                sel.price = Math.round(b.price * kg / b.kg * 1000) / 1000;
+                sel.cost = Math.round(b.cost * kg / b.kg * 1000) / 1000;
+                sel.name = `${prod.name} (${b.label} - وزن مخصص ${formatNum(kg)}كجم)`;
+                if (info) info.textContent = 'يُحسب بسعر ال' + b.label + ': ' + formatNum(sel.price) + ' د.ل (' + b.label + ' ' + formatNum(b.kg) + ' كجم = ' + formatNum(b.price) + ' د.ل)';
+            } else {
+                delete sel.customKg;
+                sel.price = b.price; sel.cost = b.cost;
+                sel.name = sel.sellMode === 'halfbag' ? `${prod.name} (نصف شكارة - ${b.kg}كجم)` : `${prod.name} (شكارة كاملة - ${prod.bagWeightKg || 0}كجم)`;
+                if (info) info.textContent = (chk && chk.checked && !(b.kg > 0)) ? 'لا يوجد وزن شكارة مسجل لهذا المنتج' : '';
+            }
+            calculateSelTotal();
+        }
+
         function setSellMode(mode) {
             currentSellMode = mode;
             if (!activeProductObj) return;
@@ -2760,6 +3005,8 @@
                 setHalfSource('newbag');
             }
 
+            { const cchk = document.getElementById('sel-custom-kg-check'); if (cchk) { cchk.checked = false; document.getElementById('sel-custom-kg').value = ''; } }
+            syncCustomKgBox();
             calculateSelTotal();
         }
 
@@ -2779,6 +3026,7 @@
         function onSelUnitQtyChange(val) {
             if (!activeSelection) return;
             activeSelection.qty = isBagSelection() ? (Math.floor(parseFloat(val)) || 0) : (parseFloat(val) || 0);
+            syncCustomKgBox();
             calculateSelTotal();
         }
 
@@ -2788,6 +3036,7 @@
             const minimum = (activeSelection.unitType === 'unit' || isBagSelection()) ? 1 : 0;
             activeSelection.qty = Math.max(minimum, current + delta);
             document.getElementById('sel-unit-qty-input').value = activeSelection.qty > 0 ? activeSelection.qty : '';
+            syncCustomKgBox();
             calculateSelTotal();
         }
 
@@ -2929,6 +3178,42 @@
                 check.checked = has;
                 input.style.display = has ? 'block' : 'none';
             });
+        }
+
+        /* v70: paid by bank transfer (not in the cash drawer): the whole sale, or only part of it */
+        let cartTransfer = null;
+        function syncCartTransferUI() {
+            const box = document.getElementById('cart-transfer');
+            const info = document.getElementById('cart-transfer-info');
+            if (box) box.checked = !!cartTransfer;
+            if (!info) return;
+            info.style.display = cartTransfer ? 'block' : 'none';
+            info.textContent = cartTransfer ? (cartTransfer.all ? 'تحويل مصرفي: الفاتورة كلها' : 'تحويل مصرفي: ' + formatNum(cartTransfer.amount) + ' د.ل والباقي نقداً') : '';
+        }
+        function onCartTransferChange(box) {
+            if (!box.checked) { cartTransfer = null; syncCartTransferUI(); return; }
+            box.checked = false;
+            const ask = (val) => {
+                const amt = parseFloat(String(val || '').replace(',', '.'));
+                cartTransfer = (amt > 0) ? { all: false, amount: amt } : { all: true, amount: 0 };
+                syncCartTransferUI();
+            };
+            ask.placeholder = 'المبلغ المحوَّل (اتركه فارغاً = الفاتورة كلها)';
+            ask.initialValue = '';
+            showModal('تأكيد التحويل المصرفي', 'هل دُفعت هذه الفاتورة بتحويل مصرفي (لا تدخل درج النقود)؟\nإذا حُوّل جزء فقط من المبلغ اكتبه هنا، أو اتركه فارغاً إذا كانت الفاتورة كلها تحويلاً:', 'text', ask);
+            const f = document.getElementById('modal-field');
+            if (f) f.setAttribute('inputmode', 'decimal');
+        }
+        function applyCartTransferTo(rec) {
+            delete rec.transferAll; delete rec.transferAmount;
+            if (cartTransfer) { if (cartTransfer.all) rec.transferAll = true; else rec.transferAmount = Number(cartTransfer.amount) || 0; }
+        }
+        /* dinars of a sale paid by transfer (never more than what was paid at the sale) */
+        function saleTransferAmount(sale, bd) {
+            if (!sale || sale.returnedAt || !(sale.transferAll || Number(sale.transferAmount) > 0)) return 0;
+            const b = bd || getSaleBreakdown(sale);
+            const paid = Math.max(0, Number(b.cashAmount) || 0);
+            return sale.transferAll ? paid : Math.min(Number(sale.transferAmount) || 0, paid);
         }
 
         function onCartDebtChange(box) {
@@ -3095,6 +3380,19 @@
                     });
                     return;
                 }
+            } else if (Number(activeSelection.customKg) > 0 && isBagSelection()) {
+                /* v70: custom-weight bag: check its real weight */
+                const kgNeed = Number(activeSelection.customKg);
+                const openKg = Number(prod.openBagKg || 0), bags = Number(prod.bagsCount || 0), cap = Number(prod.bagWeightKg || 0);
+                const enough = activeSelection.sellMode === 'halfbag'
+                    ? (activeSelection.halfSource === 'open' ? openKg >= kgNeed - 1e-9 : bags >= 1)
+                    : (Math.max(0, openKg) + bags * cap >= kgNeed - 1e-9);
+                if (!enough) {
+                    showModal('تحذير: المخزون غير كافٍ!', `المتاح حالياً: ${bags} شكارة كاملة و ${formatNum(openKg)} كجم وزن مفتوح، والمطلوب ${formatNum(kgNeed)} كجم.\nهل تريد إتمام العملية والبيع بالسالب؟`, false, () => {
+                        processAddToCartExecution(true);
+                    });
+                    return;
+                }
             } else if (activeSelection.sellMode === 'fullbag') {
                 const bagsAvailable = prod.bagsCount || 0;
                 if (bagsAvailable < qty) {
@@ -3155,6 +3453,7 @@
                 bagWeight: activeSelection.bagWeight || 0,
                 halfKg: activeSelection.halfKg || 0,
                 halfSource: activeSelection.sellMode === 'halfbag' ? (activeSelection.halfSource || 'newbag') : '',
+                ...((Number(activeSelection.customKg) > 0 && isBagSelection()) ? { customKg: Number(activeSelection.customKg) } : {}),
                 extraKg: (activeSelection.sellMode === 'retail' && activeSelection.unitType === 'weight') ? (activeSelection.extraKg || 0) : 0,
                 discount: discount,
                 isFree: isFree,
@@ -3220,6 +3519,11 @@
             activeSelection.qty = item.qty;
             activeSelection.extraKg = item.extraKg || 0;
             if (item.sellMode === 'halfbag') setHalfSource(item.halfSource || 'newbag');
+            if (Number(item.customKg) > 0 && (item.sellMode === 'fullbag' || item.sellMode === 'halfbag')) {
+                activeSelection.customKg = Number(item.customKg);
+                document.getElementById('sel-custom-kg-check').checked = true;
+                document.getElementById('sel-custom-kg').value = formatNum(item.customKg);
+            }
             if (item.sellMode === 'retail' && item.unitType === 'weight') {
                 document.getElementById('sel-weight-input').value = formatNum(item.qty);
                 document.getElementById('sel-price-input').value = formatNum(item.qty * item.price);
@@ -3228,6 +3532,7 @@
             } else {
                 document.getElementById('sel-unit-qty-input').value = item.qty;
             }
+            syncCustomKgBox();
             document.getElementById('sel-discount').value = item.discount > 0 ? item.discount : '';
             syncSelDiscountBox();
             document.getElementById('sel-note').value = item.note || '';
@@ -3320,6 +3625,8 @@
             document.getElementById('cart-customer').value = '';
             document.getElementById('cart-note').value = '';
             syncCartFieldChecks();
+            cartTransfer = null;
+            syncCartTransferUI();
             cartDebtorName = '';
             editingSaleId = null;
             updateEditSaleUI();
@@ -3371,6 +3678,7 @@
                 note: invoiceNote,
                 inventoryDeltas: []
             };
+            applyCartTransferTo(saleRecord);
             if (noteCtx) {
                 saleRecord.fromNote = { id: noteCtx.id, text: noteCtx.text, createdAt: noteCtx.ts };
                 saleRecord.convertedAt = now.toISOString();
@@ -3382,7 +3690,9 @@
             cart.forEach(item => {
                 const prod = products.find(p => p.id === item.id);
                 if (prod) {
-                    if (item.sellMode === 'fullbag') {
+                    if (customBagDeduct(prod, item)) {
+                        /* v70: custom-weight bag, deducted by its real weight */
+                    } else if (item.sellMode === 'fullbag') {
                         prod.bagsCount = (prod.bagsCount || 0) - item.qty;
                     } else if (item.sellMode === 'halfbag') {
                         const halfCount = Math.max(1, Math.floor(Number(item.qty) || 1));
@@ -3442,7 +3752,7 @@
             sales.unshift(saleRecord);
             safeSave(KEYS.PRODUCTS, products);
             persistSales([saleRecord]);
-            queueSaleForCloud(saleRecord);
+            queueSaleForCloud(saleRecord, noteCtx ? { noteBaseV: Number(noteCtx._v) || 0 } : null);
 
             if (noteCtx) {
                 quickNotes = quickNotes.filter(n => String(n.id) !== String(noteCtx.id));
@@ -3602,15 +3912,11 @@
                                 <button type="button" class="mode-btn ${pType === 'unit' ? 'active' : ''}" id="p-type-btn-unit" title="بالقطعة (وحدات)" onclick="setProductType('unit')">بالقطعة</button>
                             </div>
                         </div>
-                        <div class="pf-pic" id="pf-pic-prev"></div>
+                        <div class="pf-pic pf-pic-tap" id="pf-pic-prev" onclick="pfPicMenu('main')"></div>
                     </div>
                     <div id="p-name-hint" style="display:none; font-size:13px; line-height:1.6; margin:2px 0 8px 0; font-weight:bold;"></div>
-                    <label class="form-label" style="margin-top:8px;">صورة المنتج (اختياري)</label>
-                    <div class="pf-btns pf-btns3">
-                        <button type="button" class="btn btn-teal" onclick="document.getElementById('pf-cam').click()">التقاط صورة</button>
-                        <button type="button" class="btn btn-teal" onclick="document.getElementById('pf-gal').click()">من المعرض</button>
-                        <button type="button" class="btn btn-red" id="pf-pic-rm" onclick="pfPicRemove()">إزالة</button>
-                    </div>
+                    <label class="form-label" style="margin-top:8px;">صور إضافية (اختياري)</label>
+                    <div class="pf-extras" id="pf-extras"></div>
                     <input type="file" id="pf-cam" accept="image/*" capture="environment" hidden onchange="pfPicChosen(this)">
                     <input type="file" id="pf-gal" accept="image/*" hidden onchange="pfPicChosen(this)">
 
@@ -3940,6 +4246,8 @@
             const l = document.getElementById('theme-btn-light'), d = document.getElementById('theme-btn-dark');
             if (l) l.classList.toggle('active', t !== 'dark');
             if (d) d.classList.toggle('active', t === 'dark');
+            const sw = document.getElementById('ml-dark');
+            if (sw) sw.checked = t === 'dark';
             const meta = document.querySelector('meta[name="theme-color"]');
             if (meta) meta.setAttribute('content', t === 'dark' ? '#0e1822' : '#117c83');
         }
@@ -4502,7 +4810,7 @@
         function computeStats(list, fromMs, toMs, days) {
             const out = {
                 lateProfit: 0, lateProfitBefore: 0, lateBagProfit: 0, lateOtherProfit: 0,
-                rev: 0, profit: 0, customers: 0, paid: 0, extraKg: 0, extraValue: 0, perDay: new Array(days).fill(0),
+                rev: 0, profit: 0, customers: 0, paid: 0, transfer: 0, extraKg: 0, extraValue: 0, perDay: new Array(days).fill(0),
                 bagRev: 0, otherRev: 0, bagProfit: 0, otherProfit: 0, freeValue: 0, discountValue: 0, profitBefore: 0,
                 prod: new Map(), prodLate: new Map(), freeProd: new Map(), discProd: new Map(), cartDisc: 0
             };
@@ -4535,17 +4843,28 @@
                 }
                 return r;
             };
-            const addProd = (m) => {
+            /* v70: a whole/half bag always counts as whole bags on the day it was sold (a debt never splits the bag count) */
+            const addBagQty = (r, i, q) => {
+                if (i.sellMode === 'fullbag' || i.unitType === 'fullbag') r.full += q;
+                else r.half += q;
+                if (Number(i.customKg) > 0) { r.customN = (r.customN || 0) + q; r.customKg = (r.customKg || 0) + Number(i.customKg) * q; }
+                r.full = Math.round(r.full * 1e6) / 1e6; r.half = Math.round(r.half * 1e6) / 1e6;
+                if (r.customN) { r.customN = Math.round(r.customN * 1e6) / 1e6; r.customKg = Math.round(r.customKg * 1e6) / 1e6; }
+            };
+            const addProd = (m, noBagQty) => {
                 const r = prodRow(out.prod, m);
                 const i = m.item, q = Number(i.qty || 0) * (m.qtyK === undefined ? 1 : m.qtyK);
                 r.amount += m.amount; r.profit += m.profit; if (m.costed) r.costed = true;
-                if (i.sellMode === 'fullbag' || i.unitType === 'fullbag') r.full += q;
-                else if (i.sellMode === 'halfbag' || i.unitType === 'halfbag') r.half += q;
+                if (m.isBag) { if (!noBagQty) addBagQty(r, i, q); }
                 else if (i.unitType === 'weight') r.kg += q;
                 else r.units += q;
             };
+            const addBagCountOnly = (m) => {
+                const i = m.item;
+                addBagQty(prodRow(out.prod, m), i, Number(i.qty || 0) * (m.qtyK === undefined ? 1 : m.qtyK));
+            };
             const dayIndex = ms => { const idx = Math.round((dayStartMs(ms) - fromMs) / 86400000); return Math.min(Math.max(idx, 0), days - 1); };
-            const addItem = (m) => {
+            const addItem = (m, noBagQty) => {
                 out.rev += m.amount;
                 out.profit += m.profit;
                 if (m.isBag) { out.bagRev += m.amount; out.bagProfit += m.profit; }
@@ -4553,7 +4872,7 @@
                 out.freeValue += m.freeValue;
                 out.discountValue += m.discount;
                 out.profitBefore += m.profit + m.freeProfitImpact + m.discountProfitImpact;
-                addProd(m);
+                addProd(m, noBagQty);
                 if (m.freeValue > 0) valRow(out.freeProd, m).value += m.freeValue;
                 if (m.itemDisc > 1e-9) valRow(out.discProd, m).value += m.itemDisc;
                 out.cartDisc += m.share || 0;
@@ -4566,9 +4885,13 @@
                 const lateNote = isLateNoteSale(s);
                 if (t >= fromMs && t < toMs) {
                     out.customers++;
+                    out.transfer += saleTransferAmount(s, bd);
                     out.perDay[dayIndex(t)] += bd.cashAmount;
                     /* a note converted on a later day: its sales amount stays on the note's day, its profit goes to the conversion day's own card */
-                    money.forEach(m => { if (!m.item.isDebt || m.freeValue > 0) addItem(lateNote ? Object.assign({}, m, { profit: 0, freeProfitImpact: 0, discountProfitImpact: 0 }) : m); });
+                    money.forEach(m => {
+                        if (!m.item.isDebt || m.freeValue > 0) addItem(lateNote ? Object.assign({}, m, { profit: 0, freeProfitImpact: 0, discountProfitImpact: 0 }) : m);
+                        else if (m.isBag) addBagCountOnly(m);
+                    });
                     (s.items || []).forEach(i => {
                         if (Number(i.extraKg || 0) > 0 && Number(i.qty || 0) > 0) {
                             out.extraKg += Number(i.extraKg);
@@ -4594,7 +4917,7 @@
                     if (pt >= fromMs && pt < toMs) {
                         out.paid += bd.debtAmount;
                         out.perDay[dayIndex(pt)] += bd.debtAmount;
-                        money.forEach(m => { if (m.item.isDebt && !(m.freeValue > 0)) addItem(m); });
+                        money.forEach(m => { if (m.item.isDebt && !(m.freeValue > 0)) addItem(m, true); });
                     }
                 }
             });
@@ -4608,6 +4931,147 @@
                 });
             }
             return out;
+        }
+
+        /* ===== v70: performance charts (columns): hours, days, weekdays, weeks, months — sales and profit =====
+           Same rules as the statistics: paid-now parts at the sale time, debts when paid, a late-converted note's profit at its conversion time. */
+        function perfAccumulate(list, fromMs, toMs, add) {
+            (list || []).forEach(s => {
+                if (s.returnedAt) return;
+                const t = saleTimeMs(s);
+                const money = getItemMoney(s);
+                const late = isLateNoteSale(s);
+                if (t >= fromMs && t < toMs) money.forEach(m => { if (!m.item.isDebt || m.freeValue > 0) add(t, m.amount, late ? 0 : m.profit); });
+                if (late) {
+                    const ct = new Date(s.convertedAt).getTime() || 0;
+                    if (ct >= fromMs && ct < toMs) money.forEach(m => { if (!m.item.isDebt || m.freeValue > 0) add(ct, 0, m.profit); });
+                }
+                const bd = getSaleBreakdown(s);
+                if (bd.debtAmount > 1e-7 && s.debtPaidAt) {
+                    const pt = new Date(s.debtPaidAt).getTime() || 0;
+                    if (pt >= fromMs && pt < toMs) money.forEach(m => { if (m.item.isDebt && !(m.freeValue > 0)) add(pt, m.amount, m.profit); });
+                }
+            });
+        }
+        const PC_WD = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+        let pcState = { tab: 'hours', metric: 'sales', range: 30 }, pcTok = 0, pcData = null;
+        function openPerfCharts() {
+            if (document.getElementById('pc-ov')) return;
+            const ov = document.createElement('div');
+            ov.id = 'pc-ov';
+            ov.className = 'pc-ov';
+            const tabs = [['hours', 'الساعات'], ['days', 'الأيام'], ['weekday', 'أيام الأسبوع'], ['weeks', 'الأسابيع'], ['months', 'الأشهر']];
+            ov.innerHTML = '<div class="pc-box"><div class="pc-head"><b>أداء المبيعات والأرباح</b><button type="button" class="btn btn-red" id="pc-close">إغلاق</button></div>' +
+                '<div class="pc-tabs">' + tabs.map(t => '<button type="button" class="chip-btn" data-tab="' + t[0] + '">' + t[1] + '</button>').join('') + '</div>' +
+                '<div class="pc-metric"><button type="button" class="mode-btn" data-m="sales">المبيعات</button><button type="button" class="mode-btn" data-m="profit">الأرباح</button></div>' +
+                '<div class="pc-ranges" id="pc-ranges">' + [[7, 'آخر 7 أيام'], [30, 'آخر 30 يوم'], [90, 'آخر 90 يوم'], ['all', 'كل المبيعات']].map(r => '<button type="button" class="chip-btn" data-r="' + r[0] + '">' + r[1] + '</button>').join('') + '</div>' +
+                '<div class="pc-sub" id="pc-sub"></div><div class="pc-bw" id="pc-bw"></div><div class="pc-chart" id="pc-chart"></div><div class="pc-pick" id="pc-pick"></div></div>';
+            document.body.appendChild(ov);
+            ov.querySelector('#pc-close').addEventListener('click', () => ov.remove());
+            ov.addEventListener('click', e => {
+                const t = e.target.closest('[data-tab]'); if (t) { pcState.tab = t.getAttribute('data-tab'); pcRender(); return; }
+                const m = e.target.closest('[data-m]'); if (m) { pcState.metric = m.getAttribute('data-m'); pcDraw(); return; }
+                const r = e.target.closest('[data-r]'); if (r) { const v = r.getAttribute('data-r'); pcState.range = v === 'all' ? 'all' : Number(v); pcRender(); return; }
+                const c = e.target.closest('.pc-col'); if (c) pcPick(Number(c.getAttribute('data-i')));
+            });
+            pcRender();
+        }
+        async function pcRender() {
+            const ov = document.getElementById('pc-ov');
+            if (!ov) return;
+            const tok = ++pcTok;
+            const st = pcState;
+            ov.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('active', b.getAttribute('data-tab') === st.tab));
+            ov.querySelectorAll('[data-r]').forEach(b => b.classList.toggle('active', String(b.getAttribute('data-r')) === String(st.range)));
+            document.getElementById('pc-ranges').style.display = (st.tab === 'hours' || st.tab === 'weekday') ? 'flex' : 'none';
+            document.getElementById('pc-chart').innerHTML = '<div class="pc-empty">جاري الحساب…</div>';
+            const today0 = dayStartMs(Date.now()), end = addDaysMs(today0, 1);
+            let from, n, key, label, pickLabel;
+            if (st.tab === 'hours' || st.tab === 'weekday') {
+                from = st.range === 'all' ? 0 : addDaysMs(today0, -(st.range - 1));
+            } else if (st.tab === 'days') {
+                from = addDaysMs(today0, -29);
+            } else if (st.tab === 'weeks') {
+                const diff = (new Date(today0).getDay() + 1) % 7;
+                from = addDaysMs(addDaysMs(today0, -diff), -7 * 11);
+            } else {
+                const d = new Date(today0);
+                from = new Date(d.getFullYear(), d.getMonth() - 11, 1).getTime();
+            }
+            const list = await getSalesForStats(from, end);
+            if (tok !== pcTok || !document.getElementById('pc-ov')) return;
+            if (from === 0) {
+                let first = Infinity;
+                list.forEach(x => { if (!x.returnedAt) { const t = saleTimeMs(x); if (t > 0 && t < first) first = t; } });
+                from = first === Infinity ? today0 : dayStartMs(first);
+            }
+            if (st.tab === 'hours') {
+                n = 24; key = t => new Date(t).getHours(); label = i => String(i); pickLabel = i => 'الساعة ' + i + ':00 – ' + (i + 1) + ':00';
+            } else if (st.tab === 'weekday') {
+                n = 7; key = t => (new Date(t).getDay() + 1) % 7; label = i => PC_WD[i].replace('ال', ''); pickLabel = i => 'يوم ' + PC_WD[i] + ' (متوسط اليوم)';
+            } else if (st.tab === 'days') {
+                n = 30; key = t => Math.round((dayStartMs(t) - from) / 86400000);
+                label = i => String(new Date(addDaysMs(from, i)).getDate());
+                pickLabel = i => new Date(addDaysMs(from, i)).toLocaleDateString('ar-LY', { weekday: 'long', day: 'numeric', month: 'long' });
+            } else if (st.tab === 'weeks') {
+                n = 12; key = t => Math.floor((dayStartMs(t) - from) / (7 * 86400000) + 1e-6);
+                const ds = i => new Date(addDaysMs(from, i * 7));
+                label = i => ds(i).getDate() + '/' + (ds(i).getMonth() + 1);
+                pickLabel = i => { const a = ds(i), b = new Date(addDaysMs(from, i * 7 + 6)); return 'أسبوع ' + a.getDate() + '/' + (a.getMonth() + 1) + ' – ' + b.getDate() + '/' + (b.getMonth() + 1); };
+            } else {
+                const f = new Date(from);
+                n = 12; key = t => { const d = new Date(t); return (d.getFullYear() - f.getFullYear()) * 12 + d.getMonth() - f.getMonth(); };
+                const md = i => new Date(f.getFullYear(), f.getMonth() + i, 1);
+                label = i => String(md(i).getMonth() + 1);
+                pickLabel = i => md(i).toLocaleDateString('ar-LY', { month: 'long', year: 'numeric' });
+            }
+            const sales0 = new Array(n).fill(0), profit0 = new Array(n).fill(0);
+            perfAccumulate(list, from, end, (t, a, p) => { const k = key(t); if (k < 0 || k >= n) return; sales0[k] += a; profit0[k] += p; });
+            let sub = '';
+            const rangeText = (from, end) => 'من ' + new Date(from).toLocaleDateString('ar-LY', { day: 'numeric', month: 'long', year: 'numeric' }) + ' إلى ' + new Date(end - 1).toLocaleDateString('ar-LY', { day: 'numeric', month: 'long', year: 'numeric' });
+            let idx = Array.from({ length: n }, (_, i) => i);
+            if (st.tab === 'weekday') {
+                const cnt = new Array(7).fill(0);
+                for (let d = from; d < end; d = addDaysMs(d, 1)) cnt[(new Date(d).getDay() + 1) % 7]++;
+                for (let i = 0; i < 7; i++) { if (cnt[i]) { sales0[i] /= cnt[i]; profit0[i] /= cnt[i]; } }
+                sub = 'متوسط اليوم الواحد من كل يوم في الأسبوع — ' + rangeText(from, end);
+            } else if (st.tab === 'hours') {
+                const act = idx.filter(i => Math.abs(sales0[i]) > 1e-9 || Math.abs(profit0[i]) > 1e-9);
+                if (act.length) idx = idx.slice(Math.min.apply(null, act), Math.max.apply(null, act) + 1);
+                sub = 'مجموع كل ساعة — ' + rangeText(from, end);
+            } else if (st.tab === 'days') sub = 'آخر 30 يوماً';
+            else if (st.tab === 'weeks') sub = 'آخر 12 أسبوعاً (الأسبوع يبدأ يوم السبت)';
+            else sub = 'آخر 12 شهراً';
+            pcData = { idx, sales: sales0, profit: profit0, label, pickLabel, sub };
+            pcDraw();
+        }
+        function pcDraw() {
+            const ov = document.getElementById('pc-ov');
+            if (!ov || !pcData) return;
+            ov.querySelectorAll('[data-m]').forEach(b => b.classList.toggle('active', b.getAttribute('data-m') === pcState.metric));
+            const d = pcData, vals = pcState.metric === 'profit' ? d.profit : d.sales;
+            document.getElementById('pc-sub').textContent = d.sub;
+            const chart = document.getElementById('pc-chart'), bw = document.getElementById('pc-bw');
+            document.getElementById('pc-pick').textContent = '';
+            const nz = d.idx.filter(i => Math.abs(vals[i]) > 1e-9);
+            if (!nz.length) { chart.innerHTML = '<div class="pc-empty">لا توجد ' + (pcState.metric === 'profit' ? 'أرباح' : 'مبيعات') + ' في هذه الفترة</div>'; bw.innerHTML = ''; return; }
+            let best = nz[0], worst = nz[0];
+            nz.forEach(i => { if (vals[i] > vals[best]) best = i; if (vals[i] < vals[worst]) worst = i; });
+            const max = Math.max.apply(null, d.idx.map(i => vals[i]).concat([0]));
+            const many = d.idx.length > 12;
+            chart.innerHTML = '<div class="pc-bars' + (many ? ' many' : '') + '">' + d.idx.map(i => {
+                const v = vals[i];
+                const h = max > 0 ? Math.max(v > 0 ? 3 : 0, Math.round(Math.max(0, v) / max * 100)) : 0;
+                const cls = i === best ? ' best' : (i === worst && nz.length > 1 ? ' worst' : '');
+                return '<div class="pc-col" data-i="' + i + '"><div class="pc-v">' + (many ? '' : formatNum(Math.round(v))) + '</div><div class="pc-track"><div class="pc-bar' + cls + '" style="height:' + h + '%"></div></div><div class="pc-l">' + escapeHtml(d.label(i)) + '</div></div>';
+            }).join('') + '</div>';
+            bw.innerHTML = '<span class="pc-best">الأفضل: ' + escapeHtml(d.pickLabel(best)) + ' — ' + formatNum(Math.round(vals[best] * 100) / 100) + ' د.ل</span>' +
+                (nz.length > 1 ? '<span class="pc-worst">الأضعف: ' + escapeHtml(d.pickLabel(worst)) + ' — ' + formatNum(Math.round(vals[worst] * 100) / 100) + ' د.ل</span>' : '');
+        }
+        function pcPick(i) {
+            const d = pcData; if (!d) return;
+            document.querySelectorAll('#pc-chart .pc-col').forEach(c => c.classList.toggle('sel', Number(c.getAttribute('data-i')) === i));
+            document.getElementById('pc-pick').textContent = d.pickLabel(i) + ': المبيعات ' + formatNum(Math.round(d.sales[i] * 100) / 100) + ' د.ل — الأرباح ' + formatNum(Math.round(d.profit[i] * 100) / 100) + ' د.ل';
         }
 
         function isLateNoteSale(s) {
@@ -4717,6 +5181,7 @@
                 const t = [];
                 if (r.full) t.push(formatNum(r.full) + ' شكارة كاملة');
                 if (r.half) t.push(formatNum(r.half) + ' نصف شكارة');
+                if (r.customN) t.push('منها ' + formatNum(r.customN) + ' بوزن مخصص ' + formatNum(r.customKg) + ' كجم');
                 if (r.kg) t.push(formatNum(Math.round(r.kg * 1000) / 1000) + ' كجم');
                 if (r.units) t.push(formatNum(r.units) + ' قطعة');
                 return t.join(' — ');
@@ -4802,6 +5267,8 @@
             document.getElementById('stat-today-extra-gurush').innerText = formatNum(st.extraValue);
             document.getElementById('stat-today-extra-grams').innerText = formatNum(st.extraKg * 1000);
             document.getElementById('stat-today-debt-paid').innerText = formatNum(st.paid);
+            document.getElementById('stat-transfer').innerText = formatNum(st.transfer);
+            document.getElementById('stat-cash-drawer').innerText = formatNum(st.rev - st.transfer);
             document.getElementById('stat-debt-owed').innerText = formatNum(currentDebtOwed());
             const lateTile = document.getElementById('stat-late-note-tile');
             if (lateTile) {
@@ -4949,7 +5416,38 @@
 
             updateVibrationUI();
             updateBiometricUI();
+            closeMoreSec();
+            updateMoreList();
             showTab(tab, element);
+        }
+
+        /* v70: More page as a settings list: each row opens its own page, Back returns to the list */
+        function openMoreSec(k) {
+            const list = document.getElementById('more-list');
+            const sec = document.getElementById('more-sec-' + k);
+            if (!list || !sec) return;
+            list.style.display = 'none';
+            document.querySelectorAll('.more-sec').forEach(x => { x.style.display = 'none'; });
+            sec.style.display = 'block';
+            if (k === 'cloud' && typeof renderCloudSyncStatus === 'function') renderCloudSyncStatus();
+            try { window.scrollTo({ top: 0, behavior: 'instant' }); } catch (e) { window.scrollTo(0, 0); }
+        }
+        function closeMoreSec() {
+            document.querySelectorAll('.more-sec').forEach(x => { x.style.display = 'none'; });
+            const list = document.getElementById('more-list');
+            if (list) list.style.display = 'block';
+            updateMoreList();
+        }
+        function updateMoreList() {
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const dark = document.getElementById('ml-dark');
+            if (dark) dark.checked = document.documentElement.getAttribute('data-theme') === 'dark';
+            set('ml-v-bright', (document.getElementById('brightness-text') || {}).textContent || '');
+            set('ml-v-vibe', (document.getElementById('vibration-level-text') || {}).textContent || '');
+            let bioOn = false; try { bioOn = isManagerBiometricEnabled(); } catch (e) {}
+            set('ml-v-bio', bioOn ? 'مفعّلة' : 'غير مفعّلة');
+            set('ml-v-storage', (document.getElementById('stat-storage') || {}).textContent || '');
+            set('ml-v-cloud', typeof cloudSyncCode !== 'undefined' && cloudSyncCode ? (cloudReady ? 'متصل' : 'جارٍ الاتصال') : 'غير متصل');
         }
 
         function editSaleNote(saleId) {
@@ -4991,6 +5489,7 @@
             items.forEach(item => {
                 const prod = targetProducts.find(p => String(p.id) === String(item.id));
                 if (!prod) return;
+                if (customBagDeduct(prod, item)) return;
                 if (item.sellMode === 'fullbag') prod.bagsCount = Number(prod.bagsCount || 0) - Number(item.qty || 0);
                 else if (item.sellMode === 'halfbag') {
                     const halfCount = Math.max(0, Math.floor(Number(item.qty) || 0));
@@ -5203,6 +5702,8 @@
             syncCartFieldChecks();
             document.getElementById('cart-debt').checked = !!sale.cartDebt;
             cartDebtorName = sale.debtorName || '';
+            cartTransfer = sale.transferAll ? { all: true, amount: 0 } : (Number(sale.transferAmount) > 0 ? { all: false, amount: Number(sale.transferAmount) } : null);
+            syncCartTransferUI();
             updateEditSaleUI();
             renderCart();
             switchTab('pos', document.querySelectorAll('.nav-item')[0]);
@@ -5249,11 +5750,13 @@
             const editedItems = cart.map(item => (cartDebt && !item.isFree) ? { ...item, isDebt: true } : { ...item });
             const total = Math.max(0, editedItems.reduce((sum, item) => sum + Number(item.total || 0), 0) - globalDiscount);
 
-            const signature = (items, discount, debt, customer, debtor, cnote) => JSON.stringify([
-                items.map(i => [i.id, i.sellMode, i.qty, i.price, i.total, i.discount, i.note || '', !!i.isFree, !!i.isDebt, i.debtorName || '', i.extraKg || 0, i.halfSource || '', Number(i.partialDebt) || 0, i.partialDebtorName || '']),
-                Number(discount || 0), !!debt, customer || '', debtor || '', cnote || ''
+            const signature = (items, discount, debt, customer, debtor, cnote, tr) => JSON.stringify([
+                items.map(i => [i.id, i.sellMode, i.qty, i.price, i.total, i.discount, i.note || '', !!i.isFree, !!i.isDebt, i.debtorName || '', i.extraKg || 0, i.halfSource || '', Number(i.partialDebt) || 0, i.partialDebtorName || '', Number(i.customKg) || 0]),
+                Number(discount || 0), !!debt, customer || '', debtor || '', cnote || '', tr || ''
             ]);
-            if (signature(editedItems, globalDiscount, cartDebt, customerName, debtorName, cartNote) === signature(sale.items || [], sale.globalDiscount, sale.cartDebt, sale.customerName, sale.debtorName, sale.cartNote)) {
+            const trNew = cartTransfer ? (cartTransfer.all ? 'all' : String(Number(cartTransfer.amount) || 0)) : '';
+            const trOld = sale.transferAll ? 'all' : (Number(sale.transferAmount) > 0 ? String(Number(sale.transferAmount)) : '');
+            if (signature(editedItems, globalDiscount, cartDebt, customerName, debtorName, cartNote, trNew) === signature(sale.items || [], sale.globalDiscount, sale.cartDebt, sale.customerName, sale.debtorName, sale.cartNote, trOld)) {
                 showModal('لا يوجد تغيير', 'لم يتم تغيير أي شيء في هذه الفاتورة.', false, () => {});
                 return;
             }
@@ -5296,12 +5799,14 @@
                     inventoryDeltas: calculation.newDeltas, amendedAt, amendedBy: activeCashier,
                     amendmentHistory: [...(sale.amendmentHistory || []), amendment]
                 });
+                applyCartTransferTo(sale);
                 safeSave(KEYS.PRODUCTS, products);
                 persistSales([sale]);
                 queueCloudOperation({
                     id: 'sale-amend:' + sale.id + ':' + Date.now(), type: 'saleAmendment',
                     payload: { id: sale.id, items: sale.items, total: sale.total, profit: sale.profit, inventoryDeltas: sale.inventoryDeltas, adjustment: calculation.adjustment,
-                        amendedAt, amendedBy: sale.amendedBy, amendment, globalDiscount, cartDebt, customerName, cartNote, debtorName, note },
+                        amendedAt, amendedBy: sale.amendedBy, amendment, globalDiscount, cartDebt, customerName, cartNote, debtorName, note,
+                        transferAll: !!sale.transferAll, transferAmount: Number(sale.transferAmount) || 0 },
                     createdAt: Date.now()
                 });
                 clearCart();
@@ -5402,6 +5907,7 @@
                         ${s.fromNote ? `<div class="hist-dim" style="font-size:12.5px; color:var(--teal-primary); font-weight:700; margin-top:3px;">📝 محوّلة من ملاحظة سريعة${s.convertedAt && new Date(s.convertedAt).toDateString() !== new Date(s.timestamp).toDateString() ? ' — حُوّلت في ' + new Date(s.convertedAt).toLocaleString('ar-LY') : ''}<span style="display:block; font-weight:400; color:var(--muted); white-space:pre-wrap;">${escapeHtml(s.fromNote.text || '')}</span></div>` : ''}
                         ${s.importBatchId ? `<div class="hist-dim" style="font-size:12.5px; color:var(--teal-primary); font-weight:700; margin-top:3px;">📋 مُدخلة من نص ملصوق (مبيعات متعددة)</div>` : ''}
                         ${s.cartNote ? `<div class="hist-dim" style="font-size:13px; color:#ff8c00; font-weight:700; margin-top:3px;">📝 ملاحظة السلة: ${escapeHtml(s.cartNote)}</div>` : ''}
+                        ${(s.transferAll || Number(s.transferAmount) > 0) ? `<div style="font-size:13px; color:#1565c0; font-weight:700; margin-top:3px;">🏦 تحويل مصرفي: ${s.transferAll ? 'الفاتورة كلها' : formatNum(s.transferAmount) + ' د.ل والباقي نقداً'}</div>` : ''}
                         <div style="margin: 8px 0 4px 0;">
                             ${s.items.map(i => `
                                 <div class="hist-line">
@@ -5434,7 +5940,7 @@
                                 <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick='editSaleNote(${JSON.stringify(s.id)})'>✏️ ملاحظة</button>
                                 ${s.returnedAt ? `<span style="font-size:11px; color:#d32f2f;">تم الإرجاع</span><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='deleteSale(${JSON.stringify(s.id)})'>حذف البيع</button>` : `<button class="btn btn-green" style="padding:2px 8px; font-size:11px;" onclick='editSale(${JSON.stringify(s.id)})'>تعديل البيع</button><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='returnSale(${JSON.stringify(s.id)})'>إرجاع البيع</button>`}
                             </div>
-                            <div class="hist-total"><small class="hist-dim">الإجمالي</small><strong style="color:var(--teal-primary); font-size:19px;">${formatNum(s.total)} د.ل</strong></div>
+                            <div class="hist-total"><small class="hist-dim">الإجمالي</small><strong style="color:var(--teal-primary); font-size:22px;">${formatNum(s.total)} د.ل</strong></div>
                         </div>
                     </div>
                 `;
@@ -5565,6 +6071,8 @@
                 if (Number(i.extraKg || 0) > 0) parts.push('إضافة');
             });
             if (bd.debtAmount > 1e-7) parts.push('دين', sale.debtPaidAt ? 'دين مسدد' : 'دين مستحق');
+            if (sale.transferAll || Number(sale.transferAmount) > 0) parts.push('تحويل مصرفي', 'تحويل');
+            if ((sale.items || []).some(i => Number(i.customKg) > 0)) parts.push('وزن مخصص');
             if (sale.returnedAt) parts.push('مرتجع', 'ارجاع');
             if (sale.importBatchId) parts.push('نص ملصوق', 'مبيعات متعددة');
             return parts.filter(p => p !== undefined && p !== null && String(p).trim() !== '').join(' | ');
@@ -5645,7 +6153,7 @@
                     deletedSaleIds.add(id);
                     persistSaleRemoval(id);
                     safeSave(KEYS.DELETED_SALES, Array.from(deletedSaleIds));
-                    queueCloudOperation({ id: 'sale-delete:' + id, type: 'saleDelete', payload: { id, returnedAt }, createdAt: Date.now() });
+                    queueCloudOperation({ id: 'sale-delete:' + id, type: 'saleDelete', payload: { id, returnedAt }, baseV: Number(sale._v) || 0, saleLabel: saleLabel(sale), createdAt: Date.now() });
                     renderSales();
                 });
             });
@@ -5851,7 +6359,7 @@
                         Object.entries(d).forEach(([f, v]) => { acc[f] = (acc[f] || 0) + v; });
                     }));
                     const adjustment = Object.entries(tot).map(([productId, inventoryDelta]) => ({ productId, inventoryDelta }));
-                    queueCloudOperation({ id: 'sales-del-many:' + cloudUuid(), type: 'salesDeleteMany', payload: { ids: chunk.map(x => String(x.id)), returnStock, adjustment }, createdAt: Date.now() });
+                    queueCloudOperation({ id: 'sales-del-many:' + cloudUuid(), type: 'salesDeleteMany', payload: { ids: chunk.map(x => String(x.id)), returnStock, adjustment }, baseVs: Object.fromEntries(chunk.map(x => [String(x.id), Number(x._v) || 0])), createdAt: Date.now() });
                 }
 
                 salesSelectMode = false; selSaleIds.clear(); selMonths.clear();
@@ -6026,7 +6534,7 @@
                     const ids = new Set(list.map(p => String(p.id)));
                     products = products.filter(p => !ids.has(String(p.id)));
                     safeSave(KEYS.PRODUCTS, products);
-                    list.forEach(b => picDelete(b.id));
+                    list.forEach(b => picDeleteAll(b.id));
                     invSelectMode = false; selProductIds.clear();
                     updateInvSelectUI();
                     renderInventory();
@@ -6193,7 +6701,9 @@
                 return;
             }
             const query = (document.getElementById('inventory-search')?.value || '').trim().toLocaleLowerCase();
-            const visibleProducts = query ? sortBySoldRank(products.filter(p => matchesSearch(p.name, query))) : products;
+            const visibleProducts0 = query ? sortBySoldRank(products.filter(p => matchesSearch(p.name, query))) : products;
+            /* v70: inactive products always at the bottom */
+            const visibleProducts = visibleProducts0.filter(p => !p.inactive).concat(visibleProducts0.filter(p => p.inactive));
             shownProductIds = visibleProducts.map(p => String(p.id));
             if (countEl) countEl.textContent = query ? `عدد المنتجات: ${products.length} — نتائج البحث: ${visibleProducts.length}` : `عدد المنتجات: ${products.length}`;
             if (visibleProducts.length === 0) {
@@ -6247,7 +6757,7 @@
                     
                     safeSave(KEYS.PRODUCTS, products);
                     safeSave(KEYS.LOGS, stockLogs);
-                    queueInventoryMutation(prod.id, before, prod, { kgPrice: prod.kgPrice, expiryDate: prod.expiryDate, notes: prod.notes });
+                    queueInventoryMutation(prod.id, editBefore, prod, { kgPrice: prod.kgPrice, expiryDate: prod.expiryDate, notes: prod.notes });
                     logInventoryEdit('partial', editBefore, prod);
                     queueStockLogForCloud(log);
                     renderInventory();
@@ -6263,6 +6773,12 @@
         function showProductFormModal(productId, prefill) {
             const existing = productId ? products.find(p => String(p.id) === String(productId)) : null;
             if (!prefill) pfPic = { data: existing ? (productPics[String(existing.id)] || '') : '', dirty: false };
+            if (!prefill) {
+                pfExtras = { list: existing ? picExtras(existing.id) : [], dirty: false, forId: existing ? String(existing.id) : '' };
+                if (existing && !picExtrasLoaded(existing.id)) picLoadExtras(existing.id).then(list => {
+                    if (pfExtras.forId === String(existing.id) && !pfExtras.dirty) { pfExtras.list = list; pfPaintExtras(); }
+                });
+            }
             const callback = (data) => {
                 if (data && data.name) {
                     data.name = data.name.trim().replace(/\s+/g, ' ');
@@ -6321,6 +6837,7 @@
                     safeSave(KEYS.PRODUCTS, products);
                     safeSave(KEYS.LOGS, stockLogs);
                     if (pfPic.dirty && receiptProd) { if (pfPic.data) picSave(receiptProd.id, pfPic.data); else picDelete(receiptProd.id); pfPic.dirty = false; }
+                    if (pfExtras.dirty && receiptProd) { picSaveExtras(receiptProd.id, pfExtras.list); pfExtras.dirty = false; }
                     renderInventory();
                     renderStockLogs();
 
@@ -6353,7 +6870,7 @@
                 const before = products.find(p => String(p.id) === String(id));
                 products = products.filter(p => String(p.id) !== String(id));
                 safeSave(KEYS.PRODUCTS, products);
-                picDelete(id);
+                picDeleteAll(id);
                 if (before) { queueInventoryMutation(id, before, before, {}, { deleteProduct: true }); logInventoryEdit('delete', before, null); }
                 renderInventory();
             });
@@ -6578,7 +7095,7 @@
         }
 
         async function downloadBackupFile(data, opts) {
-            if (data && typeof data === 'object' && !('productPics' in data)) data.productPics = productPics;
+            if (data && typeof data === 'object' && !('productPics' in data)) { const all = await picAllForBackup(); data.productPics = all || productPics; }
             if (data && typeof data === 'object' && !('quickNotes' in data)) data.quickNotes = quickNotes;
             const silent = !!(opts && opts.silent);
             let pw = getBackupPassword();
@@ -6684,7 +7201,7 @@
                         localStorage.setItem(SALES_CLEARED_KEY, '0');
                         stockLogs = imported.stockLogs || [];
                         if (Array.isArray(imported.inventoryEdits)) { inventoryEdits = imported.inventoryEdits; safeSave(EDITS_KEY, inventoryEdits); renderInventoryEdits(); }
-                        if (Array.isArray(imported.quickNotes)) { quickNotes = imported.quickNotes; safeSave('pos_quick_notes', quickNotes); if (typeof refreshNotesUI === 'function') refreshNotesUI(); }
+                        if (Array.isArray(imported.quickNotes)) { quickNotes = imported.quickNotes.map(n => Object.assign({}, n, { _up: false })); safeSave('pos_quick_notes', quickNotes); if (typeof qnUploadMissing === 'function') qnUploadMissing(); if (typeof refreshNotesUI === 'function') refreshNotesUI(); }
                         cashiers = imported.cashiers || cashiers;
                         managerPin = imported.managerPin || managerPin;
 
@@ -6734,16 +7251,66 @@
         }
         function picSave(id, data) { productPics[String(id)] = data; return picTx(s => s.put({ id: String(id), data })); }
         function picDelete(id) { delete productPics[String(id)]; return picTx(s => s.delete(String(id))); }
+        /* v70: extra pictures of a product, kept as "<id>#x1", "<id>#x2"... beside the main one (on the device and in backups).
+           v71: they are the same small size as the main picture, and they are read from the phone only when that product is opened
+           (never when the app starts), so they never slow the app down. */
+        const extraPics = {};
+        function picIsExtraKey(k) { return String(k).indexOf('#x') > 0; }
+        function picExtraRange(id) { const pre = String(id) + '#x'; return IDBKeyRange.bound(pre, pre + '\uffff'); }
+        function picExtras(id) { return (extraPics[String(id)] || []).slice(); }
+        function picExtrasLoaded(id) { return Array.isArray(extraPics[String(id)]); }
+        function picLoadExtras(id) {
+            const key = String(id);
+            if (picExtrasLoaded(key)) return Promise.resolve(picExtras(key));
+            return picDb().then(db => new Promise(resolve => {
+                const req = db.transaction('pics').objectStore('pics').getAll(picExtraRange(key));
+                req.onsuccess = () => {
+                    const pre = key + '#x';
+                    const rows = (req.result || []).filter(r => r && r.data && String(r.id).indexOf(pre) === 0)
+                        .sort((a, b) => Number(String(a.id).slice(pre.length)) - Number(String(b.id).slice(pre.length)));
+                    resolve(rows.map(r => r.data));
+                };
+                req.onerror = () => resolve([]);
+            })).catch(() => []).then(async list => {
+                /* a bigger picture saved by v70 is made small once, like the main picture */
+                let changed = false;
+                const out = [];
+                for (const d of list) {
+                    if (String(d).length > 60000) { try { out.push(await picFromFile(d)); changed = true; continue; } catch (e) {} }
+                    out.push(d);
+                }
+                extraPics[key] = out;
+                if (changed) picSaveExtras(key, out);
+                return out.slice();
+            });
+        }
+        function picSaveExtras(id, list) {
+            const key = String(id);
+            const next = (list || []).filter(Boolean);
+            extraPics[key] = next.slice();
+            return picTx(s => { s.delete(picExtraRange(key)); next.forEach((d, i) => s.put({ id: key + '#x' + (i + 1), data: d })); });
+        }
+        /* every picture (main and extra) for a backup file, read straight from the phone */
+        function picAllForBackup() {
+            return picDb().then(db => new Promise(resolve => {
+                const req = db.transaction('pics').objectStore('pics').getAll();
+                req.onsuccess = () => { const m = {}; (req.result || []).forEach(r => { if (r && r.id && r.data) m[String(r.id)] = r.data; }); resolve(m); };
+                req.onerror = () => resolve(null);
+            })).catch(() => null);
+        }
+        function picDeleteAll(id) { picDelete(id); picSaveExtras(id, []); }
         function picReplaceAll(map) {
             const next = {};
             Object.keys(map || {}).forEach(k => { if (typeof map[k] === 'string' && map[k]) next[String(k)] = map[k]; });
-            productPics = next;
+            productPics = {};
+            Object.keys(next).forEach(k => { if (!picIsExtraKey(k)) productPics[k] = next[k]; });
+            Object.keys(extraPics).forEach(k => { delete extraPics[k]; });
             picTx(s => { s.clear(); Object.keys(next).forEach(k => s.put({ id: k, data: next[k] })); }).then(refreshPicViews);
         }
         function picLoadAll() {
             return picDb().then(db => new Promise(resolve => {
                 const req = db.transaction('pics').objectStore('pics').getAll();
-                req.onsuccess = () => { (req.result || []).forEach(r => { if (r && r.id && r.data) productPics[String(r.id)] = r.data; }); resolve(); };
+                req.onsuccess = () => { (req.result || []).forEach(r => { if (r && r.id && r.data && !picIsExtraKey(r.id)) productPics[String(r.id)] = r.data; }); resolve(); };
                 req.onerror = () => resolve();
             })).catch(() => {});
         }
@@ -6755,7 +7322,7 @@
         /* square crop from the middle, 320 px, JPEG: about 15-25 KB per picture, the original is never kept */
         function picFromFile(file) {
             return new Promise((resolve, reject) => {
-                const url = URL.createObjectURL(file);
+                const url = (typeof file === 'string') ? file : URL.createObjectURL(file);
                 const im = new Image();
                 im.onload = () => {
                     try {
@@ -6774,17 +7341,71 @@
                 im.src = url;
             });
         }
+        const PF_CAM_IC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.2"/></svg>';
         function pfPaintPic() {
             const box = document.getElementById('pf-pic-prev');
             if (!box) return;
-            box.innerHTML = pfPic.data ? '<img src="' + pfPic.data + '" alt="">' : PG_BOX;
-            const rm = document.getElementById('pf-pic-rm');
-            if (rm) rm.style.display = pfPic.data ? '' : 'none';
+            /* v70: tap the picture itself for camera / gallery / replace / remove; a small hint says so */
+            box.innerHTML = pfPic.data
+                ? '<img src="' + pfPic.data + '" alt=""><span class="pf-pic-badge">' + PF_CAM_IC + '</span>'
+                : PG_BOX + '<span class="pf-pic-hint">اضغط لإضافة صورة</span>';
+            pfPaintExtras();
+        }
+        function pfPaintExtras() {
+            const box = document.getElementById('pf-extras');
+            if (!box) return;
+            box.innerHTML = pfExtras.list.map((d, i) => '<button type="button" class="pf-x" onclick="pfPicMenu(\'extra\', ' + i + ')"><img src="' + d + '" alt=""></button>').join('') +
+                '<button type="button" class="pf-x pf-x-add" onclick="pfPicMenu(\'add\')"><span>+</span><small>إضافة صورة</small></button>';
+        }
+        function pfPicMenu(kind, idx) {
+            pfPicTarget = { kind, idx };
+            const has = kind === 'main' ? !!pfPic.data : kind === 'extra';
+            const ov = document.createElement('div');
+            ov.className = 'act-ov';
+            ov.style.zIndex = '10080';
+            ov.innerHTML = '<div class="act-sh"><div class="act-t">' + (kind === 'main' ? 'الصورة الرئيسية' : (kind === 'add' ? 'إضافة صورة' : 'صورة إضافية')) + '</div>' +
+                '<button type="button" class="act-b" data-a="cam">' + (has ? 'استبدال: التقاط صورة' : 'التقاط صورة') + '</button>' +
+                '<button type="button" class="act-b" data-a="gal">' + (has ? 'استبدال: من المعرض' : 'من المعرض') + '</button>' +
+                (kind === 'extra' ? '<button type="button" class="act-b" data-a="main">جعلها الصورة الرئيسية</button>' : '') +
+                (has ? '<button type="button" class="act-b red" data-a="rm">إزالة الصورة</button>' : '') +
+                '<button type="button" class="act-b cancel" data-a="x">إلغاء</button></div>';
+            ov.addEventListener('click', e => {
+                const b = e.target.closest('[data-a]');
+                if (e.target !== ov && !b) return;
+                ov.remove();
+                const a = b ? b.getAttribute('data-a') : 'x';
+                if (a === 'cam') document.getElementById('pf-cam').click();
+                else if (a === 'gal') document.getElementById('pf-gal').click();
+                else if (a === 'rm') { if (kind === 'main') pfPicRemove(); else { pfExtras.list.splice(idx, 1); pfExtras.dirty = true; pfPaintExtras(); } }
+                else if (a === 'main') pfMakeMain(idx);
+            });
+            document.body.appendChild(ov);
+        }
+        function pfMakeMain(idx) {
+            const d = pfExtras.list[idx];
+            if (!d) return;
+            picFromFile(d).then(sq => {
+                const oldMain = pfPic.data;
+                pfExtras.list.splice(idx, 1);
+                if (oldMain) pfExtras.list.unshift(oldMain);
+                pfExtras.dirty = true;
+                pfPic = { data: sq, dirty: true };
+                pfPaintPic();
+            }).catch(() => {});
         }
         function pfPicChosen(input) {
             const f = input.files && input.files[0];
             input.value = '';
             if (!f) return;
+            const t = pfPicTarget || { kind: 'main' };
+            if (t.kind === 'add' || t.kind === 'extra') {
+                picFromFile(f).then(d => {
+                    if (t.kind === 'add') pfExtras.list.push(d); else pfExtras.list[t.idx] = d;
+                    pfExtras.dirty = true;
+                    pfPaintExtras();
+                }).catch(() => showModal('خطأ', 'تعذر قراءة الصورة.', false, () => {}));
+                return;
+            }
             const box = document.getElementById('pf-pic-prev');
             if (box) box.textContent = 'جاري المعالجة…';
             picFromFile(f).then(d => { pfPic = { data: d, dirty: true }; pfPaintPic(); })
@@ -6808,7 +7429,7 @@
             const price = isW ? formatNum(p.kgPrice) + ' د.ل/كجم' : formatNum(p.price) + ' د.ل';
             const stock = isW ? `الشكائر: ${p.bagsCount || 0}<br>مفتوح: ${formatNum(p.openBagKg || 0)} كجم` : `الكمية: ${formatNum(p.qty)}`;
             const sel = invSelectMode && selProductIds.has(String(p.id));
-            return `<div class="pg-cell${sel ? ' sel' : ''}" data-id="${escapeHtml(String(p.id))}" onclick='invCellTap(${JSON.stringify(String(p.id))})'><div class="pg-im">${pgPicHtml(p)}<span class="pg-pb">${price}</span>${invSelectMode ? '<span class="pg-sel">' + PG_CHECK + '</span>' : ''}</div><div class="pg-t">${escapeHtml(p.name)}</div><div class="pg-s">${stock}</div>${p.expiryDate ? `<div class="pg-x">انتهاء ${escapeHtml(p.expiryDate)}</div>` : ''}</div>`;
+            return `<div class="pg-cell${sel ? ' sel' : ''}${p.inactive ? ' pg-inactive' : ''}" data-id="${escapeHtml(String(p.id))}" onclick='invCellTap(${JSON.stringify(String(p.id))})'><div class="pg-im">${pgPicHtml(p)}<span class="pg-pb">${price}</span>${p.inactive ? '<span class="pg-off">غير نشط</span>' : ''}${invSelectMode ? '<span class="pg-sel">' + PG_CHECK + '</span>' : ''}</div><div class="pg-t">${escapeHtml(p.name)}</div><div class="pg-s">${stock}</div>${p.expiryDate ? `<div class="pg-x">انتهاء ${escapeHtml(p.expiryDate)}</div>` : ''}</div>`;
         }
         function ddMore() {
             const dd = document.getElementById('product-dropdown');
@@ -6835,6 +7456,7 @@
             invObserver.observe(end);
         }
         function invCellTap(id) {
+            if (Date.now() - invLongPressAt < 700) return;
             if (invSelectMode) {
                 const k = String(id);
                 const on = !selProductIds.has(k);
@@ -6854,11 +7476,108 @@
             const stock = isW ? `الشكائر: ${p.bagsCount || 0} | المفتوح: ${formatNum(p.openBagKg || 0)} كجم` : `الكمية: ${formatNum(p.qty)}`;
             const d = productPics[String(p.id)];
             const pic = d ? '<img src="' + d + '" alt="">' : pgPicHtml(p);
-            const btns = `<button class="btn btn-green" onclick='prodSheetAct("edit", ${sid})'>تعديل</button>` +
-                (isW ? `<button class="btn btn-green" onclick='prodSheetAct("open", ${sid})'>فتح شكارة</button><button class="btn btn-green" onclick='prodSheetAct("part", ${sid})'>إضافة جزء</button>` : '') +
+            /* v70: the other three buttons in the app's teal; Delete stays red */
+            const btns = `<button class="btn btn-teal" onclick='prodSheetAct("edit", ${sid})'>تعديل</button>` +
+                (isW ? `<button class="btn btn-teal" onclick='prodSheetAct("open", ${sid})'>فتح شكارة</button><button class="btn btn-teal" onclick='prodSheetAct("part", ${sid})'>إضافة جزء</button>` : '') +
                 `<button class="btn btn-red" onclick='prodSheetAct("del", ${sid})'>حذف</button>`;
-            document.getElementById('pa-sh').innerHTML = `<div class="pa-hn"></div><div class="pa-top"><div class="pa-im">${pic}</div><div><div class="pa-nm">${escapeHtml(p.name)} <span class="pa-ty">(${isW ? 'بالوزن' : 'بالقطعة'})</span></div><div class="pa-in">${priceLine}<br><b>${stock}</b>${p.expiryDate ? `<br><span style="color:#d32f2f;">انتهاء: ${escapeHtml(p.expiryDate)}</span>` : ''}</div></div></div><div class="pa-bt">${btns}</div>`;
+            /* v70: every detail the product has, and all of its pictures */
+            const det = [];
+            const row = (l, v) => { if (v === undefined || v === null || v === '' || (typeof v === 'number' && !(v > 0))) return; det.push('<div class="pa-dr"><span>' + l + '</span><b>' + escapeHtml(String(v)) + '</b></div>'); };
+            if (isW) {
+                row('سعر الكيلو', Number(p.kgPrice) > 0 ? formatNum(p.kgPrice) + ' د.ل' : '');
+                row('سعر الشكارة الكاملة', Number(p.fullBagPrice) > 0 ? formatNum(p.fullBagPrice) + ' د.ل' : '');
+                row('سعر نصف الشكارة', Number(p.halfBagPrice) > 0 ? formatNum(p.halfBagPrice) + ' د.ل' : '');
+                row('وزن الشكارة', Number(p.bagWeightKg) > 0 ? formatNum(p.bagWeightKg) + ' كجم' : '');
+            } else {
+                row('سعر القطعة', Number(p.price) > 0 ? formatNum(p.price) + ' د.ل' : '');
+                row('سعر الجملة', Number(p.wholesaleUnitPrice) > 0 ? formatNum(p.wholesaleUnitPrice) + ' د.ل' : '');
+            }
+            if (p.expiryDate) row('تاريخ الانتهاء', p.expiryDate);
+            if (p.inactive) row('الحالة', 'غير نشط');
+            const notes = String(p.notes || p.description || '').trim();
+            const extras = picExtras(p.id);
+            if (!picExtrasLoaded(p.id)) picLoadExtras(p.id).then(list => {
+                const ov = document.getElementById('pa-ov');
+                if (list.length && ov && ov.classList.contains('open') && ov.dataset.pid === String(p.id)) openProdSheet(p.id);
+            });
+            document.getElementById('pa-ov').dataset.pid = String(p.id);
+            const gal = (d || extras.length) ? '<div class="pa-gal">' + [d].concat(extras).filter(Boolean).map(src => '<img src="' + src + '" alt="" onclick="openPicViewer(this.src)">').join('') + '</div>' : '';
+            document.getElementById('pa-sh').innerHTML = `<div class="pa-hn"></div><div class="pa-top"><div class="pa-im">${pic}</div><div><div class="pa-nm">${escapeHtml(p.name)} <span class="pa-ty">(${isW ? 'بالوزن' : 'بالقطعة'})</span></div><div class="pa-in">${priceLine}<br><b>${stock}</b>${p.expiryDate ? `<br><span style="color:#d32f2f;">انتهاء: ${escapeHtml(p.expiryDate)}</span>` : ''}</div></div></div>` +
+                (extras.length ? gal : '') +
+                (det.length || notes ? '<div class="pa-det">' + det.join('') + (notes ? '<div class="pa-notes"><span>التفاصيل</span>' + escapeHtml(notes) + '</div>' : '') + '</div>' : '') +
+                `<div class="pa-bt">${btns}</div>`;
             document.getElementById('pa-ov').classList.add('open');
+        }
+        function openPicViewer(src) {
+            const ov = document.createElement('div');
+            ov.className = 'pic-viewer';
+            ov.innerHTML = '<img src="' + src + '" alt="">';
+            ov.addEventListener('click', () => ov.remove());
+            document.body.appendChild(ov);
+        }
+
+        /* ---------- v70: long press on an inventory product: make inactive / active, or delete ---------- */
+        let invLongPressAt = 0;
+        (function () {
+            let timer = 0, sx = 0, sy = 0, cell = null;
+            const cancel = () => { clearTimeout(timer); timer = 0; if (cell) cell.classList.remove('pg-press'); cell = null; };
+            document.addEventListener('pointerdown', e => {
+                const c = e.target.closest && e.target.closest('#pg-inv .pg-cell');
+                if (!c || invSelectMode) return;
+                cancel();
+                cell = c; sx = e.clientX; sy = e.clientY;
+                c.classList.add('pg-press');
+                timer = setTimeout(() => {
+                    const id = c.getAttribute('data-id');
+                    cancel();
+                    invLongPressAt = Date.now();
+                    try { if (navigator.vibrate && getVibrationLevel() > 0) navigator.vibrate(VIBRATION_MS[getVibrationLevel()] || 30); } catch (er) {}
+                    openInvLongMenu(id);
+                }, 550);
+            }, true);
+            document.addEventListener('pointermove', e => { if (timer && (Math.abs(e.clientX - sx) > 10 || Math.abs(e.clientY - sy) > 10)) cancel(); }, true);
+            document.addEventListener('pointerup', () => { if (timer) cancel(); }, true);
+            document.addEventListener('pointercancel', cancel, true);
+            document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('#pg-inv .pg-cell')) e.preventDefault(); }, true);
+        })();
+        function openInvLongMenu(id) {
+            const p = products.find(x => String(x.id) === String(id));
+            if (!p) return;
+            const ov = document.createElement('div');
+            ov.className = 'act-ov';
+            ov.innerHTML = '<div class="act-sh"><div class="act-t">' + escapeHtml(p.name) + (p.inactive ? ' <small>(غير نشط)</small>' : '') + '</div>' +
+                '<button type="button" class="act-b" data-a="toggle">' + (p.inactive ? 'تفعيل المنتج (نشط)' : 'جعل المنتج غير نشط') + '</button>' +
+                '<button type="button" class="act-b red" data-a="del">حذف المنتج</button>' +
+                '<button type="button" class="act-b cancel" data-a="x">إلغاء</button></div>';
+            ov.addEventListener('click', e => {
+                const b = e.target.closest('[data-a]');
+                if (e.target !== ov && !b) return;
+                ov.remove();
+                const a = b ? b.getAttribute('data-a') : 'x';
+                if (a === 'toggle') requireManagerPass(() => confirmProductActive(id, !!p.inactive));
+                else if (a === 'del') requireManagerPass(() => deleteProduct(id));
+            });
+            document.body.appendChild(ov);
+        }
+        function confirmProductActive(id, makeActive) {
+            const p = products.find(x => String(x.id) === String(id));
+            if (!p) return;
+            const isW = p.unitType === 'weight';
+            const has = isW ? (Number(p.bagsCount || 0) > 0 || Number(p.openBagKg || 0) > 0) : Number(p.qty || 0) > 0;
+            const stockTxt = isW ? `${p.bagsCount || 0} شكارة و ${formatNum(p.openBagKg || 0)} كجم مفتوح` : `${formatNum(p.qty || 0)} قطعة`;
+            const msg = makeActive
+                ? `سيعود المنتج "${p.name}" نشطاً: يرجع إلى مكانه في المخزون ويظهر في البحث في الصفحة الرئيسية.`
+                : `سيصبح المنتج "${p.name}" غير نشط: ينتقل إلى أسفل المخزون ولا يظهر في البحث في الصفحة الرئيسية. يمكنك تفعيله لاحقاً بضغطة مطولة عليه.` + (has ? `\n\nتنبيه: ما زال في المخزون ${stockTxt}.` : '');
+            showModal(makeActive ? 'تفعيل المنتج' : 'جعل المنتج غير نشط', msg, false, () => setProductActive(id, makeActive));
+        }
+        function setProductActive(id, active) {
+            const p = products.find(x => String(x.id) === String(id));
+            if (!p) return;
+            const before = { ...p };
+            p.inactive = !active;
+            safeSave(KEYS.PRODUCTS, products);
+            queueInventoryMutation(p.id, before, p, { inactive: p.inactive });
+            renderInventory();
         }
         function closeProdSheet() { const ov = document.getElementById('pa-ov'); if (ov) ov.classList.remove('open'); }
         function prodSheetAct(kind, id) {
@@ -6908,6 +7627,7 @@
         let cloudSalesCol = null;
         let cloudLogsCol = null;
         let cloudInventoryOpsCol = null;
+        let cloudNotesCol = null;
         let cloudOutbox = safeLoad(CLOUD_OUTBOX_KEY, []);
         let cloudReady = false;
         let cloudSyncBusy = false;
@@ -6928,8 +7648,70 @@
             safeSave(CLOUD_OUTBOX_KEY, cloudOutbox);
         }
 
+        /* ===== v70: changes made on two devices to the same thing =====
+           Every synced product, sale, quick note and the settings carry a version number in the cloud.
+           A change remembers the version this device saw; if another device changed the same thing first,
+           the change is refused, this device is set back to the cloud's version, and a clear message explains it.
+           New sales are never refused. Stock changes entered by hand on the same product are both applied, with a warning. */
+        const SYNC_DEVICE_ID = (function () {
+            try { let d = localStorage.getItem('pos_device_id'); if (!d) { d = cloudUuid(); localStorage.setItem('pos_device_id', d); } return d; } catch (e) { return 'device'; }
+        })();
+        function syncInfo() {
+            return { who: (typeof activeCashier !== 'undefined' && activeCashier) ? String(activeCashier) : 'غير محدد', at: Date.now(), dev: SYNC_DEVICE_ID };
+        }
+        function syncByText(info) {
+            if (!info) return '';
+            const parts = [];
+            if (info.who) parts.push('بواسطة: ' + info.who);
+            if (info.at) parts.push('الوقت: ' + new Date(Number(info.at)).toLocaleString('ar-LY'));
+            return parts.join(' — ');
+        }
+        const SYNC_CONFLICT_KEY = 'pos_sync_conflicts';
+        let syncConflicts = safeLoad(SYNC_CONFLICT_KEY, []);
+        if (!Array.isArray(syncConflicts)) syncConflicts = [];
+        function reportSyncConflict(kind, title, text) {
+            syncConflicts.push({ id: cloudUuid(), kind, title, text, at: Date.now() });
+            safeSave(SYNC_CONFLICT_KEY, syncConflicts);
+            showSyncConflicts();
+        }
+        function showSyncConflicts() {
+            if (!syncConflicts.length || !document.body) return;
+            let ov = document.getElementById('sync-cf-ov');
+            if (!ov) {
+                ov = document.createElement('div');
+                ov.id = 'sync-cf-ov';
+                ov.className = 'sync-cf-ov';
+                document.body.appendChild(ov);
+            }
+            ov.innerHTML = '<div class="sync-cf-box"><div class="sync-cf-head">تغيير من جهاز آخر</div><div class="sync-cf-list">' +
+                syncConflicts.map(c => '<div class="sync-cf-item ' + (c.kind === 'warn' ? 'warn' : 'rej') + '"><div class="sync-cf-t">' + escapeHtml(c.title) + '</div><div class="sync-cf-x">' + escapeHtml(c.text) + '</div></div>').join('') +
+                '</div><button type="button" class="btn btn-teal" id="sync-cf-ok">فهمت</button></div>';
+            ov.querySelector('#sync-cf-ok').addEventListener('click', function () {
+                syncConflicts = [];
+                safeSave(SYNC_CONFLICT_KEY, syncConflicts);
+                ov.remove();
+            });
+        }
+        document.addEventListener('DOMContentLoaded', function () { setTimeout(showSyncConflicts, 600); });
+        const SALE_VERSIONED_OPS = { saleReturn: 1, saleAmendment: 1, saleDelete: 1, saleDebtPaid: 1, saleDebtUnpaid: 1, saleUpdate: 1 };
+        function saleLabel(s) {
+            if (!s) return 'فاتورة';
+            const t = s.timestamp ? new Date(s.timestamp) : null;
+            return 'فاتورة ' + (t ? t.toLocaleDateString('ar-LY') + ' الساعة ' + t.toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' }) : '') + (s.total !== undefined ? ' (' + formatNum(Number(s.total) || 0) + ' د.ل)' : '') + (s.cashier ? ' — الكاشير ' + s.cashier : '');
+        }
+
         function queueCloudOperation(operation) {
             if (!operation || !operation.id) return;
+            if (!operation.info) operation.info = syncInfo();
+            if (SALE_VERSIONED_OPS[operation.type] && operation.baseV === undefined && operation.payload && operation.payload.id !== undefined) {
+                const s = sales.find(x => String(x.id) === String(operation.payload.id));
+                if (s) {
+                    operation.baseV = Number(s._v) || 0;
+                    operation.saleLabel = saleLabel(s);
+                    s._v = operation.baseV + 1;
+                    try { persistSales([s]); } catch (e) {}
+                }
+            }
             if (!cloudOutbox.some(op => op.id === operation.id)) {
                 cloudOutbox.push(operation);
                 persistCloudOutbox();
@@ -6937,8 +7719,8 @@
             if (cloudReady) processCloudOutbox();
         }
 
-        function queueSaleForCloud(sale) {
-            queueCloudOperation({ id: 'sale:' + sale.id, type: 'sale', payload: sale, createdAt: Date.now() });
+        function queueSaleForCloud(sale, extra) {
+            queueCloudOperation(Object.assign({ id: 'sale:' + sale.id, type: 'sale', payload: sale, createdAt: Date.now() }, extra || {}));
         }
 
         function queueSaleNoteUpdateForCloud(sale) {
@@ -6957,13 +7739,30 @@
                 if (Math.abs(delta) > 1e-12) inventoryDelta[field] = delta;
             });
 
+            /* v70: send only the details that really changed, with the versions this device saw */
+            const metadata = {};
+            Object.keys(metadataPatch || {}).forEach(k => {
+                if (k === '_v' || k === '_sv' || k === '_vInfo' || k === '_svInfo') return;
+                if (JSON.stringify(before[k]) !== JSON.stringify(metadataPatch[k])) metadata[k] = metadataPatch[k];
+            });
+            const local = products.find(p => String(p.id) === String(productId));
+            const baseV = before._v !== undefined ? (Number(before._v) || 0) : (local ? Number(local._v) || 0 : 0);
+            const baseSV = before._sv !== undefined ? (Number(before._sv) || 0) : (local ? Number(local._sv) || 0 : 0);
             const payload = {
                 productId,
                 inventoryDelta,
-                metadata: metadataPatch || {},
+                metadata,
                 createProduct: options.createProduct || null,
-                deleteProduct: !!options.deleteProduct
+                deleteProduct: !!options.deleteProduct,
+                baseV, baseSV,
+                name: (after && after.name) || before.name || (local && local.name) || ''
             };
+            if (payload.createProduct) { delete payload.createProduct._v; delete payload.createProduct._sv; delete payload.createProduct._vInfo; delete payload.createProduct._svInfo; }
+            if (local && !options.createProduct && !options.deleteProduct) {
+                if (Object.keys(metadata).length) local._v = baseV + 1;
+                if (Object.keys(inventoryDelta).length) local._sv = baseSV + 1;
+                try { safeSave(KEYS.PRODUCTS, products); } catch (e) {}
+            }
             queueCloudOperation({ id: 'product-op:' + cloudUuid(), type: 'productMutation', payload, createdAt: Date.now() });
         }
 
@@ -6973,11 +7772,16 @@
             queueCloudOperation({ id: 'stock-log:' + log.id, type: 'stockLog', payload: log, createdAt: Date.now() });
         }
 
+        let cloudSettingsV = Number(localStorage.getItem('pos_settings_v')) || 0;
+        function setCloudSettingsV(v) { cloudSettingsV = Number(v) || 0; try { localStorage.setItem('pos_settings_v', String(cloudSettingsV)); } catch (e) {} }
         function queueSettingsSync() {
+            const baseV = cloudSettingsV;
+            setCloudSettingsV(baseV + 1);
             queueCloudOperation({
                 id: 'settings:' + cloudUuid(),
                 type: 'settings',
                 payload: { cashiers, managerPin },
+                baseV,
                 createdAt: Date.now()
             });
         }
@@ -7029,12 +7833,18 @@
             if (op.type === 'sale') {
                 const sale = op.payload;
                 const saleRef = cloudSalesCol.doc(String(sale.id));
+                const noteId = (sale.fromNote && sale.fromNote.id) ? String(sale.fromNote.id) : '';
+                const noteRef = (noteId && cloudNotesCol) ? cloudNotesCol.doc(noteId) : null;
+                let noteConflict = null;
                 await cloudDb.runTransaction(async transaction => {
-                    const [stateSnap, saleSnap] = await Promise.all([
-                        transaction.get(cloudStateRef),
-                        transaction.get(saleRef)
-                    ]);
+                    noteConflict = null;
+                    const reads = [transaction.get(cloudStateRef), transaction.get(saleRef)];
+                    if (noteRef) reads.push(transaction.get(noteRef));
+                    const [stateSnap, saleSnap, noteSnap] = await Promise.all(reads);
                     if (saleSnap.exists) return;
+                    /* v70: a sale made from a quick note goes through only if no other device converted, deleted or changed that note first */
+                    const nd = (noteSnap && noteSnap.exists) ? (noteSnap.data() || {}) : null;
+                    if (nd && (nd.closed || (op.noteBaseV !== undefined && (Number(nd._v) || 0) !== Number(op.noteBaseV)))) { noteConflict = nd; return; }
                     const state = stateSnap.exists ? (stateSnap.data() || {}) : {};
                     const remoteProducts = Array.isArray(state.products) ? state.products : [];
                     applyInventoryDeltas(remoteProducts, saleInventoryDeltasFromRecord(sale));
@@ -7044,7 +7854,9 @@
                         schemaVersion: CLOUD_SCHEMA_VERSION
                     }, { merge: true });
                     transaction.set(saleRef, { ...sale, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                    if (nd) transaction.set(noteRef, { closed: true, closedReason: 'converted', saleId: String(sale.id), _v: (Number(nd._v) || 0) + 1, _vInfo: op.info || syncInfo(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
                 });
+                if (noteConflict) await syncUndoNoteSale(sale, noteConflict, op);
                 return true;
             }
 
@@ -7052,16 +7864,21 @@
                 const p = op.payload || {};
                 const opRef = cloudInventoryOpsCol.doc(String(op.id));
                 const saleRef = cloudSalesCol.doc(String(p.id));
+                let cf = null;
                 await cloudDb.runTransaction(async transaction => {
+                    cf = null;
                     const [opSnap, stateSnap, saleSnap] = await Promise.all([transaction.get(opRef), transaction.get(cloudStateRef), transaction.get(saleRef)]);
-                    if (opSnap.exists || !saleSnap.exists || saleSnap.data().returnedAt || saleSnap.data().deleted) return;
+                    if (opSnap.exists) return;
+                    const sd = saleSnap.exists ? (saleSnap.data() || {}) : null;
+                    if (!sd || sd.deleted || sd.returnedAt || (op.baseV !== undefined && (Number(sd._v) || 0) !== op.baseV)) { cf = { data: sd }; return; }
                     const state = stateSnap.exists ? (stateSnap.data() || {}) : {};
                     const remoteProducts = Array.isArray(state.products) ? state.products.map(x => ({ ...x })) : [];
                     applyInventoryDeltas(remoteProducts, p.adjustment || []);
                     transaction.set(cloudStateRef, { products: remoteProducts, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), schemaVersion: CLOUD_SCHEMA_VERSION }, { merge: true });
-                    transaction.set(saleRef, { returnedAt: p.returnedAt, returnedBy: p.returnedBy || '', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                    transaction.set(saleRef, { returnedAt: p.returnedAt, returnedBy: p.returnedBy || '', _v: (Number(sd._v) || 0) + 1, _vInfo: op.info || syncInfo(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
                     transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'saleReturn' });
                 });
+                if (cf) await syncSaleConflict(op, String(p.id), cf.data, 'إرجاع الفاتورة');
                 return true;
             }
 
@@ -7069,38 +7886,64 @@
                 const p = op.payload || {};
                 const opRef = cloudInventoryOpsCol.doc(String(op.id));
                 const saleRef = cloudSalesCol.doc(String(p.id));
+                let cf = null;
                 await cloudDb.runTransaction(async transaction => {
+                    cf = null;
                     const [opSnap, stateSnap, saleSnap] = await Promise.all([transaction.get(opRef), transaction.get(cloudStateRef), transaction.get(saleRef)]);
-                    if (opSnap.exists || !saleSnap.exists || saleSnap.data().returnedAt || saleSnap.data().deleted) return;
+                    if (opSnap.exists) return;
+                    const sd = saleSnap.exists ? (saleSnap.data() || {}) : null;
+                    if (!sd || sd.deleted || sd.returnedAt || (op.baseV !== undefined && (Number(sd._v) || 0) !== op.baseV)) { cf = { data: sd }; return; }
                     const state = stateSnap.exists ? (stateSnap.data() || {}) : {};
                     const remoteProducts = Array.isArray(state.products) ? state.products.map(x => ({ ...x })) : [];
                     applyInventoryDeltas(remoteProducts, p.adjustment || []);
                     transaction.set(cloudStateRef, { products: remoteProducts, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), schemaVersion: CLOUD_SCHEMA_VERSION }, { merge: true });
                     const priorHistory = saleSnap.data().amendmentHistory || [];
-                    transaction.set(saleRef, { updatedAt: firebase.firestore.FieldValue.serverTimestamp(), items: p.items || [], total: Number(p.total || 0), profit: Number(p.profit || 0), inventoryDeltas: p.inventoryDeltas || [], ...(p.globalDiscount !== undefined ? { globalDiscount: Number(p.globalDiscount || 0), cartDebt: !!p.cartDebt, customerName: p.customerName || '', cartNote: p.cartNote || '', debtorName: p.debtorName || '', note: p.note || '' } : {}), amendedAt: p.amendedAt, amendedBy: p.amendedBy || '', amendmentHistory: p.amendment ? [...priorHistory, p.amendment] : priorHistory }, { merge: true });
+                    transaction.set(saleRef, { _v: (Number(sd._v) || 0) + 1, _vInfo: op.info || syncInfo(), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), items: p.items || [], total: Number(p.total || 0), profit: Number(p.profit || 0), inventoryDeltas: p.inventoryDeltas || [], ...(p.globalDiscount !== undefined ? { globalDiscount: Number(p.globalDiscount || 0), cartDebt: !!p.cartDebt, customerName: p.customerName || '', cartNote: p.cartNote || '', debtorName: p.debtorName || '', note: p.note || '' } : {}), ...(p.transferAll !== undefined ? { transferAll: !!p.transferAll, transferAmount: Number(p.transferAmount) || 0 } : {}), amendedAt: p.amendedAt, amendedBy: p.amendedBy || '', amendmentHistory: p.amendment ? [...priorHistory, p.amendment] : priorHistory }, { merge: true });
                     transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'saleAmendment' });
                 });
+                if (cf) await syncSaleConflict(op, String(p.id), cf.data, 'تعديل الفاتورة');
                 return true;
             }
 
             if (op.type === 'saleDelete') {
                 const p = op.payload || {};
-                await cloudSalesCol.doc(String(p.id)).set({
-                    id: String(p.id),
-                    deleted: true,
-                    returnedAt: p.returnedAt || '',
-                    deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                const saleRef = cloudSalesCol.doc(String(p.id));
+                let cf = null;
+                await cloudDb.runTransaction(async transaction => {
+                    cf = null;
+                    const snap = await transaction.get(saleRef);
+                    const sd = snap.exists ? (snap.data() || {}) : null;
+                    if (sd && sd.deleted) return;
+                    if (sd && op.baseV !== undefined && (Number(sd._v) || 0) !== op.baseV) { cf = { data: sd }; return; }
+                    transaction.set(saleRef, {
+                        id: String(p.id),
+                        deleted: true,
+                        returnedAt: p.returnedAt || '',
+                        _v: (sd ? Number(sd._v) || 0 : 0) + 1, _vInfo: op.info || syncInfo(),
+                        deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                 });
+                if (cf) await syncSaleConflict(op, String(p.id), cf.data, 'حذف الفاتورة');
                 return true;
             }
 
             if (op.type === 'salesDeleteMany') {
                 const p = op.payload || {};
                 const opRef = cloudInventoryOpsCol.doc(String(op.id));
+                let manyConflict = null, already = false;
+                const vIds = Object.keys(op.baseVs || {});
                 await cloudDb.runTransaction(async transaction => {
+                    manyConflict = null; already = false;
                     const [opSnap, stateSnap] = await Promise.all([transaction.get(opRef), transaction.get(cloudStateRef)]);
-                    if (opSnap.exists) return;
+                    if (opSnap.exists) { already = true; return; }
+                    /* v70: if another device changed any of these sales first, nothing is deleted */
+                    if (vIds.length) {
+                        const snaps = await Promise.all(vIds.map(id => transaction.get(cloudSalesCol.doc(id))));
+                        const changed = [];
+                        snaps.forEach((s, n) => { if (!s.exists) return; const d = s.data() || {}; if (d.deleted) return; if ((Number(d._v) || 0) !== Number(op.baseVs[vIds[n]])) changed.push(d); });
+                        if (changed.length) { manyConflict = changed; return; }
+                    }
                     if (p.returnStock && (p.adjustment || []).length) {
                         const state = stateSnap.exists ? (stateSnap.data() || {}) : {};
                         const remoteProducts = Array.isArray(state.products) ? state.products.map(x => ({ ...x })) : [];
@@ -7109,6 +7952,7 @@
                     }
                     transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'salesDeleteMany' });
                 });
+                if (manyConflict) { await syncDeleteManyConflict(op, manyConflict); return true; }
                 const idList = (p.ids || []).map(String);
                 for (let i = 0; i < idList.length; i += 400) {
                     const batch = cloudDb.batch();
@@ -7155,30 +7999,47 @@
             if (op.type === 'saleDebtPaid') {
                 const p = op.payload || {};
                 const saleRef = cloudSalesCol.doc(String(p.id));
+                let cf = null;
                 await cloudDb.runTransaction(async transaction => {
+                    cf = null;
                     const saleSnap = await transaction.get(saleRef);
                     if (!saleSnap.exists) return;
                     const data = saleSnap.data() || {};
-                    if (data.deleted || data.debtPaidAt) return;
-                    transaction.set(saleRef, { debtPaidAt: p.debtPaidAt, debtPaidBy: p.debtPaidBy || '', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                    if (data.deleted || data.debtPaidAt || data.returnedAt || (op.baseV !== undefined && (Number(data._v) || 0) !== op.baseV)) { cf = { data }; return; }
+                    transaction.set(saleRef, { debtPaidAt: p.debtPaidAt, debtPaidBy: p.debtPaidBy || '', _v: (Number(data._v) || 0) + 1, _vInfo: op.info || syncInfo(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
                 });
+                if (cf) await syncSaleConflict(op, String(p.id), cf.data, 'تسجيل سداد الدين');
                 return true;
             }
 
             if (op.type === 'saleDebtUnpaid') {
                 const p = op.payload || {};
                 const saleRef = cloudSalesCol.doc(String(p.id));
+                let cf = null;
                 await cloudDb.runTransaction(async transaction => {
+                    cf = null;
                     const saleSnap = await transaction.get(saleRef);
                     if (!saleSnap.exists) return;
-                    transaction.set(saleRef, { debtPaidAt: firebase.firestore.FieldValue.delete(), debtPaidBy: firebase.firestore.FieldValue.delete(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                    const data = saleSnap.data() || {};
+                    if (data.deleted || (op.baseV !== undefined && (Number(data._v) || 0) !== op.baseV)) { cf = { data }; return; }
+                    transaction.set(saleRef, { debtPaidAt: firebase.firestore.FieldValue.delete(), debtPaidBy: firebase.firestore.FieldValue.delete(), _v: (Number(data._v) || 0) + 1, _vInfo: op.info || syncInfo(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
                 });
+                if (cf) await syncSaleConflict(op, String(p.id), cf.data, 'إلغاء سداد الدين');
                 return true;
             }
 
             if (op.type === 'saleUpdate') {
                 const p = op.payload || {};
-                await cloudSalesCol.doc(String(p.id)).set({ note: p.note || '', noteUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                const saleRef = cloudSalesCol.doc(String(p.id));
+                let cf = null;
+                await cloudDb.runTransaction(async transaction => {
+                    cf = null;
+                    const snap = await transaction.get(saleRef);
+                    const data = snap.exists ? (snap.data() || {}) : null;
+                    if (data && (data.deleted || (op.baseV !== undefined && (Number(data._v) || 0) !== op.baseV))) { cf = { data }; return; }
+                    transaction.set(saleRef, { note: p.note || '', _v: (data ? Number(data._v) || 0 : 0) + 1, _vInfo: op.info || syncInfo(), noteUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                });
+                if (cf) await syncSaleConflict(op, String(p.id), cf.data, 'تعديل ملاحظة الفاتورة');
                 return true;
             }
 
@@ -7186,7 +8047,9 @@
                 const p = op.payload || {};
                 const productRef = cloudStateRef;
                 const opRef = cloudInventoryOpsCol.doc(String(op.id));
+                let pc = null;
                 await cloudDb.runTransaction(async transaction => {
+                    pc = null;
                     const [opSnap, stateSnap] = await Promise.all([
                         transaction.get(opRef),
                         transaction.get(productRef)
@@ -7195,20 +8058,33 @@
                     const state = stateSnap.exists ? (stateSnap.data() || {}) : {};
                     let remoteProducts = Array.isArray(state.products) ? state.products.map(x => ({ ...x })) : [];
                     const idx = remoteProducts.findIndex(x => String(x.id) === String(p.productId));
+                    const meta = {};
+                    Object.keys(p.metadata || {}).forEach(k => { if (k !== '_v' && k !== '_sv' && k !== '_vInfo' && k !== '_svInfo') meta[k] = p.metadata[k]; });
+                    const hasMeta = Object.keys(meta).length > 0;
+                    const hasStock = Object.keys(p.inventoryDelta || {}).length > 0;
+                    const versioned = p.baseV !== undefined;
+                    const info = op.info || syncInfo();
 
                     if (p.deleteProduct) {
-                        if (idx >= 0) remoteProducts.splice(idx, 1);
+                        if (idx >= 0) {
+                            const r = remoteProducts[idx];
+                            if (versioned && (Number(r._v) || 0) !== Number(p.baseV)) { pc = { kind: 'delete', remote: r }; return; }
+                            remoteProducts.splice(idx, 1);
+                        }
                     } else if (p.createProduct) {
-                        if (idx < 0) remoteProducts.push({ ...p.createProduct });
+                        if (idx < 0) remoteProducts.push({ ...p.createProduct, _v: 0, _sv: 0 });
                         else {
-                            Object.assign(remoteProducts[idx], p.metadata || {});
+                            Object.assign(remoteProducts[idx], meta);
                             applyInventoryDeltaToProduct(remoteProducts[idx], p.inventoryDelta || {});
                         }
                     } else {
                         if (idx >= 0) {
-                            Object.assign(remoteProducts[idx], p.metadata || {});
-                            applyInventoryDeltaToProduct(remoteProducts[idx], p.inventoryDelta || {});
-                        }
+                            const r = remoteProducts[idx];
+                            if (versioned && hasMeta && (Number(r._v) || 0) !== Number(p.baseV)) { pc = { kind: 'meta', remote: r }; return; }
+                            if (versioned && hasStock && (Number(r._sv) || 0) !== Number(p.baseSV)) pc = { kind: 'stock', remote: { ...r } };
+                            if (hasMeta) { Object.assign(r, meta); r._v = (Number(r._v) || 0) + 1; r._vInfo = info; }
+                            if (hasStock) { applyInventoryDeltaToProduct(r, p.inventoryDelta || {}); r._sv = (Number(r._sv) || 0) + 1; r._svInfo = info; }
+                        } else if (versioned && (hasMeta || hasStock)) { pc = { kind: 'gone' }; return; }
                     }
 
                     transaction.set(productRef, {
@@ -7218,6 +8094,7 @@
                     }, { merge: true });
                     transaction.set(opRef, { createdAt: op.createdAt || Date.now(), type: 'productMutation' });
                 });
+                if (pc) await syncProductConflict(op, pc);
                 return true;
             }
 
@@ -7249,12 +8126,57 @@
             }
 
             if (op.type === 'settings') {
-                await cloudStateRef.set({
-                    cashiers: op.payload.cashiers || [],
-                    managerPin: op.payload.managerPin || managerPin,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    schemaVersion: CLOUD_SCHEMA_VERSION
-                }, { merge: true });
+                let cf = null;
+                await cloudDb.runTransaction(async transaction => {
+                    cf = null;
+                    const snap = await transaction.get(cloudStateRef);
+                    const st = snap.exists ? (snap.data() || {}) : {};
+                    if (op.baseV !== undefined && (Number(st._setV) || 0) !== Number(op.baseV)) { cf = st; return; }
+                    transaction.set(cloudStateRef, {
+                        cashiers: op.payload.cashiers || [],
+                        managerPin: op.payload.managerPin || managerPin,
+                        _setV: (Number(st._setV) || 0) + 1, _setInfo: op.info || syncInfo(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        schemaVersion: CLOUD_SCHEMA_VERSION
+                    }, { merge: true });
+                });
+                if (cf) {
+                    if (!cloudOutbox.some(o => o !== op && o.type === 'settings')) setCloudSettingsV(Number(cf._setV) || 0);
+                    reportSyncConflict('reject', 'لم يُحفظ تغيير كلمات السر أو حسابات الكاشيرين', 'غيّر جهاز آخر كلمات السر أو حسابات الكاشيرين قبل أن يصل تغييرك' + (cf._setInfo ? ' (' + syncByText(cf._setInfo) + ')' : '') + '.\nتم إرجاع هذا الجهاز إلى الإعدادات الموجودة على السحابة. إذا كان تغييرك ما زال مطلوباً أعد إدخاله.');
+                    await cloudRefreshState();
+                }
+                return true;
+            }
+
+            if (op.type === 'noteCreate') {
+                const n = op.payload || {};
+                if (!cloudNotesCol) return false;
+                const ref = cloudNotesCol.doc(String(n.id));
+                await cloudDb.runTransaction(async transaction => {
+                    const snap = await transaction.get(ref);
+                    if (snap.exists) return;
+                    transaction.set(ref, { ...n, closed: false, _v: 0, _vInfo: op.info || syncInfo(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                });
+                return true;
+            }
+
+            if (op.type === 'noteEdit' || op.type === 'noteDelete') {
+                const p = op.payload || {};
+                if (!cloudNotesCol) return false;
+                const ref = cloudNotesCol.doc(String(p.id));
+                let cf = null;
+                await cloudDb.runTransaction(async transaction => {
+                    cf = null;
+                    const snap = await transaction.get(ref);
+                    const d = snap.exists ? (snap.data() || {}) : null;
+                    if (!d) { if (op.type === 'noteEdit') cf = { gone: true }; return; }
+                    if (d.closed || (op.baseV !== undefined && (Number(d._v) || 0) !== Number(op.baseV))) { cf = { data: d }; return; }
+                    const upd = op.type === 'noteEdit'
+                        ? { text: p.text || '', editedAt: p.editedAt || '' }
+                        : { closed: true, closedReason: 'deleted' };
+                    transaction.set(ref, { ...upd, _v: (Number(d._v) || 0) + 1, _vInfo: op.info || syncInfo(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                });
+                if (cf) syncNoteConflict(op, cf);
                 return true;
             }
 
@@ -7304,6 +8226,116 @@
             }
         }
 
+        /* ===== v70: what happens on this device when a change was refused ===== */
+        async function cloudRefreshState() {
+            if (!cloudStateRef) return;
+            try {
+                const snap = await cloudStateRef.get();
+                if (!snap.exists) return;
+                const data = snap.data() || {};
+                cloudApplyingRemote = true;
+                try {
+                    if (Array.isArray(data.products)) { products = cloudKeepPendingVersions(data.products); safeSave(KEYS.PRODUCTS, products); }
+                    if (Array.isArray(data.cashiers)) { cashiers = data.cashiers; safeSave(KEYS.CASHIERS, cashiers); }
+                    if (data.managerPin) { managerPin = data.managerPin; localStorage.setItem(KEYS.MANAGER_PIN, managerPin); }
+                    if (!cloudOutbox.some(o => o.type === 'settings')) setCloudSettingsV(Number(data._setV) || 0);
+                } finally { cloudApplyingRemote = false; }
+                renderInventory();
+            } catch (e) { console.error('Could not refresh from the cloud', e); }
+        }
+        /* products this device still has changes waiting for keep the version they will have after those changes */
+        function cloudKeepPendingVersions(remoteProducts) {
+            const pend = new Set(cloudOutbox.filter(o => o.type === 'productMutation' && o.payload).map(o => String(o.payload.productId)));
+            if (!pend.size) return remoteProducts;
+            return remoteProducts.map(r => {
+                if (!pend.has(String(r.id))) return r;
+                const l = products.find(p => String(p.id) === String(r.id));
+                if (!l) return r;
+                return Object.assign({}, r, { _v: Math.max(Number(r._v) || 0, Number(l._v) || 0), _sv: Math.max(Number(r._sv) || 0, Number(l._sv) || 0) });
+            });
+        }
+        function cloudPendingSaleIds() {
+            return new Set(cloudOutbox.filter(o => SALE_VERSIONED_OPS[o.type] && o.payload).map(o => String(o.payload.id)));
+        }
+        function cloudReplaceLocalSale(remote) {
+            const r = stripCloudSaleFields(remote);
+            const id = String(r.id);
+            const i = sales.findIndex(x => String(x.id) === id);
+            if (i >= 0) sales[i] = r; else { sales.push(r); sales = sortSalesDesc(sales); }
+            persistSales([r]);
+        }
+        function cloudRemoveLocalSale(id) {
+            id = String(id);
+            if (!sales.some(x => String(x.id) === id)) return;
+            sales = sales.filter(x => String(x.id) !== id);
+            persistSaleRemoval(id);
+        }
+        function describeSaleState(d) {
+            if (!d) return 'هذه الفاتورة غير موجودة على السحابة';
+            if (d.deleted) return 'حُذفت هذه الفاتورة من جهاز آخر';
+            if (d.returnedAt) return 'أُرجعت هذه الفاتورة' + (d.returnedBy ? ' بواسطة ' + d.returnedBy : '') + ' في ' + new Date(d.returnedAt).toLocaleString('ar-LY');
+            const by = d._vInfo ? ' (' + syncByText(d._vInfo) + ')' : '';
+            return 'غيّر جهاز آخر هذه الفاتورة قبل وصول تغييرك' + by;
+        }
+        async function syncSaleConflict(op, id, remote, actionLabel) {
+            if (op.type === 'saleDelete' && remote && !remote.deleted && deletedSaleIds.has(String(id))) {
+                deletedSaleIds.delete(String(id));
+                safeSave(KEYS.DELETED_SALES, Array.from(deletedSaleIds));
+            }
+            if (remote && !remote.deleted) cloudReplaceLocalSale(remote);
+            else if (remote && remote.deleted) cloudRemoveLocalSale(id);
+            await cloudRefreshState();
+            renderSales();
+            const label = op.saleLabel || (remote ? saleLabel(remote) : 'فاتورة');
+            reportSyncConflict('reject', 'لم يتم ' + actionLabel + ': ' + label, describeSaleState(remote) + '.\nلذلك لم يُطبَّق تغييرك، وتظهر الفاتورة الآن كما هي على السحابة. إذا كان تغييرك ما زال مطلوباً، راجع الفاتورة وأعده.');
+        }
+        async function syncDeleteManyConflict(op, changed) {
+            const ids = ((op.payload && op.payload.ids) || []).map(String);
+            ids.forEach(id => deletedSaleIds.delete(id));
+            safeSave(KEYS.DELETED_SALES, Array.from(deletedSaleIds));
+            try {
+                for (let i = 0; i < ids.length; i += 10) {
+                    const snaps = await Promise.all(ids.slice(i, i + 10).map(id => cloudSalesCol.doc(id).get()));
+                    snaps.forEach(s => { if (s.exists) { const d = s.data() || {}; if (!d.deleted) cloudReplaceLocalSale(d); } });
+                }
+            } catch (e) { console.error('Could not restore the sales', e); }
+            await cloudRefreshState();
+            renderSales();
+            reportSyncConflict('reject', 'لم يتم حذف ' + ids.length + ' فاتورة', 'غيّر جهاز آخر ' + changed.length + ' من هذه الفواتير قبل وصول الحذف (مثلاً: ' + saleLabel(changed[0]) + (changed[0]._vInfo ? ' — ' + syncByText(changed[0]._vInfo) : '') + ').\nلذلك لم يُحذف أي منها ولم يتغير المخزون، وأُعيدت كلها إلى سجل المبيعات. راجعها ثم احذف من جديد إذا لزم.');
+        }
+        async function syncProductConflict(op, pc) {
+            const p = op.payload || {};
+            const name = p.name || (pc.remote && pc.remote.name) || 'منتج';
+            if (pc.kind === 'stock') {
+                reportSyncConflict('warn', 'تنبيه مخزون: «' + name + '»', 'تم تطبيق تغيير المخزون الذي أدخلته، لكن جهازاً آخر غيّر مخزون نفس المنتج أيضاً قبل وصول تغييرك' + (pc.remote && pc.remote._svInfo ? ' (' + syncByText(pc.remote._svInfo) + ')' : '') + '.\nتأكد أن نفس الكمية لم تُدخل مرتين.');
+                return;
+            }
+            await cloudRefreshState();
+            if (pc.kind === 'gone') {
+                reportSyncConflict('reject', 'لم يُحفظ تغييرك على «' + name + '»', 'حُذف هذا المنتج من جهاز آخر قبل وصول تغييرك، فلم يُطبَّق.');
+                return;
+            }
+            const fields = Object.keys(p.metadata || {}).map(k => { const f = (typeof EDIT_FIELDS !== 'undefined') ? EDIT_FIELDS.find(x => x[0] === k) : null; return f ? f[1] + ': ' + (p.metadata[k] === '' || p.metadata[k] === undefined ? 'فارغ' : p.metadata[k]) : ''; }).filter(Boolean);
+            const what = pc.kind === 'delete' ? 'حذف المنتج' : 'تعديلك';
+            reportSyncConflict('reject', 'لم يتم ' + (pc.kind === 'delete' ? 'حذف' : 'حفظ تعديل') + ' «' + name + '»', 'عدّل جهاز آخر هذا المنتج قبل أن يصل ' + what + (pc.remote && pc.remote._vInfo ? ' (' + syncByText(pc.remote._vInfo) + ')' : '') + '.\nلذلك لم يُطبَّق ' + what + (p.inventoryDelta && Object.keys(p.inventoryDelta).length && pc.kind !== 'delete' ? ' (ولا تغيير المخزون الذي معه)' : '') + '، والمنتج يظهر الآن كما هو على السحابة.' + (fields.length ? '\nما كنت أدخلته: ' + fields.join('، ') : '') + '\nإذا كان ما زال مطلوباً أعد إدخاله.');
+        }
+        async function syncUndoNoteSale(sale, nd, op) {
+            cloudRemoveLocalSale(sale.id);
+            if (!nd.closed && typeof qnApplyRemoteNote === 'function') qnApplyRemoteNote(nd);
+            await cloudRefreshState();
+            renderSales();
+            if (typeof refreshNotesUI === 'function') refreshNotesUI();
+            const why = nd.closed ? (nd.closedReason === 'converted' ? 'حوّلها جهاز آخر إلى بيع' : 'حذفها جهاز آخر') : 'عدّل جهاز آخر نصها';
+            reportSyncConflict('reject', 'لم يتم تحويل الملاحظة السريعة إلى بيع', why + ' قبل وصول تحويلك' + (nd._vInfo ? ' (' + syncByText(nd._vInfo) + ')' : '') + '.\nلذلك أُلغي البيع الذي أنشأته منها على هذا الجهاز وأُرجع المخزون كما هو على السحابة' + (nd.closed ? '' : '، وأُعيدت الملاحظة بنصها الجديد لتحوّلها من جديد إذا لزم') + '.\nنص الملاحظة: ' + ((sale.fromNote && sale.fromNote.text) || ''));
+        }
+        function syncNoteConflict(op, cf) {
+            const p = op.payload || {};
+            const d = cf.data || null;
+            if (typeof qnApplyRemoteNote === 'function') { if (d && !d.closed) qnApplyRemoteNote(d); else if (typeof qnDropLocalNote === 'function') qnDropLocalNote(p.id); }
+            const why = !d ? 'حُذفت هذه الملاحظة' : (d.closed ? (d.closedReason === 'converted' ? 'حوّلها جهاز آخر إلى بيع' : 'حذفها جهاز آخر') : 'عدّل جهاز آخر نصها');
+            reportSyncConflict('reject', op.type === 'noteEdit' ? 'لم يُحفظ تعديل الملاحظة السريعة' : 'لم تُحذف الملاحظة السريعة', why + ' قبل وصول تغييرك' + (d && d._vInfo ? ' (' + syncByText(d._vInfo) + ')' : '') + '.\nالملاحظة تظهر الآن كما هي على السحابة.' + (op.type === 'noteEdit' ? '\nالنص الذي كتبته: ' + (p.text || '') : ''));
+        }
+
         function stripCloudSaleFields(remote) {
             const copy = { ...remote };
             delete copy.updatedAt;
@@ -7327,6 +8359,7 @@
             const changed = [];
             const removedIds = [];
             let deletedChanged = false;
+            const pendSales = cloudPendingSaleIds();
             remoteSales.forEach(remote => {
                 const id = String(remote.id);
                 if (remote.deleted) {
@@ -7338,6 +8371,7 @@
                 if (deletedSaleIds.has(id)) return;
                 const existing = memById.get(id);
                 const merged = existing ? { ...existing, ...remote } : remote;
+                if (existing && pendSales.has(id)) merged._v = Math.max(Number(remote._v) || 0, Number(existing._v) || 0);
                 memById.set(id, merged);
                 changed.push(merged);
             });
@@ -7358,6 +8392,7 @@
             if (salesMode === 'idb') return mergeSalesFromCloudIdb(remoteSales);
             const byId = new Map(sales.map(s => [String(s.id), s]));
             let deletedChanged = false;
+            const pendSalesL = cloudPendingSaleIds();
             (remoteSales || []).forEach(remote => {
                 const remoteId = String(remote.id);
                 if (remote.deleted) {
@@ -7368,7 +8403,11 @@
                 if (deletedSaleIds.has(remoteId)) return;
                 const existing = byId.get(remoteId);
                 if (!existing) byId.set(remoteId, remote);
-                else byId.set(remoteId, { ...existing, ...remote });
+                else {
+                    const merged = { ...existing, ...remote };
+                    if (pendSalesL.has(remoteId)) merged._v = Math.max(Number(remote._v) || 0, Number(existing._v) || 0);
+                    byId.set(remoteId, merged);
+                }
             });
             deletedSaleIds.forEach(id => byId.delete(id));
             if (deletedChanged) safeSave(KEYS.DELETED_SALES, Array.from(deletedSaleIds));
@@ -7489,9 +8528,10 @@
                 if (stateSnap.exists) {
                     const data = stateSnap.data() || {};
                     if (Array.isArray(data.products)) {
-                        products = data.products;
+                        products = cloudKeepPendingVersions(data.products);
                         safeSave(KEYS.PRODUCTS, products);
                     }
+                    if (!cloudOutbox.some(o => o.type === 'settings')) setCloudSettingsV(Number(data._setV) || 0);
                     if (Array.isArray(data.cashiers)) {
                         cashiers = data.cashiers;
                         safeSave(KEYS.CASHIERS, cashiers);
@@ -7506,6 +8546,9 @@
 
                 if (salesSnap) await mergeSalesFromCloud(salesSnap.docs.map(d => d.data()));
                 mergeLogsFromCloud(logsSnap.docs.map(d => d.data()));
+                if (cloudNotesCol && typeof qnMergeFromCloud === 'function') {
+                    try { const ns = await cloudNotesCol.where('closed', '==', false).get(); qnMergeFromCloud(ns.docs.map(d => d.data())); } catch (e) { console.error('Could not read the quick notes', e); }
+                }
                 renderInventory();
                 renderSales();
                 renderStockLogs();
@@ -7524,9 +8567,10 @@
                 cloudApplyingRemote = true;
                 try {
                     if (Array.isArray(data.products)) {
-                        products = data.products;
+                        products = cloudKeepPendingVersions(data.products);
                         safeSave(KEYS.PRODUCTS, products);
                     }
+                    if (!cloudOutbox.some(o => o.type === 'settings')) setCloudSettingsV(Number(data._setV) || 0);
                     if (Array.isArray(data.cashiers)) {
                         cashiers = data.cashiers;
                         safeSave(KEYS.CASHIERS, cashiers);
@@ -7553,6 +8597,12 @@
                 mergeLogsFromCloud(snapshot.docs.map(d => d.data()));
                 renderStockLogs();
             }, err => console.error('Cloud logs listen error', err));
+
+            /* v70: quick notes are shared between the devices (only the ones not converted or deleted are read) */
+            cloudNotesCol.where('closed', '==', false).onSnapshot(snapshot => {
+                if (cloudBootstrapping) return;
+                if (typeof qnMergeFromCloud === 'function') qnMergeFromCloud(snapshot.docs.map(d => d.data()));
+            }, err => console.error('Cloud notes listen error', err));
         }
 
         async function initCloudSync() {
@@ -7566,6 +8616,7 @@
                 cloudSalesCol = cloudDocRef.collection('sales');
                 cloudLogsCol = cloudDocRef.collection('stockLogs');
                 cloudInventoryOpsCol = cloudDocRef.collection('inventoryOps');
+                cloudNotesCol = cloudDocRef.collection('notes');
                 cloudBootstrapping = true;
 
                 await migrateLegacyCloudIfNeeded();
@@ -7636,6 +8687,7 @@
                 cloudSalesCol = null;
                 cloudLogsCol = null;
                 cloudInventoryOpsCol = null;
+                cloudNotesCol = null;
                 cloudReady = false;
                 cloudListenersAttached = false;
                 renderCloudSyncStatus();
@@ -8047,6 +9099,70 @@
         /* v55: quick notes (rush-hour notes that are turned into real sales later) */
         const QN_KEY = 'pos_quick_notes', QN_DRAFT_KEY = 'pos_quick_note_draft';
         function saveQuickNotes() { safeSave(QN_KEY, quickNotes); }
+        /* ===== v70: quick notes are shared through the cloud ===== */
+        function qnCloudNote(n) {
+            const o = { id: String(n.id), ts: n.ts, cashier: n.cashier || '', dayName: n.dayName || '', text: n.text || '' };
+            if (n.editedAt) o.editedAt = n.editedAt;
+            if (n.importBatchId) o.importBatchId = n.importBatchId;
+            return o;
+        }
+        function qnSort() { quickNotes.sort((a, b) => (new Date(b.ts).getTime() || 0) - (new Date(a.ts).getTime() || 0)); }
+        function qnUpload(n) {
+            n._up = true;
+            queueCloudOperation({ id: 'note-create:' + n.id, type: 'noteCreate', payload: qnCloudNote(n), createdAt: Date.now() });
+        }
+        function qnAddNotes(list) {
+            (list || []).forEach(n => { n._v = 0; quickNotes.push(n); qnUpload(n); });
+            qnSort();
+            saveQuickNotes();
+            if (typeof refreshNotesUI === 'function') refreshNotesUI();
+        }
+        window.qnAddNotes = qnAddNotes;
+        function qnUploadMissing() {
+            let ch = false;
+            quickNotes.forEach(n => { if (!n._up) { qnUpload(n); ch = true; } });
+            if (ch) saveQuickNotes();
+        }
+        function qnPendingNoteIds() {
+            const s = new Set();
+            cloudOutbox.forEach(o => {
+                if ((o.type === 'noteCreate' || o.type === 'noteEdit' || o.type === 'noteDelete') && o.payload) s.add(String(o.payload.id));
+                else if (o.type === 'sale' && o.payload && o.payload.fromNote && o.payload.fromNote.id) s.add(String(o.payload.fromNote.id));
+            });
+            return s;
+        }
+        function qnFromRemote(d) {
+            const n = { id: String(d.id), ts: d.ts, cashier: d.cashier || '', dayName: d.dayName || '', text: d.text || '', _v: Number(d._v) || 0, _up: true };
+            if (d.editedAt) n.editedAt = d.editedAt;
+            if (d.importBatchId) n.importBatchId = d.importBatchId;
+            return n;
+        }
+        function qnMergeFromCloud(remote) {
+            const pend = qnPendingNoteIds();
+            const byId = new Map();
+            quickNotes.forEach(n => { if (pend.has(String(n.id))) byId.set(String(n.id), n); });
+            (remote || []).forEach(d => { if (!d || d.closed || pend.has(String(d.id))) return; byId.set(String(d.id), qnFromRemote(d)); });
+            const before = JSON.stringify(quickNotes.map(n => [n.id, n.text, n._v]));
+            quickNotes = Array.from(byId.values());
+            qnSort();
+            if (JSON.stringify(quickNotes.map(n => [n.id, n.text, n._v])) === before) return;
+            saveQuickNotes();
+            refreshNotesUI();
+        }
+        function qnApplyRemoteNote(d) {
+            const n = qnFromRemote(d);
+            quickNotes = quickNotes.filter(x => String(x.id) !== n.id);
+            quickNotes.push(n);
+            qnSort();
+            saveQuickNotes();
+            refreshNotesUI();
+        }
+        function qnDropLocalNote(id) {
+            quickNotes = quickNotes.filter(x => String(x.id) !== String(id));
+            saveQuickNotes();
+            refreshNotesUI();
+        }
+        setTimeout(qnUploadMissing, 0);
         function qnFmt(ts) {
             const d = new Date(ts);
             return d.toLocaleDateString('ar-LY', { weekday: 'long', day: 'numeric', month: 'numeric' }) + ' — ' + d.toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' });
@@ -8123,11 +9239,19 @@
                     return;
                 }
                 if (editing) {
-                    if (t !== editing.text) { editing.text = t; editing.editedAt = new Date().toISOString(); }
+                    if (t !== editing.text) {
+                        editing.text = t; editing.editedAt = new Date().toISOString();
+                        const baseV = Number(editing._v) || 0;
+                        editing._v = baseV + 1;
+                        if (!editing._up) qnUpload(editing);
+                        else queueCloudOperation({ id: 'note-edit:' + editing.id + ':' + Date.now(), type: 'noteEdit', payload: { id: String(editing.id), text: t, editedAt: editing.editedAt }, baseV, createdAt: Date.now() });
+                    }
                 } else {
                     const now = new Date();
                     const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-                    quickNotes.unshift({ id: cloudUuid(), ts: now.toISOString(), cashier: activeCashier, dayName: days[now.getDay()], text: t });
+                    const nn = { id: cloudUuid(), ts: now.toISOString(), cashier: activeCashier, dayName: days[now.getDay()], text: t, _v: 0 };
+                    quickNotes.unshift(nn);
+                    qnUpload(nn);
                     dropDraft();
                 }
                 saveQuickNotes();
@@ -8186,6 +9310,10 @@
         }
         function removeNotes(ids) {
             const set = new Set(ids.map(String));
+            quickNotes.forEach(n => {
+                if (!set.has(String(n.id))) return;
+                queueCloudOperation({ id: 'note-delete:' + n.id + ':' + Date.now(), type: 'noteDelete', payload: { id: String(n.id) }, baseV: Number(n._v) || 0, createdAt: Date.now() });
+            });
             quickNotes = quickNotes.filter(n => !set.has(String(n.id)));
             if (convertingNote && set.has(String(convertingNote.id))) clearCart();
             saveQuickNotes();
@@ -8234,7 +9362,7 @@
         function qnStartConvert(note, mode, readText) {
             if (cart.length > 0 || editingSaleId) return;
             clearCart();
-            convertingNote = { id: note.id, ts: note.ts, cashier: note.cashier || activeCashier, text: note.text };
+            convertingNote = { id: note.id, ts: note.ts, cashier: note.cashier || activeCashier, text: note.text, _v: Number(note._v) || 0 };
             let report = null;
             if (mode === 'read') report = fillCartFromNote(readText);
             updateNoteBanner();
@@ -8354,7 +9482,12 @@
                 if (!sim.has(String(p.id))) sim.set(String(p.id), { qty: Number(p.qty || 0), bags: Number(p.bagsCount || 0), open: Number(p.openBagKg || 0) });
                 const st = sim.get(String(p.id));
                 let bad = false;
-                if (it.sellMode === 'fullbag') { st.bags -= it.qty; bad = st.bags < 0; }
+                if (Number(it.customKg) > 0 && (it.sellMode === 'fullbag' || it.sellMode === 'halfbag')) {
+                    const tmp = { bagsCount: st.bags, openBagKg: st.open, bagWeightKg: p.bagWeightKg };
+                    customBagDeduct(tmp, it);
+                    st.bags = tmp.bagsCount; st.open = tmp.openBagKg; bad = st.open < -1e-9;
+                }
+                else if (it.sellMode === 'fullbag') { st.bags -= it.qty; bad = st.bags < 0; }
                 else if (it.sellMode === 'halfbag') {
                     const n = Math.max(1, Math.floor(Number(it.qty) || 1));
                     if (it.halfSource === 'open') { st.open -= n * it.halfKg; bad = st.open < -1e-9; }
@@ -8503,7 +9636,9 @@
             free: /^(بلاش|ببلاش|مجاني|مجانا|مجانيه|هديه|عطيته|عطيتها|عطيتهم|عطيتلو|عطيتو|اعطيته|اعطيتها|اهديته|اهديتها)$/,
             debt: /^(دين|بالدين|سلف|بالسلف|اجل|بالاجل|ديون)$/,
             bag: /^(شوال|اشوال|شوالات|اشوالات|شوالين|اشوالين|جوال|اجوال|اجوله|جوالات|جوالين|اجوالين)$/,
-            drop: /^(بيع|بعت|باع|ببيع|بعته|بعتها|وبيع)$/
+            drop: /^(بيع|بعت|باع|ببيع|بعته|بعتها|وبيع)$/,
+            transfer: /^(تحويل|بتحويل|التحويل|بالتحويل|تحويله|تحويلها|حواله|بحواله|الحواله|بالحواله)$/,
+            transferFill: /^(مصرفي|مصرفيه|بنكي|بنكيه|مصرف|بنك|المصرف|البنك|عالمصرف|عالبنك)$/
         };
         const BK_EDITS_KEY = 'pos_bulk_edits';
         /* v64: every change made in the review (picked products, panel edits, accepted prices, deleted lines...) is kept,
@@ -8783,7 +9918,27 @@
                 p.debt = dd;
                 break;
             }
+            /* v70: bank transfer: "تحويل" (the line's amount), "تحويل 5 دينار" (only that amount) */
+            for (let i = 0; i < t.length; i++) {
+                if (used.has(i) || !BK.transfer.test(t[i])) continue;
+                const tr = { amount: null };
+                used.add(i);
+                let j = i + 1;
+                while (j < t.length && !used.has(j) && (BK.transferFill.test(t[j]) || BK.fill.test(t[j]))) { used.add(j); j++; }
+                if (j + 1 < t.length && bkIsNum(t[j]) && !used.has(j) && (bkIsMoney(t[j + 1]) || bkIsGurush(t[j + 1])) && !used.has(j + 1)) {
+                    tr.amount = parseFloat(t[j]) / (bkIsGurush(t[j + 1]) ? 100 : 1);
+                    used.add(j); used.add(j + 1);
+                }
+                for (let k = 0; k < t.length; k++) if (!used.has(k) && BK.transferFill.test(t[k])) used.add(k);
+                p.transfer = tr;
+                break;
+            }
             return p;
+        }
+        /* a line holding only the transfer word (and filler words): it applies to the whole invoice */
+        function bkTransferOnly(p) {
+            if (!p || !p.transfer) return false;
+            return !p.t.some((w, i) => !p.used.has(i) && !BK.fill.test(w) && !BK.whole.test(w) && w !== 'و');
         }
         function bkParseText(text) {
             const carts = [];
@@ -9219,15 +10374,41 @@
             state.carts.forEach((cart, ci) => {
                 if (cart.deleted) return;
                 const cov = cart.ov || {};
-                const cv = { ci, lines: [], items: [], globalDiscount: 0, total: 0, debt: 0, edited: Array.isArray(cov.cartItems) && cov.cartItems.length > 0 };
+                const cv = { ci, lines: [], items: [], globalDiscount: 0, total: 0, debt: 0, edited: Array.isArray(cov.cartItems) && cov.cartItems.length > 0, transferAll: false, transferAmt: 0, noteLines: [], wholeNote: !!cov.toNote };
                 let prev = null;
+                if (cv.wholeNote) {
+                    /* v70: the whole invoice becomes one quick note in its own place */
+                    cv.noteText = cart.lines.filter(ln => !ln.ov.deleted).map(ln => ln.raw).filter((r, i, a) => i === 0 || r !== a[i - 1]).join('\n');
+                    out.carts.push(cv);
+                    return;
+                }
                 cart.lines.forEach((ln, li) => {
                     if (ln.ov.deleted) return;
                     if (ln.ignored && !ln.ov.keep) { out.ignored.push({ ci, li, raw: ln.raw, reason: ln.ignored }); return; }
                     if (ln.repay && !ln.ov.notRepay) { out.repays.push(bkBuildRepay(ln, ci, li, out._used)); return; }
-                    if (cv.edited) return;
-                    const lv = bkBuildLine(ln, prev, cv);
+                    if (cv.edited) {
+                        if (ln.p && ln.p.transfer && !ln.ov.toNote) { if (ln.p.transfer.amount > 0) cv.transferAmt += ln.p.transfer.amount; else cv.transferAll = true; }
+                        return;
+                    }
+                    let lv;
+                    if (bkTransferOnly(ln.p)) {
+                        lv = { ln, status: 'ok', msgs: [], tags: [], items: [], attached: true, ambiguous: false, bareChoice: '', match: null, pickable: false, targetName: '', slots: null };
+                        if (ln.p.transfer.amount > 0) { cv.transferAmt += ln.p.transfer.amount; lv.tags.push({ k: 'edit', t: 'تحويل مصرفي: ' + formatNum(ln.p.transfer.amount) + ' د.ل' }); }
+                        else { cv.transferAll = true; lv.tags.push({ k: 'edit', t: 'تحويل مصرفي: الفاتورة كلها' }); }
+                    } else lv = bkBuildLine(ln, prev, cv);
                     lv.ci = ci; lv.li = li;
+                    /* v70: a line turned into a quick note (with the lines that only modify it) */
+                    if (ln.ov.toNote || (lv.attached && lv.targetName && prev && prev._toNote)) {
+                        lv._toNote = true;
+                        cv.noteLines.push(lv);
+                        if (!lv.attached) prev = lv;
+                        return;
+                    }
+                    if (ln.p && ln.p.transfer && !bkTransferOnly(ln.p) && lv.items.length) {
+                        const amt = ln.p.transfer.amount > 0 ? ln.p.transfer.amount : lv.items.reduce((a, it) => a + ((it.isFree || it.isDebt) ? 0 : Math.max(0, Number(it.total || 0) - Number(it.partialDebt || 0))), 0);
+                        cv.transferAmt += amt;
+                        lv.tags.push({ k: 'edit', t: 'تحويل مصرفي: ' + formatNum(amt) + ' د.ل' });
+                    }
                     cv.lines.push(lv);
                     if (!lv.attached) prev = lv;
                 });
@@ -9237,7 +10418,7 @@
                     out.carts.push(cv);
                     return;
                 }
-                if (!cv.lines.length) return;
+                if (!cv.lines.length && !cv.noteLines.length) return;
                 cv.lines.forEach(lv => lv.items.forEach(it => { cv.items.push(it); all.push(it); }));
                 out.carts.push(cv);
             });
@@ -9255,7 +10436,18 @@
                 }
             });
             out.repays.forEach(r => { if (r.status === 'bad') out.bad++; else if (r.status === 'warn') out.warn++; });
+            out.noteCount = out.carts.reduce((a, cv) => a + (cv.wholeNote ? 1 : bkNoteGroups(cv).length), 0);
             return out;
+        }
+        /* v70: the lines of one invoice turned into quick notes; a line that only modifies the line above goes with it */
+        function bkNoteGroups(cv) {
+            const groups = [];
+            (cv.noteLines || []).forEach(lv => {
+                if (lv.attached && groups.length) { const g = groups[groups.length - 1]; if (g[g.length - 1] !== lv.ln.raw) g.push(lv.ln.raw); return; }
+                if (groups.length && lv.ln.partLabel && groups[groups.length - 1][0] === lv.ln.raw) return;
+                groups.push([lv.ln.raw]);
+            });
+            return groups.map(g => g.join('\n'));
         }
 
         /* ---------- the text box ---------- */
@@ -9263,6 +10455,7 @@
             try {
                 const rec = JSON.parse(localStorage.getItem(BK_LAST_KEY) || 'null');
                 if (rec && rec.batchId && sales.some(s => s.importBatchId === rec.batchId)) return rec;
+                if (rec && Array.isArray(rec.noteIds) && rec.noteIds.some(id => quickNotes.some(n => String(n.id) === String(id)))) return rec;
                 if (rec && Array.isArray(rec.paid) && rec.paid.some(p => sales.some(s => String(s.id) === String(p.id) && s.debtPaidAt === p.at))) return rec;
             } catch (e) {}
             return null;
@@ -9373,7 +10566,7 @@
             if (bkFilter === 'warn' && !v.warn) bkFilter = 'all';
             const sl = (f, html) => '<div class="bk-sl f-' + f + (bkFilter === f ? ' on' : '') + '" data-f="' + f + '">' + html + '</div>';
             document.getElementById('bk-sum').innerHTML =
-                sl('all', v.invoices + ' فاتورة — الإجمالي ' + formatNum(v.total) + ' د.ل' + (v.debt > 0 ? ' (دين ' + formatNum(v.debt) + ' د.ل)' : '') + (v.repays.length ? ' — ' + v.repays.length + ' تسديد دين' : '')) +
+                sl('all', v.invoices + ' فاتورة — الإجمالي ' + formatNum(v.total) + ' د.ل' + (v.debt > 0 ? ' (دين ' + formatNum(v.debt) + ' د.ل)' : '') + (v.repays.length ? ' — ' + v.repays.length + ' تسديد دين' : '') + (v.noteCount ? ' — ' + v.noteCount + ' ملاحظة سريعة' : '')) +
                 (v.bad ? sl('bad', '<span style="color:#d32f2f; font-weight:700;">' + v.bad + ' سطر أحمر: صحّحه أو احذفه أو اقبل سعر المخزون</span>') : '') +
                 (v.warn ? sl('warn', '<span style="color:#b45f06; font-weight:700;">' + v.warn + ' سطر برتقالي: تأكد منه</span>') : '');
             const showLine = (lv) => bkFilter === 'all' || lv.status === bkFilter;
@@ -9381,17 +10574,29 @@
             const ignHtml = ign.length ? '<div class="bk-ign"><button type="button" class="bk-ign-h" data-act="ign-toggle">سطور متجاهلة (' + ign.length + ') ' + (bkIgnOpen ? '▲' : '▼') + '</button>' +
                 (bkIgnOpen ? ign.map(x => '<div class="bk-ign-row"><div class="bk-ign-t">' + escapeHtml(x.raw) + '</div><div class="bk-ign-r">' + escapeHtml(x.reason) + '</div><button type="button" data-act="ign-keep" data-c="' + x.ci + '" data-l="' + x.li + '">اعتبره سطراً عادياً</button></div>').join('') : '') + '</div>' : '';
             const repShown = (v.repays || []).filter(r => bkFilter === 'all' || r.status === bkFilter);
-            list.innerHTML = ignHtml + repShown.map(bkRepayHtml).join('') + v.carts.map((cv, n) => {
+            let invNo = 0;
+            list.innerHTML = ignHtml + repShown.map(bkRepayHtml).join('') + v.carts.map((cv) => {
+                const n = invNo++;
+                if (cv.wholeNote) {
+                    if (bkFilter !== 'all') return '';
+                    return '<div class="bk-card bk-note-card"><div class="bk-card-h"><span class="bk-card-t">فاتورة ' + (n + 1) + ' ← ملاحظة سريعة</span><span class="bk-card-btns"><button type="button" data-act="cart-note-undo" data-c="' + cv.ci + '">إلغاء التحويل</button></span></div>' +
+                        '<div class="bk-note-body">' + escapeHtml(cv.noteText || '') + '</div><div class="bk-note-hint">ستُحفظ كملاحظة سريعة في نفس مكان هذه الفاتورة في سجل المبيعات.</div></div>';
+                }
                 const shown = cv.edited ? [] : cv.lines.filter(showLine);
-                if (cv.edited ? bkFilter !== 'all' : !shown.length) return '';
+                const noteGroups = bkNoteGroups(cv);
+                const noteHtml = (bkFilter === 'all' && cv.noteLines.length) ? '<div class="bk-note-sec"><div class="bk-note-sec-t">ستتحول إلى ملاحظة سريعة بعد هذه الفاتورة:</div>' +
+                    cv.noteLines.map(lv => '<div class="bk-note-row"><span>' + escapeHtml(lv.ln.raw) + '</span>' + (lv.ln.ov.toNote ? '<button type="button" data-act="line-note-undo" data-c="' + lv.ci + '" data-l="' + lv.li + '">إلغاء</button>' : '<small>يتبع السطر أعلاه</small>') + '</div>').join('') + '</div>' : '';
+                if (cv.edited ? bkFilter !== 'all' : (!shown.length && !noteHtml)) return '';
                 const sub = [];
                 if (cv.globalDiscount > 0) sub.push('خصم على الفاتورة: ' + formatNum(cv.globalDiscount) + ' د.ل');
                 if (cv.debt > 0) sub.push('دين: ' + formatNum(cv.debt) + ' د.ل');
                 const cov = (bkState.carts[cv.ci] && bkState.carts[cv.ci].ov) || {};
                 if (cov.customerName) sub.push('المشتري: ' + cov.customerName);
                 const body = cv.edited ? bkEditedCartHtml(cv, cov) : shown.map(bkLineHtml).join('');
-                return '<div class="bk-card"><div class="bk-card-h"><span class="bk-card-t">فاتورة ' + (n + 1) + '</span><span class="bk-card-tot">' + formatNum(cv.total) + ' <small>د.ل</small></span><span class="bk-card-btns"><button type="button" data-act="cart-edit" data-c="' + cv.ci + '" data-n="' + (n + 1) + '">السلة</button><button type="button" class="del" data-act="del-cart" data-c="' + cv.ci + '">حذف الفاتورة</button></span></div>' +
-                    (sub.length ? '<div class="bk-card-sub">' + escapeHtml(sub.join(' — ')) + '</div>' : '') + body + '</div>';
+                if (cv.transferAll) sub.push('تحويل مصرفي: الفاتورة كلها');
+                else if (cv.transferAmt > 0) sub.push('تحويل مصرفي: ' + formatNum(Math.min(cv.transferAmt, cv.total)) + ' د.ل');
+                return '<div class="bk-card"><div class="bk-card-h"><span class="bk-card-t">فاتورة ' + (n + 1) + '</span><span class="bk-card-tot">' + formatNum(cv.total) + ' <small>د.ل</small></span><span class="bk-card-btns">' + (cv.items.length ? '<button type="button" data-act="cart-edit" data-c="' + cv.ci + '" data-n="' + (n + 1) + '">السلة</button>' : '') + '<button type="button" data-act="cart-note" data-c="' + cv.ci + '">ملاحظة سريعة</button><button type="button" class="del" data-act="del-cart" data-c="' + cv.ci + '">حذف الفاتورة</button></span></div>' +
+                    (sub.length ? '<div class="bk-card-sub">' + escapeHtml(sub.join(' — ')) + '</div>' : '') + body + noteHtml + '</div>';
             }).join('') || (ign.length || repShown.length ? '' : '<div class="bk-empty">لا توجد أسطر في هذا التصنيف</div>');
             list.scrollTop = keep;
         }
@@ -9430,6 +10635,7 @@
             if (lv.pickable && !lv.slots) h += '<button type="button" data-act="panel"' + d + (lv.match ? '' : ' class="dis"') + '>لوحة المنتج</button>';
             if (lv.moneyBad) h += '<button type="button" data-act="accept"' + d + '>اقبل سعر المخزون</button>';
             if (lv.ambiguous) h += '<button type="button" data-act="bare"' + d + '>' + (lv.bareChoice === 'money' ? 'اعتبره كمية' : 'اعتبره مبلغاً بالدينار') + '</button>';
+            if (!(lv.attached && !lv.targetName)) h += '<button type="button" data-act="line-note"' + d + '>ملاحظة سريعة</button>';
             h += '<button type="button" class="del" data-act="del-line"' + d + '>حذف السطر</button></div></div>';
             return h;
         }
@@ -9442,11 +10648,15 @@
             const cart = bkState.carts[c];
             if (!cart) return;
             if (act === 'del-cart') { cart.deleted = true; bkRender(); return; }
+            if (act === 'cart-note') { cart.ov = cart.ov || {}; cart.ov.toNote = true; bkRender(); return; }
+            if (act === 'cart-note-undo') { if (cart.ov) delete cart.ov.toNote; bkRender(); return; }
             if (act === 'cart-edit') { bkOpenCartEdit(c, parseInt(b.getAttribute('data-n'), 10) || (c + 1)); return; }
             if (act === 'cart-undo') { if (cart.ov) { delete cart.ov.cartItems; delete cart.ov.cartDiscount; delete cart.ov.customerName; delete cart.ov.cartNote; } bkRender(); return; }
             const ln = cart.lines[l];
             if (!ln) return;
             if (act === 'ign-keep') { ln.ov.keep = true; bkRender(); return; }
+            if (act === 'line-note') { ln.ov.toNote = true; if (ln.partLabel) cart.lines.forEach(o => { if (o.raw === ln.raw && o.partLabel) o.ov.toNote = true; }); bkRender(); return; }
+            if (act === 'line-note-undo') { delete ln.ov.toNote; if (ln.partLabel) cart.lines.forEach(o => { if (o.raw === ln.raw && o.partLabel) delete o.ov.toNote; }); bkRender(); return; }
             if (act === 'repay-pick') { ln.ov.repayId = b.getAttribute('data-id'); bkRender(); return; }
             if (act === 'repay-all') { bkOpenRepayPicker(ln); return; }
             if (act === 'repay-not') { ln.ov.notRepay = true; bkRender(); return; }
@@ -9628,10 +10838,11 @@
             if (!v) return;
             if (v.bad > 0) { showModal('أسطر تحتاج تصحيحاً', 'يوجد ' + v.bad + ' سطر باللون الأحمر. صحّحه أو احذف السطر أو اقبل سعر المخزون (حيث يظهر الزر) ثم أكّد.', false, () => {}); return; }
             const repOk = (v.repays || []).filter(r => r.chosen && r.status !== 'bad');
-            if (!v.invoices && !repOk.length) { showModal('تنبيه', 'لا توجد فواتير لإنشائها.', false, () => {}); return; }
+            if (!v.invoices && !repOk.length && !v.noteCount) { showModal('تنبيه', 'لا توجد فواتير لإنشائها.', false, () => {}); return; }
             if (v.warn > 0 && !bkReviewed) { bkShowWarnReview(v); return; }
             bkReviewed = false;
             let msg = v.invoices ? 'سيتم إنشاء ' + v.invoices + ' فاتورة بإجمالي ' + formatNum(v.total) + ' د.ل' + (v.debt > 0 ? ' (منها دين ' + formatNum(v.debt) + ' د.ل)' : '') + '.\nسيُسجَّل كل شيء بتاريخ اليوم.' : '';
+            if (v.noteCount) msg += (msg ? '\n' : '') + 'وسيتم حفظ ' + v.noteCount + ' ملاحظة سريعة في أماكنها بين المبيعات.';
             if (repOk.length) msg += (msg ? '\n' : '') + 'سيتم تسجيل ' + repOk.length + ' دين كمسدد بقيمة ' + formatNum(repOk.reduce((a, r) => a + r.chosen.amount, 0)) + ' د.ل (تُضاف إلى مبيعات وأرباح اليوم).';
             const warn = [];
             if (v.warn) warn.push('يوجد ' + v.warn + ' سطر برتقالي، هل راجعتها؟');
@@ -9649,6 +10860,7 @@
         function bkDeductStock(item) {
             const prod = products.find(p => p.id === item.id);
             if (!prod) return;
+            if (customBagDeduct(prod, item)) return;
             if (item.sellMode === 'fullbag') {
                 prod.bagsCount = (prod.bagsCount || 0) - item.qty;
             } else if (item.sellMode === 'halfbag') {
@@ -9682,16 +10894,27 @@
         }
         function bkExecute() {
             const v = bkView;
-            if (!v || (!v.invoices && !(v.repays || []).some(r => r.chosen && r.status !== 'bad'))) return;
+            if (!v || (!v.invoices && !v.noteCount && !(v.repays || []).some(r => r.chosen && r.status !== 'bad'))) return;
             const batchId = cloudUuid();
             const importedAt = new Date().toISOString();
             const base = (bkOpenedAt || new Date()).getTime();
             const daysArr = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
             const created = [];
+            const notesMade = [];
             let k = 0;
+            /* v70: every invoice keeps its own slot (100 ms apart), so a quick note made from it sits exactly where it was;
+               a note made from one line sits right after (under) its invoice */
+            const mkNote = (ms, text) => {
+                const d = new Date(ms);
+                const n = { id: cloudUuid(), ts: d.toISOString(), cashier: activeCashier, dayName: daysArr[d.getDay()], text, importBatchId: batchId };
+                notesMade.push(n);
+            };
             v.carts.forEach(cv => {
+                const slot = base + k * 100; k++;
+                if (cv.wholeNote) { if (String(cv.noteText || '').trim()) mkNote(slot, cv.noteText); return; }
+                bkNoteGroups(cv).forEach((txt, j) => mkNote(slot - 1 - j, txt));
                 if (!cv.items.length) return;
-                const at = new Date(base + k); k++;
+                const at = new Date(slot);
                 const items = cv.items.map(it => Object.assign({}, it));
                 const before = new Map();
                 items.forEach(item => {
@@ -9706,6 +10929,8 @@
                     customerName: ((bkState.carts[cv.ci] || {}).ov || {}).customerName || '', cartNote: ((bkState.carts[cv.ci] || {}).ov || {}).cartNote || '', debtorName: '', note: '', inventoryDeltas: [],
                     importBatchId: batchId, importedAt
                 };
+                if (cv.transferAll) rec.transferAll = true;
+                else if (cv.transferAmt > 0) rec.transferAmount = Math.round(cv.transferAmt * 1000) / 1000;
                 const bd = getSaleBreakdown(rec);
                 rec.profit = bd.cashProfit + bd.debtProfit;
                 items.forEach(bkDeductStock);
@@ -9727,10 +10952,11 @@
                 persistSales(created);
                 created.forEach(r => queueSaleForCloud(r));
             }
+            if (notesMade.length) qnAddNotes(notesMade);
             const paidRecs = bkMarkRepaysPaid(v);
             const paidNow = paidRecs.length;
             try {
-                if (created.length || paidRecs.length) localStorage.setItem(BK_LAST_KEY, JSON.stringify({ batchId: created.length ? batchId : '', at: importedAt, count: created.length, total: v.total, paid: paidRecs }));
+                if (created.length || paidRecs.length || notesMade.length) localStorage.setItem(BK_LAST_KEY, JSON.stringify({ batchId: (created.length || notesMade.length) ? batchId : '', at: importedAt, count: created.length, total: v.total, paid: paidRecs, noteIds: notesMade.map(n => n.id) }));
                 const hs = bkHashList(); hs.push(bkHash(bkText));
                 localStorage.setItem(BK_HASH_KEY, JSON.stringify({ day: new Date().toDateString(), list: hs }));
                 localStorage.removeItem(BK_DRAFT_KEY);
@@ -9743,6 +10969,15 @@
             if (ovT && ovT._bkClose) ovT._bkClose();
             renderInventory();
             renderSales();
+            if (!count && notesMade.length) {
+                const doneN = () => {};
+                doneN.confirmLabel = 'تم';
+                doneN.cancelLabel = 'إلغاء الاستيراد';
+                doneN.onCancel = bkCancelFlow;
+                doneN.noOutsideDismiss = true;
+                showModal('تم الحفظ', 'تم حفظ ' + notesMade.length + ' ملاحظة سريعة في أماكنها في سجل المبيعات.' + (paidNow ? '\nوتم تسجيل ' + paidNow + ' دين كمسدد.' : ''), false, doneN);
+                return;
+            }
             if (!count) {
                 const doneP = () => {};
                 doneP.confirmLabel = 'تم';
@@ -9757,7 +10992,7 @@
             done.cancelLabel = 'إلغاء الاستيراد';
             done.onCancel = bkCancelFlow;
             done.noOutsideDismiss = true;
-            showModal('تم إنشاء المبيعات', 'تم إنشاء ' + count + ' فاتورة بإجمالي ' + formatNum(total) + ' د.ل.' + (paidNow ? '\nوتم تسجيل ' + paidNow + ' دين كمسدد.' : '') + '\nإذا لاحظت خطأً في المنتجات يمكنك إلغاء هذا الاستيراد كله الآن (يحتاج الرقم السري للمدير).', false, done);
+            showModal('تم إنشاء المبيعات', 'تم إنشاء ' + count + ' فاتورة بإجمالي ' + formatNum(total) + ' د.ل.' + (notesMade.length ? '\nوتم حفظ ' + notesMade.length + ' ملاحظة سريعة في أماكنها.' : '') + (paidNow ? '\nوتم تسجيل ' + paidNow + ' دين كمسدد.' : '') + '\nإذا لاحظت خطأً في المنتجات يمكنك إلغاء هذا الاستيراد كله الآن (يحتاج الرقم السري للمدير).', false, done);
         }
 
         /* ---------- cancelling the last import ---------- */
@@ -9769,6 +11004,8 @@
                 go.confirmLabel = 'نعم، ألغِ الاستيراد';
                 const parts = [];
                 if (rec.count) parts.push('سيتم حذف ' + rec.count + ' فاتورة أُنشئت في آخر استيراد وإرجاع المنتجات المباعة فيها إلى المخزون، وكأنها لم تحدث.');
+                const nLeft = (rec.noteIds || []).filter(id => quickNotes.some(n => String(n.id) === String(id))).length;
+                if (nLeft) parts.push('وسيتم حذف ' + nLeft + ' ملاحظة سريعة حُفظت في هذا الاستيراد.');
                 if (rec.paid && rec.paid.length) parts.push('وسيتم إرجاع ' + rec.paid.length + ' دين سُجّل كمسدد في هذا الاستيراد إلى حالة «غير مسدد».');
                 showModal(rec.count ? 'إلغاء آخر استيراد' : 'إلغاء السداد', parts.join('\n') + '\nهل أنت متأكد؟', false, go);
             });
@@ -9776,8 +11013,10 @@
         function bkCancelExecute() {
             const rec = bkLoadLast();
             if (!rec) return;
-            const targets = sales.filter(s => s.importBatchId === rec.batchId);
-            if (!targets.length && !(rec.paid && rec.paid.length)) { try { localStorage.removeItem(BK_LAST_KEY); } catch (e) {} return; }
+            const targets = rec.batchId ? sales.filter(s => s.importBatchId === rec.batchId) : [];
+            const noteIdsAll = (rec.noteIds || []).map(String);
+            const noteIdsLeft = noteIdsAll.filter(id => quickNotes.some(n => String(n.id) === id));
+            if (!targets.length && !(rec.paid && rec.paid.length) && !noteIdsLeft.length) { try { localStorage.removeItem(BK_LAST_KEY); } catch (e) {} return; }
             const touched = targets.filter(s => s.returnedAt || s.debtPaidAt || s.amendedAt);
             if (touched.length) {
                 showModal('لا يمكن إلغاء الاستيراد', 'تم إرجاع أو تعديل أو سداد دين ' + touched.length + ' فاتورة من هذا الاستيراد بعد إنشائها، فلا يمكن إلغاؤه كله بأمان.\nتعامل مع الفواتير من سجل المبيعات.', false, () => {});
@@ -9813,7 +11052,9 @@
             if (salesMode === 'idb') {
                 idbWriteChain = idbWriteChain.then(() => SalesStore.removeMany(Array.from(ids))).catch(err => { console.error('Error removing sales', err); showStorageErrorBanner(); });
             } else safeSave(KEYS.SALES, sales);
-            if (ids.size) queueCloudOperation({ id: 'sales-del-many:' + cloudUuid(), type: 'salesDeleteMany', payload: { ids: Array.from(ids), returnStock: true, adjustment }, createdAt: Date.now() });
+            if (ids.size) queueCloudOperation({ id: 'sales-del-many:' + cloudUuid(), type: 'salesDeleteMany', payload: { ids: Array.from(ids), returnStock: true, adjustment }, baseVs: Object.fromEntries(targets.map(x => [String(x.id), Number(x._v) || 0])), createdAt: Date.now() });
+            if (noteIdsLeft.length) removeNotes(noteIdsLeft);
+            const notesGone = noteIdsAll.length - noteIdsLeft.length;
             try { localStorage.removeItem(BK_LAST_KEY); } catch (e) {}
             renderInventory();
             renderSales();
@@ -9821,7 +11062,9 @@
             if (targets.length) msgs.push('تم حذف ' + targets.length + ' فاتورة وإرجاع المنتجات إلى المخزون.');
             if (undone.length) msgs.push('وتم إرجاع ' + undone.length + ' دين إلى حالة «غير مسدد».');
             if (skippedPaid) msgs.push('ولم يُلغَ سداد ' + skippedPaid + ' دين لأنه تغيّر بعد الاستيراد (أُرجع أو عُدّل).');
-            showModal(targets.length ? 'تم إلغاء الاستيراد' : 'تم إلغاء السداد', msgs.join('\n'), false, () => {});
+            if (noteIdsLeft.length) msgs.push('وتم حذف ' + noteIdsLeft.length + ' ملاحظة سريعة من هذا الاستيراد.');
+            if (notesGone > 0) msgs.push(notesGone + ' ملاحظة من هذا الاستيراد كانت قد حُوّلت إلى بيع أو حُذفت من قبل، فلم تتغير.');
+            showModal((targets.length || noteIdsLeft.length) ? 'تم إلغاء الاستيراد' : 'تم إلغاء السداد', msgs.join('\n'), false, () => {});
         }
     </script>
 
@@ -10027,8 +11270,8 @@
                 if (!rows.length) { box.innerHTML = ''; return; }
                 box.innerHTML = '<div class="sc-title">حسب الكاشير</div>' + rows.map((x, i) =>
                     '<div class="sc-card"><div class="sc-name">' + escapeHtml(x.name) + '</div><div class="stats-grid" style="margin-bottom:0;">' +
-                    '<div class="stat-tile stat-sm stat-tap" onclick="showStatsSplit(\'sales\', statsByCashier[' + i + '].st)"><div class="stat-t">المبيعات</div><div class="stat-v">' + formatNum(x.st.rev) + ' <small>د.ل</small></div><div class="stat-hint">اضغط للتفاصيل</div></div>' +
-                    '<div class="stat-tile stat-sm stat-tap" onclick="showStatsSplit(\'profit\', statsByCashier[' + i + '].st)"><div class="stat-t">الأرباح</div><div class="stat-v" style="color:#2e7d32;">' + formatNum(x.st.profit) + ' <small>د.ل</small></div><div class="stat-hint">اضغط للتفاصيل</div></div>' +
+                    '<div class="stat-tile stat-tap" onclick="showStatsSplit(\'sales\', statsByCashier[' + i + '].st)"><div class="stat-ic stat-ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M3 4h2.5l2.2 10.2a1.5 1.5 0 0 0 1.5 1.2h8.4a1.5 1.5 0 0 0 1.5-1.1L21 8H6.2"/></svg></div><div class="stat-t">المبيعات</div><div class="stat-v">' + formatNum(x.st.rev) + ' <small>د.ل</small></div><div class="stat-hint">اضغط للتفاصيل</div></div>' +
+                    '<div class="stat-tile stat-tap" onclick="showStatsSplit(\'profit\', statsByCashier[' + i + '].st)"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div><div class="stat-t">الأرباح</div><div class="stat-v" style="color:#2e7d32;">' + formatNum(x.st.profit) + ' <small>د.ل</small></div><div class="stat-hint">اضغط للتفاصيل</div></div>' +
                     '</div></div>').join('');
             } catch (e) { console.error('Could not draw the cashier statistics', e); box.innerHTML = ''; }
         }
