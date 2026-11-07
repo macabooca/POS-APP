@@ -254,7 +254,7 @@
             align-items: center;
             justify-content: center;
             padding: 16px;
-            z-index: 9999;
+            z-index: 10150;
             transition: padding-bottom 0.15s ease-out;
         }
 
@@ -895,6 +895,8 @@
         #fast-scroll .fs-thumb::before { content: ''; position: absolute; right: 5px; top: 0; bottom: 0; width: 11px; border-radius: 8px; background: rgba(19, 126, 132, 0.6); transition: width 0.12s ease, background 0.12s ease; }
         #fast-scroll.drag .fs-thumb::before { width: 15px; background: rgba(19, 126, 132, 0.85); }
         #fast-scroll.settle .fs-thumb { transition: transform 0.22s ease-out; }
+        html.fs-dragging { overscroll-behavior: none; }
+        html.fs-dragging body { -webkit-user-select: none; user-select: none; }
         /* ===== v75 ===== */
         .rs-box { border: 1px solid #e1ecf0; border-radius: 12px; overflow: hidden; margin-bottom: 8px; font-size: 13px; }
         .rs-row { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 6px; padding: 7px 10px; border-top: 1px solid #edf3f5; line-height: 1.6; align-items: center; }
@@ -1183,7 +1185,7 @@
         .quick-sale-btn.qs-holding { background-image: linear-gradient(#f6c48c, #f6c48c); background-repeat: no-repeat; background-position: right center; background-size: 0% 100%; animation: qsFill 1.5s linear forwards; }
         html[data-theme="dark"] .quick-sale-btn.qs-holding { background-image: linear-gradient(#7a5226, #7a5226); }
         @keyframes qsFill { 0%, 12% { background-size: 0% 100%; } 100% { background-size: 100% 100%; } }
-        body.bk-open .modal-overlay, body.bk-open #custom-modal { z-index: 10100; }
+        body.bk-open .modal-overlay, body.bk-open #custom-modal { z-index: 10150; }
         .bk-review { position: fixed; left: 0; right: 0; top: 0; height: 100%; z-index: 10065; display: flex; flex-direction: column; direction: rtl; background: var(--bg-color, #f2f6f9); padding-top: env(safe-area-inset-top, 0px); box-sizing: border-box; }
         .bk-head { flex: none; padding: 12px 14px 8px; }
         .bk-title { font-size: 19px; font-weight: 800; color: var(--navy, #12283a); }
@@ -1417,7 +1419,8 @@
         .kebab-btn { position: absolute; top: 12px; left: 10px; width: 38px; height: 38px; border: none; border-radius: 50%; background: transparent; color: var(--navy); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; z-index: 2; }
         .kebab-btn svg { width: 22px; height: 22px; }
         .kebab-btn:active { background: #e8f0f3; }
-        .kebab-inline { position: static; flex: none; }
+        /* the press effect makes a static button 'relative'; top/left must then do nothing (they are only for the absolute one on the sales page) */
+        .kebab-inline { position: static; top: auto; left: auto; flex: none; }
         .inv-head-r { display: flex; align-items: center; gap: 2px; }
         .kb-menu-ov { position: fixed; inset: 0; z-index: 10070; }
         .kb-menu { position: fixed; min-width: 210px; background: var(--card-bg, #fff); border-radius: 14px; box-shadow: 0 8px 28px rgba(18, 40, 58, 0.25); padding: 6px; direction: rtl; border: 1px solid #e3ecef; }
@@ -4708,10 +4711,10 @@
         })();
 
         /* ---------- Fast-scroll handle ----------
-           v74: while you drag, the handle follows your finger directly and the page follows the handle (never the
-           other way round, which made it shake on iPhone); one scroll per screen frame; the sizes are measured once when
-           you grab it (the iPhone toolbar cannot change them mid-drag); the rest of the list is drawn first so the page
-           length does not change mid-drag. */
+           v77: while you drag, the handle follows your finger directly and the page follows the handle; one scroll per
+           screen frame; the sizes are measured once when you grab it; the page length is fixed (the inventory keeps a
+           placeholder for the products not drawn yet) and the products the finger reaches are drawn a little each frame.
+           Nothing is drawn ahead of time, so scrolling stays light on iPhone. */
         (function () {
             const bar = document.createElement('div');
             bar.id = 'fast-scroll';
@@ -4733,32 +4736,32 @@
                 return { max, trackH, thumbH };
             };
             const place = (y) => { thumb.style.transform = 'translate3d(0,' + Math.round(y) + 'px,0)'; };
+            const showBar = () => {
+                if (!bar.classList.contains('show')) shownAt = Date.now();
+                bar.classList.add('show');
+                clearTimeout(hideT);
+                hideT = setTimeout(() => { if (!dragging) bar.classList.remove('show'); }, 900);
+            };
+            /* all the measuring happens once per screen frame, never inside the raw scroll event */
             const update = () => {
                 raf = 0;
                 if (dragging) return;
                 const m = metrics();
                 if (m.max < 200) { bar.classList.remove('show'); return; }
                 thumb.style.height = m.thumbH + 'px';
-                place((Math.min(window.scrollY, m.max) / m.max) * (m.trackH - m.thumbH));
+                const range = m.trackH - m.thumbH;
+                place(Math.max(0, Math.min(range, (Math.min(window.scrollY, m.max) / m.max) * range)));
+                showBar();
             };
-            const showBar = () => {
-                if (!bar.classList.contains('show')) {
-                    shownAt = Date.now();
-                    /* the rest of the list is drawn as soon as the handle appears, before it can be grabbed */
-                    const pre = () => { try { if (!dragging && typeof window.fsBeforeDrag === 'function' && window.fsBeforeDrag()) { if (!raf) raf = requestAnimationFrame(update); } } catch (er) {} };
-                    if (window.requestIdleCallback) requestIdleCallback(pre, { timeout: 200 }); else setTimeout(pre, 50);
-                }
-                bar.classList.add('show');
-                clearTimeout(hideT);
-                hideT = setTimeout(() => { if (!dragging) bar.classList.remove('show'); }, 900);
+            window.addEventListener('scroll', () => { if (!dragging && !raf && activeView()) raf = requestAnimationFrame(update); }, { passive: true });
+            const step = () => {
+                scrollRaf = 0;
+                if (!dragging) return;
+                if (pendingY !== null) { window.scrollTo(0, pendingY); pendingY = null; }
+                let more = false;
+                if (typeof window.fsEnsureRendered === 'function') { try { more = window.fsEnsureRendered(); } catch (er) {} }
+                if (more) scrollRaf = requestAnimationFrame(step);
             };
-            window.addEventListener('scroll', () => {
-                if (!activeView()) return;
-                if (!dragging) {
-                    if (!raf) raf = requestAnimationFrame(update);
-                    if (metrics().max >= 200) showBar();
-                }
-            }, { passive: true });
             const moveTo = (clientY) => {
                 const m = drag;
                 if (!m) return;
@@ -4768,15 +4771,11 @@
                 /* anchored to where the page was when grabbed: the first movement never jumps, and both ends are still reached */
                 if (y >= m.y0) pendingY = m.s0 + (range - m.y0 > 0.5 ? (y - m.y0) / (range - m.y0) : 0) * (m.max - m.s0);
                 else pendingY = m.y0 > 0.5 ? m.s0 * (y / m.y0) : 0;
-                if (!scrollRaf) scrollRaf = requestAnimationFrame(() => {
-                    scrollRaf = 0;
-                    if (pendingY !== null) { window.scrollTo(0, pendingY); pendingY = null; }
-                });
+                if (!scrollRaf) scrollRaf = requestAnimationFrame(step);
             };
             thumb.addEventListener('pointerdown', (e) => {
                 /* a finger that was already scrolling when the handle appeared never grabs it */
                 if (Date.now() - shownAt < 250) return;
-                try { if (typeof window.fsBeforeDrag === 'function') window.fsBeforeDrag(); } catch (er) {}
                 const m = metrics();
                 const tr = thumb.getBoundingClientRect();
                 const trackTop = bar.getBoundingClientRect().top;
@@ -4788,6 +4787,9 @@
                 dragging = true;
                 clearTimeout(hideT);
                 bar.classList.add('drag');
+                document.documentElement.classList.add('fs-dragging');
+                /* the page stops where it is (a flick's momentum would otherwise fight the handle) */
+                try { window.scrollTo({ top: window.scrollY, behavior: 'instant' }); } catch (er) {}
                 try { thumb.setPointerCapture(e.pointerId); } catch (err) {}
                 e.preventDefault();
             });
@@ -4797,8 +4799,9 @@
             thumb.addEventListener('touchmove', (e) => { if (dragging) e.preventDefault(); }, { passive: false });
             const end = () => {
                 if (!dragging) return;
-                dragging = false; drag = null;
+                dragging = false; drag = null; pendingY = null;
                 bar.classList.remove('drag');
+                document.documentElement.classList.remove('fs-dragging');
                 /* the handle glides (not jumps) to its exact place */
                 bar.classList.add('settle');
                 requestAnimationFrame(update);
@@ -4809,17 +4812,6 @@
             thumb.addEventListener('pointercancel', end);
             thumb.addEventListener('lostpointercapture', end);
         })();
-        /* v74: before the handle is dragged, the whole inventory grid is drawn, so the page length stays fixed */
-        window.fsBeforeDrag = function () {
-            const inv = document.getElementById('view-inventory');
-            if (!inv || inv.style.display === 'none' || !Array.isArray(invItems) || invShown >= invItems.length) return false;
-            const grid = document.getElementById('pg-inv');
-            if (!grid) return false;
-            grid.insertAdjacentHTML('beforeend', invItems.slice(invShown).map(pgInvCell).join(''));
-            invShown = invItems.length;
-            if (invObserver) { try { invObserver.disconnect(); } catch (e) {} invObserver = null; }
-            return true;
-        };
 
         /* ---------- X (clear) button for every search box ---------- */
         function installSearchClearButtons() {
@@ -5285,6 +5277,7 @@
 
             document.body.classList.toggle('pos-active', tab === 'pos');
             if (element) element.classList.add('active');
+            if (tab === 'inventory') { try { invUpdateSpacer(); } catch (e) {} }
             if (tab === 'sales' || tab === 'inventory') {
                 const y = tabScrollY['view-' + tab] || 0;
                 window.scrollTo(0, y);
@@ -7375,7 +7368,8 @@
             const sameList = renderInventory._q === query;
             renderInventory._q = query;
             invShown = Math.min(Math.max(PG_CHUNK, sameList ? invShown : 0), visibleProducts.length);
-            container.innerHTML = `<div class="pg-grid g3" id="pg-inv">${visibleProducts.slice(0, invShown).map(pgInvCell).join('')}</div><div id="pg-inv-end" style="height:1px;"></div>`;
+            container.innerHTML = `<div class="pg-grid g3" id="pg-inv">${visibleProducts.slice(0, invShown).map(pgInvCell).join('')}</div><div id="pg-inv-end" style="height:1px;"></div><div id="pg-inv-spacer"></div>`;
+            invUpdateSpacer();
             setupInvMore();
             if (invOnScreen && sameList && Math.abs(window.scrollY - keepY) > 1) window.scrollTo(0, keepY);
         }
@@ -8254,7 +8248,7 @@
             productPics = {};
             Object.keys(next).forEach(k => { if (!picIsExtraKey(k)) productPics[k] = next[k]; });
             Object.keys(extraPics).forEach(k => { delete extraPics[k]; });
-            picTx(s => { s.clear(); Object.keys(next).forEach(k => s.put({ id: k, data: next[k] })); }).then(refreshPicViews);
+            return picTx(s => { s.clear(); Object.keys(next).forEach(k => s.put({ id: k, data: next[k] })); }).then(refreshPicViews);
         }
         function picLoadAll() {
             return picDb().then(db => new Promise(resolve => {
@@ -8389,6 +8383,33 @@
             grid.insertAdjacentHTML('beforeend', ddItems.slice(ddShown, next).map(pgMainCell).join(''));
             ddShown = next;
         }
+        /* v77: the products not drawn yet are represented by an empty block of the right height, so the page (and the scroll
+           handle) keeps one fixed length while the list is drawn little by little. The list is still drawn 32 at a time. */
+        let invRowH = 0;
+        function invUpdateSpacer() {
+            const grid = document.getElementById('pg-inv');
+            const sp = document.getElementById('pg-inv-spacer');
+            if (!grid || !sp) return;
+            const remaining = Math.max(0, invItems.length - invShown);
+            if (grid.offsetHeight > 0 && invShown > 0) invRowH = grid.offsetHeight / Math.ceil(invShown / 3);
+            const rowH = invRowH > 20 ? invRowH : 150;
+            sp.style.height = remaining ? Math.round(Math.ceil(remaining / 3) * rowH) + 'px' : '0px';
+        }
+        /* while the scroll handle is dragged: draw (a little each frame) as far down as the finger has reached */
+        window.fsEnsureRendered = function () {
+            const inv = document.getElementById('view-inventory');
+            if (!inv || inv.style.display === 'none' || invShown >= invItems.length) return false;
+            const grid = document.getElementById('pg-inv');
+            if (!grid) return false;
+            const bottom = grid.getBoundingClientRect().bottom + window.scrollY;
+            if (bottom >= window.scrollY + window.innerHeight + 900) return false;
+            const next = Math.min(invShown + PG_CHUNK * 2, invItems.length);
+            grid.insertAdjacentHTML('beforeend', invItems.slice(invShown, next).map(pgInvCell).join(''));
+            invShown = next;
+            invUpdateSpacer();
+            if (invShown >= invItems.length && invObserver) { invObserver.disconnect(); invObserver = null; }
+            return invShown < invItems.length;
+        };
         function setupInvMore() {
             if (invObserver) { invObserver.disconnect(); invObserver = null; }
             const end = document.getElementById('pg-inv-end');
@@ -8400,6 +8421,7 @@
                 const next = Math.min(invShown + PG_CHUNK, invItems.length);
                 grid.insertAdjacentHTML('beforeend', invItems.slice(invShown, next).map(pgInvCell).join(''));
                 invShown = next;
+                invUpdateSpacer();
                 if (invShown >= invItems.length) { invObserver.disconnect(); invObserver = null; }
             }, { rootMargin: '700px' });
             invObserver.observe(end);
@@ -10340,6 +10362,8 @@
             sum.cashOnlyFile = fc.filter(n => !lc.has(n));
             sum.fileCashiers = fc;
             sum.fileNotes = Array.isArray(imp.quickNotes) ? imp.quickNotes.length : null;
+            sum.filePics = (imp.productPics && typeof imp.productPics === 'object') ? Object.keys(imp.productPics).filter(k => !picIsExtraKey(k) && imp.productPics[k]).length : null;
+            sum.localPics = Object.keys(productPics).filter(k => productPics[k]).length;
             sum.notesAdd = rsNotesToAdd(imp, localSales).length;
             sum.fileLogs = Array.isArray(imp.stockLogs) ? imp.stockLogs.length : 0;
             sum.fileEdits = Array.isArray(imp.inventoryEdits) ? imp.inventoryEdits.length : null;
@@ -10361,6 +10385,7 @@
                 row('تواريخ الفواتير', rsDateRange(sum.localSales), rsDateRange(sum.fileSales)) +
                 row('المنتجات', formatNum(products.length), formatNum(sum.fileProducts)) +
                 row('حسابات الكاشيرين', formatNum(cashiers.length), formatNum(sum.fileCashiers.length)) +
+                row('صور المنتجات', formatNum(sum.localPics), sum.filePics === null ? '— (لا يحتويها)' : formatNum(sum.filePics)) +
                 row('سجل التوريد', formatNum(stockLogs.length), formatNum(sum.fileLogs)) +
                 (sum.fileEdits === null ? '' : row('سجل تعديلات المخزون', formatNum(inventoryEdits.length), formatNum(sum.fileEdits))) +
                 (sum.fileNotes === null ? '' : row('الملاحظات السريعة', formatNum(quickNotes.length), formatNum(sum.fileNotes))) + '</div>' +
@@ -10370,7 +10395,7 @@
                 (sum.fileNotes === null ? '' : '<div class="rs-note ' + (sum.notesAdd ? 'warn' : 'ok') + '"><b>' + formatNum(sum.notesAdd) + '</b> ملاحظة سريعة في الملف ليست هنا' + (sum.notesAdd ? ' — ' + (cloudOn ? 'حتى هذا العدد' : 'ستُضاف') + ' إذا اخترت «دمج» (لا تُضاف ملاحظة حُذفت أو حُوّلت إلى بيع' + (cloudOn ? '، أو أُغلقت في السحابة' : '') + ')' : '') + '</div>') +
                 '<div class="rs-note"><b>' + formatNum(sum.prodOnlyHere) + '</b> منتج هنا فقط (يُحذف عند الاستبدال) · <b>' + formatNum(sum.prodOnlyFile) + '</b> في الملف فقط</div>' +
                 (sum.cashOnlyHere.length || sum.cashOnlyFile.length ? '<div class="rs-note">حسابات هنا فقط: ' + (sum.cashOnlyHere.map(escapeHtml).join('، ') || '—') + ' · في الملف فقط: ' + (sum.cashOnlyFile.map(escapeHtml).join('، ') || '—') + '</div>' : '') +
-                (cloudOn ? '<div class="rs-note bad"><b>المزامنة السحابية مفعّلة:</b> «استبدال الكل» يستبدل بيانات السحابة لكل الأجهزة أيضاً، وكل جهاز يحفظ نسخة أمان من بياناته ثم يتطابق مع الملف. «دمج» يضيف الناقص فقط عبر المزامنة العادية ولا يحذف شيئاً من أي جهاز.</div>' : '') +
+                (cloudOn ? '<div class="rs-note bad"><b>المزامنة السحابية مفعّلة:</b> «استبدال الكل» يستبدل بيانات السحابة لكل الأجهزة أيضاً، وكل جهاز يحفظ نسخة أمان من بياناته ثم يتطابق مع الملف. «دمج» يضيف الناقص فقط عبر المزامنة العادية ولا يحذف شيئاً من أي جهاز.<br><b>صور المنتجات لا تنتقل عبر السحابة أبداً:</b> لتظهر على الأجهزة الأخرى استعد ملف النسخة نفسه عليها.</div>' : '') +
                 '<div class="rs-help"><b>دمج:</b> يُبقي كل ما عندك ويضيف فقط ما ينقص (الفواتير بمعرّفها، المنتجات والحسابات والسجلات غير الموجودة)، ولا يغيّر أي رقم عندك. الفروق على ما هو موجود في الاثنين تظهر لك في تقرير ولا تُطبَّق.<br><b>استبدال الكل:</b> يجعل هذا الجهاز مطابقاً للملف تماماً.<br>قبل أي تغيير تُحفظ نسخة أمان من هذا الجهاز تلقائياً.</div>' +
                 '</div><div class="bp-btns rs-btns"><button type="button" class="btn btn-teal" id="rs-cancel">إلغاء</button><button type="button" class="btn btn-orange" id="rs-merge">دمج (إضافة الناقص)</button><button type="button" class="btn btn-red" id="rs-replace">استبدال الكل</button></div></div>';
             document.body.appendChild(ov);
@@ -10391,7 +10416,14 @@
             const saved = await restoreSafetyBackup();
             try {
                 products = imp.products || [];
-                if (imp.productPics && typeof imp.productPics === 'object') picReplaceAll(imp.productPics);
+                let picInfo = null;
+                if (imp.productPics && typeof imp.productPics === 'object') {
+                    const want = Object.keys(imp.productPics).filter(k => typeof imp.productPics[k] === 'string' && imp.productPics[k]).length;
+                    await picReplaceAll(imp.productPics);
+                    let got = 0;
+                    try { got = Object.keys((await picAllForBackup()) || {}).length; } catch (e) {}
+                    picInfo = { want, got };
+                }
                 const importedSales = imp.sales || [];
                 sales = importedSales;
                 deletedSaleIds = new Set();
@@ -10410,7 +10442,9 @@
                 localStorage.setItem(KEYS.MANAGER_PIN, managerPin);
                 if (cloudSyncCode) queueFullRestoreForCloud({ mode: 'replace', sales: importedSales.length, products: products.length, cashiers: cashiers.length }, importedSales);
                 renderInventory(); renderSales(); renderStockLogs(); renderMoreCashiers();
-                showModal('تمت الاستعادة', 'أصبح هذا الجهاز مطابقاً للملف.' + (saved ? '\nحُفظت نسخة أمان من بياناته السابقة في مجلد التنزيلات.' : '\nتعذّر حفظ نسخة الأمان تلقائياً.') + (cloudSyncCode ? '\nيجري الآن تحديث السحابة والأجهزة الأخرى؛ انتظر علامة ✓ على دائرة المزامنة قبل إغلاق التطبيق.' : ''), false, () => {});
+                const picLine = picInfo ? '\nصور المنتجات: ' + formatNum(picInfo.got) + ' من ' + formatNum(picInfo.want) + (picInfo.got < picInfo.want ? ' — <b>تعذّر حفظ بعضها على هذا الجهاز</b>' : '') : (sum.filePics === null ? '\nالملف لا يحتوي صور منتجات، فبقيت صور هذا الجهاز كما هي.' : '');
+                const picCloud = cloudSyncCode ? '\nصور المنتجات لا تنتقل عبر السحابة: لتظهر على الأجهزة الأخرى استعد ملف النسخة نفسه عليها.' : '';
+                showModal('تمت الاستعادة', 'أصبح هذا الجهاز مطابقاً للملف.' + picLine + picCloud + (saved ? '\nحُفظت نسخة أمان من بياناته السابقة في مجلد التنزيلات.' : '\nتعذّر حفظ نسخة الأمان تلقائياً.') + (cloudSyncCode ? '\nيجري الآن تحديث السحابة والأجهزة الأخرى؛ انتظر علامة ✓ على دائرة المزامنة قبل إغلاق التطبيق.' : ''), false, () => {});
             } catch (err) {
                 console.error(err);
                 showModal('خطأ', 'تعذّرت الاستعادة. نسخة الأمان محفوظة في مجلد التنزيلات.', false, () => {});
@@ -10425,7 +10459,7 @@
             }
             closeRs();
             const saved = await restoreSafetyBackup();
-            const rep = { sales: 0, products: 0, cashiers: 0, logs: 0, edits: 0, notes: 0, notesList: [], skippedDeleted: 0, review: [], paid: 0, returned: 0, amended: 0 };
+            const rep = { sales: 0, products: 0, pics: 0, cashiers: 0, logs: 0, edits: 0, notes: 0, notesList: [], skippedDeleted: 0, review: [], paid: 0, returned: 0, amended: 0 };
             try {
                 const match = rsProductMatcher();
                 const idMap = new Map(), newIds = new Set(), newProds = [];
@@ -10497,13 +10531,18 @@
                     rep.sales = toAdd.length;
                 }
                 safeSave(KEYS.PRODUCTS, products);
-                /* pictures of the products that were added */
-                if (imp.productPics && typeof imp.productPics === 'object' && newIds.size) {
-                    Object.keys(imp.productPics).forEach(k => {
-                        const base = String(k).split('#x')[0];
-                        if (!newIds.has(base) || typeof imp.productPics[k] !== 'string') return;
-                        if (picIsExtraKey(k)) picTx(s => s.put({ id: k, data: imp.productPics[k] })); else picSave(k, imp.productPics[k]);
-                    });
+                /* v77: pictures: a product that has none here gets the file's (a picture you already have is never replaced) */
+                if (imp.productPics && typeof imp.productPics === 'object') {
+                    const P = imp.productPics;
+                    for (const fp of (imp.products || [])) {
+                        if (!fp || fp.id === undefined || fp.id === null) continue;
+                        const fid = String(fp.id), lid = idMap.get(fid);
+                        if (lid === undefined) continue;
+                        if (typeof P[fid] === 'string' && P[fid] && !productPics[lid]) { await picSave(lid, P[fid]); rep.pics++; }
+                        const extras = Object.keys(P).filter(k => k.indexOf(fid + '#x') === 0 && typeof P[k] === 'string' && P[k]).sort((a, b) => Number(a.slice(fid.length + 2)) - Number(b.slice(fid.length + 2))).map(k => P[k]);
+                        if (extras.length) { const have = await picLoadExtras(lid); if (!have.length) { await picSaveExtras(lid, extras); rep.pics += extras.length; } }
+                    }
+                    if (rep.pics) refreshPicViews();
                 }
                 /* cashier accounts: combined by name */
                 const names = new Set(cashiers.map(c => String(c.name || '').trim()));
@@ -10558,7 +10597,7 @@
                 }
                 renderInventory(); renderSales(); renderStockLogs(); renderMoreCashiers(); try { renderInventoryEdits(); } catch (e) {}
                 const lines = [];
-                lines.push('أُضيف: ' + rep.sales + ' فاتورة، ' + rep.products + ' منتج، ' + rep.cashiers + ' حساب كاشير، ' + rep.logs + ' سجل توريد، ' + rep.edits + ' سجل تعديل، ' + rep.notes + ' ملاحظة سريعة.');
+                lines.push('أُضيف: ' + rep.sales + ' فاتورة، ' + rep.products + ' منتج، ' + rep.cashiers + ' حساب كاشير، ' + rep.logs + ' سجل توريد، ' + rep.edits + ' سجل تعديل، ' + rep.notes + ' ملاحظة سريعة، ' + rep.pics + ' صورة منتج.');
                 if (rep.notesList.length) lines.push('<b>الملاحظات السريعة المُضافة</b> (احذف أي واحدة لا تريدها):<br>' + rep.notesList.slice(0, 10).map(t => '• ' + escapeHtml(t)).join('<br>') + (rep.notesList.length > 10 ? '<br>… و' + (rep.notesList.length - 10) + ' أخرى' : ''));
                 if (rep.notesSkipped) lines.push('لم تُضَف ' + rep.notesSkipped + ' ملاحظة لأنها حُذفت أو حُوّلت إلى بيع من قبل (أو أُغلقت في السحابة).');
                 if (rep.skippedDeleted) lines.push('لم تُضَف ' + rep.skippedDeleted + ' فاتورة لأنها محذوفة من هنا أو من السحابة.');
@@ -10621,7 +10660,7 @@
             cloudMarks.sales = nowMs; cloudMarks.logs = nowMs; cloudMarks.edits = nowMs; cloudSaveMarks();
             try { localStorage.setItem(RESTORE_EPOCH_KEY, data.restoreEpoch); } catch (e) {}
             renderSales(); renderStockLogs(); renderInventory(); try { renderInventoryEdits(); } catch (e) {}
-            reportSyncConflict('warn', 'استُعيدت نسخة احتياطية على جهاز آخر', 'قام ' + (info.by ? '«' + info.by + '»' : 'جهاز آخر') + (info.at ? ' (' + new Date(Number(info.at)).toLocaleString('ar-LY') + ')' : '') + ' باستعادة نسخة احتياطية، فأصبحت بيانات هذا الجهاز مطابقة للسحابة.\nالفواتير: من ' + formatNum(before) + ' إلى ' + formatNum(sales.length) + (lost ? ' (أُزيلت ' + formatNum(lost) + ' فاتورة لم تكن في النسخة)' : '') + '.\nالمنتجات والأرقام وحسابات الكاشيرين تحدّثت أيضاً.\nحُفظت نسخة أمان من بيانات هذا الجهاز قبل التغيير في مجلد التنزيلات (إن سمح المتصفح).' + (keepPending.length ? '\nبقيت ' + keepPending.length + ' فاتورة لم تُرفع بعد وستُرفع.' : ''));
+            reportSyncConflict('warn', 'استُعيدت نسخة احتياطية على جهاز آخر', 'قام ' + (info.by ? '«' + info.by + '»' : 'جهاز آخر') + (info.at ? ' (' + new Date(Number(info.at)).toLocaleString('ar-LY') + ')' : '') + ' باستعادة نسخة احتياطية، فأصبحت بيانات هذا الجهاز مطابقة للسحابة.\nالفواتير: من ' + formatNum(before) + ' إلى ' + formatNum(sales.length) + (lost ? ' (أُزيلت ' + formatNum(lost) + ' فاتورة لم تكن في النسخة)' : '') + '.\nالمنتجات والأرقام وحسابات الكاشيرين تحدّثت أيضاً.\nصور المنتجات لا تنتقل عبر السحابة: إن أردتها على هذا الجهاز فاستعد ملف النسخة نفسه عليه.\nحُفظت نسخة أمان من بيانات هذا الجهاز قبل التغيير في مجلد التنزيلات (إن سمح المتصفح).' + (keepPending.length ? '\nبقيت ' + keepPending.length + ' فاتورة لم تُرفع بعد وستُرفع.' : ''));
         }
 
         /* ===== v75: "check against the cloud": compares this phone with the cloud and offers to fix what is missing ===== */
