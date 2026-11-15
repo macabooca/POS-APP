@@ -25,7 +25,21 @@
         if (busy || !navigator.onLine || !window.fetch) return;
         busy = true;
         var t0 = RealDate.now();
-        fetch('./manifest.json?clock=' + t0, { method: 'HEAD', cache: 'no-store' }).then(function (r) {
+        /* v78 (installed app only): the app's own files are inside the phone there and carry no clock, so the time is
+           read from the app's website instead. The website version keeps using the line below exactly as before. */
+        var nat = null;
+        try {
+            var C = window.Capacitor;
+            if (C && C.isNativePlatform && C.isNativePlatform() && C.Plugins && C.Plugins.CapacitorHttp) nat = C.Plugins.CapacitorHttp;
+        } catch (e) { nat = null; }
+        var req = nat
+            ? nat.request({ url: 'https://macabooca.github.io/POS-APP/manifest.json?clock=' + t0, method: 'HEAD' }).then(function (res) {
+                var hs = (res && res.headers) || {}, d = null;
+                for (var k in hs) { if (String(k).toLowerCase() === 'date') d = hs[k]; }
+                return { headers: { get: function () { return d; } } };
+            })
+            : fetch('./manifest.json?clock=' + t0, { method: 'HEAD', cache: 'no-store' });
+        req.then(function (r) {
             var t1 = RealDate.now();
             var h = r.headers.get('date');
             var server = h ? RealDate.parse(h) : NaN;
@@ -44,6 +58,142 @@
     window.addEventListener('online', sync);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) sync(); });
     setInterval(sync, 30 * 60 * 1000);
+})();
+
+/* ============================================================================================================
+   v78: INSTALLED APP (APK) BRIDGE.
+   Everything in this block does nothing at all on the website / PWA. It switches on only when the page runs inside
+   the installed Android app, where three things do not exist the way they do in a browser:
+     - saving a file (the backup)      -> written straight into the phone's Download folder
+     - vibration                       -> sent through the phone's own vibration service
+     - fingerprint                     -> the phone's own fingerprint window
+   ============================================================================================================ */
+(function () {
+    var C = window.Capacitor, on = false, platform = '';
+    try { on = !!(C && C.isNativePlatform && C.isNativePlatform()); platform = on && C.getPlatform ? C.getPlatform() : ''; } catch (e) { on = false; }
+    var N = window.posNative = { on: on, android: on && platform === 'android' };
+    if (!on) return;
+
+    function has(name) {
+        try { return !!(C.Plugins && C.Plugins[name]) || !!(C.isPluginAvailable && C.isPluginAvailable(name)); } catch (e) { return false; }
+    }
+    function call(name, method, options) {
+        try {
+            var pl = C.Plugins && C.Plugins[name];
+            if (pl && typeof pl[method] === 'function') return Promise.resolve(pl[method](options || {}));
+            if (C.nativePromise) return C.nativePromise(name, method, options || {});
+        } catch (e) { return Promise.reject(e); }
+        return Promise.reject(new Error(name + ' is not installed'));
+    }
+    N.has = has;
+
+    /* ---------- vibration: every existing navigator.vibrate(...) in the app now reaches the phone ---------- */
+    try {
+        var realVibrate = (typeof navigator.vibrate === 'function') ? navigator.vibrate.bind(navigator) : null;
+        var nativeVibrate = function (pattern) {
+            var ms = Array.isArray(pattern) ? Number(pattern[0]) : Number(pattern);
+            if (!ms || !isFinite(ms) || ms <= 0) return true;
+            if (has('Haptics')) {
+                call('Haptics', 'vibrate', { duration: Math.round(ms) }).catch(function () { try { if (realVibrate) realVibrate(ms); } catch (e) {} });
+            } else if (realVibrate) {
+                try { realVibrate(ms); } catch (e) {}
+            }
+            return true;
+        };
+        try { Object.defineProperty(Navigator.prototype, 'vibrate', { configurable: true, writable: true, value: nativeVibrate }); } catch (e) {}
+        if (navigator.vibrate !== nativeVibrate) { try { Object.defineProperty(navigator, 'vibrate', { configurable: true, writable: true, value: nativeVibrate }); } catch (e) {} }
+    } catch (e) {}
+
+    /* ---------- a small message at the bottom of the screen (a browser shows its own "download finished" note, an app has none) ---------- */
+    function toast(text, ms) {
+        try {
+            var old = document.getElementById('pos-native-toast'); if (old) old.remove();
+            var d = document.createElement('div');
+            d.id = 'pos-native-toast';
+            d.dir = 'rtl';
+            d.style.cssText = 'position:fixed; left:50%; bottom:110px; transform:translateX(-50%); max-width:86vw; z-index:2147483000; background:rgba(20,30,32,0.94); color:#fff; padding:12px 18px; border-radius:14px; font-family:inherit; font-size:14px; font-weight:700; line-height:1.6; text-align:center; white-space:pre-line; box-shadow:0 6px 20px rgba(0,0,0,0.25); opacity:0; transition:opacity .2s; pointer-events:none;';
+            d.textContent = text;
+            document.body.appendChild(d);
+            requestAnimationFrame(function () { d.style.opacity = '1'; });
+            setTimeout(function () { d.style.opacity = '0'; setTimeout(function () { try { d.remove(); } catch (e) {} }, 300); }, ms || 4000);
+        } catch (e) {}
+    }
+    N.toast = toast;
+
+    /* ---------- backup file ---------- */
+    function two(n) { return (n < 10 ? '0' : '') + n; }
+    function backupName() {
+        var d = new Date();
+        return 'POS_Backup_' + d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate()) + '_' + two(d.getHours()) + '-' + two(d.getMinutes()) + '-' + two(d.getSeconds()) + '.json';
+    }
+    /* big files are handed to the phone in pieces, so a very large backup (many pictures / years of sales) cannot choke it */
+    var PIECE = 1000000;
+    async function writeText(path, directory, text) {
+        if (text.length <= PIECE * 3) {
+            return await call('Filesystem', 'writeFile', { path: path, directory: directory, data: text, encoding: 'utf8', recursive: true });
+        }
+        var pos = 0, first = null;
+        while (pos < text.length) {
+            var end = Math.min(text.length, pos + PIECE);
+            if (end < text.length) { var c = text.charCodeAt(end - 1); if (c >= 0xD800 && c <= 0xDBFF) end--; }
+            var part = text.slice(pos, end);
+            if (pos === 0) first = await call('Filesystem', 'writeFile', { path: path, directory: directory, data: part, encoding: 'utf8', recursive: true });
+            else await call('Filesystem', 'appendFile', { path: path, directory: directory, data: part, encoding: 'utf8' });
+            pos = end;
+        }
+        return first;
+    }
+    async function removeQuiet(path, directory) { try { await call('Filesystem', 'deleteFile', { path: path, directory: directory }); } catch (e) {} }
+
+    /* Returns where the file went: 'downloads' | 'documents' | 'app' | 'shared' | 'cancel'. Throws only if nothing worked. */
+    N.saveBackup = async function (text, silent) {
+        if (!has('Filesystem')) throw new Error('Filesystem plugin is not installed');
+        var name = backupName();
+        try {
+            await writeText('Download/' + name, 'EXTERNAL_STORAGE', text);
+            if (!silent) toast('✅ تم حفظ النسخة الاحتياطية في مجلد التنزيلات (Download)\n' + name);
+            return 'downloads';
+        } catch (e1) { console.warn('Backup: the Download folder refused the file', e1); await removeQuiet('Download/' + name, 'EXTERNAL_STORAGE'); }
+        try {
+            await writeText(name, 'DOCUMENTS', text);
+            toast('✅ تم حفظ النسخة الاحتياطية في مجلد المستندات (Documents)\n' + name, 6000);
+            return 'documents';
+        } catch (e2) { console.warn('Backup: the Documents folder refused the file', e2); await removeQuiet(name, 'DOCUMENTS'); }
+        if (!silent && has('Share')) {
+            var res = await writeText(name, 'CACHE', text);
+            try {
+                await call('Share', 'share', { title: 'نسخة احتياطية', files: [res.uri] });
+                return 'shared';
+            } catch (e3) { return 'cancel'; }
+        }
+        /* an automatic safety copy must never be lost: the app's own folder always accepts files */
+        try { await writeText(name, 'EXTERNAL', text); }
+        catch (e4) { await writeText(name, 'DATA', text); }
+        toast('⚠️ تعذّر الحفظ في مجلد التنزيلات، حُفظت النسخة داخل مجلد التطبيق:\nAndroid/data/com.macabooca.posapp/files\n' + name, 9000);
+        return 'app';
+    };
+
+    /* ---------- fingerprint ---------- */
+    N.hasBio = function () { return has('NativeBiometric'); };
+    N.bioAvailable = async function () {
+        if (!has('NativeBiometric')) return false;
+        try { var r = await call('NativeBiometric', 'isAvailable', {}); return !!(r && r.isAvailable); } catch (e) { return false; }
+    };
+    /* resolves when the finger is accepted; a cancel is reported like the browser reports it (AbortError), so the app treats both the same */
+    N.bioVerify = function (title) {
+        return call('NativeBiometric', 'verifyIdentity', {
+            title: title || 'التحقق من المدير',
+            subtitle: 'ضع إصبعك على حسّاس البصمة',
+            negativeButtonText: 'إلغاء',
+            maxAttempts: 3
+        }).catch(function (e) {
+            var code = e && (e.code !== undefined ? String(e.code) : '');
+            var err = new Error((e && e.message) || 'biometric failed');
+            err.name = (code === '15' || code === '16') ? 'AbortError' : 'BiometricError';
+            err.code = code;
+            throw err;
+        });
+    };
 })();
 (function () {
     try {
@@ -431,6 +581,14 @@
             -webkit-user-select: none;
         }
         .day-group-header .day-arrow { font-size: 14px; }
+        /* v79: week / month cards in the sales history */
+        .bucket-hdr { margin-top: 8px; }
+        .bucket-hdr .bk-meta { display: block; font-size: 12px; font-weight: 600; opacity: 0.8; margin-top: 2px; }
+        .bucket-hdr.mo-hdr { background-color: #cfe8ea !important; font-size: 16px; }
+        .bucket-hdr.wk-hdr { background-color: #e3f4f2 !important; }
+        .bucket-body { border-right: 3px solid #bfe0e2; padding-right: 8px; margin: 4px 0 6px; }
+        html[data-theme="dark"] .bucket-hdr.mo-hdr { background-color: #1f4a50 !important; }
+        html[data-theme="dark"] .bucket-hdr.wk-hdr { background-color: #1b3a3e !important; }
         .day-group-header:active { filter: brightness(0.92); }
         .item-row[onclick]:active { background-color: #f1f1f1; }
 
@@ -498,7 +656,8 @@
             display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2;
             -webkit-tap-highlight-color: transparent;
         }
-        .cloud-dot svg { width: 19px; height: 19px; display: block; }
+.cloud-dot svg { width: 19px; height: 19px; display: block; pointer-events: none; }
+        .cloud-dot::after { content: ''; position: absolute; inset: -9px; }   /* v79: a bigger touch area around the small circle */
         .cloud-dot .cd-spin { animation: cdspin 0.9s linear infinite; }
         @keyframes cdspin { to { transform: rotate(360deg); } }
         .cloud-dot .cd-n {
@@ -647,6 +806,10 @@
             padding: 14px;
         }
         .selection-box { margin-top: 10px; }
+        /* v79: the product panel slides down smoothly when it appears (only transform + opacity, which phones draw without shaking) */
+        @keyframes panelSlideIn { from { opacity: 0; transform: translateY(-18px); } to { opacity: 1; transform: translateY(0); } }
+        #selected-product-panel.panel-anim { animation: panelSlideIn .22s cubic-bezier(.22, .8, .3, 1) backwards; will-change: transform, opacity; }
+        @media (prefers-reduced-motion: reduce) { #selected-product-panel.panel-anim { animation: none; } }
         #sel-product-name { color: var(--teal-primary) !important; }
         .mode-btn {
             border: 1px solid #cfe3e6;
@@ -849,6 +1012,11 @@
         .sp-period { text-align: center; font-size: 12.5px; color: var(--muted); margin: -4px 0 8px; }
         .sp-list { max-height: 58vh; overflow-y: auto; }
         .sp-row { display: flex; align-items: center; gap: 10px; padding: 10px 2px; border-bottom: 1px solid #edf2f6; }
+        .sp-acc { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 12px 0 2px; padding: 9px 12px; border-radius: 12px; background: #e3f4f2; color: var(--teal-primary); font-weight: 800; font-size: 15px; }
+        .sp-acc b { font-size: 15px; white-space: nowrap; }
+        .sp-acc small { font-size: 11px; font-weight: 600; }
+        .sp-top { font-style: normal; font-size: 11px; font-weight: 700; background: #f08a00; color: #fff; border-radius: 8px; padding: 1px 7px; margin-right: 4px; }
+        html[data-theme="dark"] .sp-acc { background: #1b3a3e; }
         .sp-n { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--teal-soft); color: var(--teal-primary); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
         .sp-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .sp-nm { font-weight: 700; color: var(--navy); font-size: 14.5px; overflow-wrap: anywhere; }
@@ -1039,9 +1207,9 @@
         .hist-name { min-width: 0; overflow-wrap: anywhere; }
         /* v69: every text of a sale except the amount, product name and total is 20% less opaque */
         .hist-dim { opacity: 0.8; }
-        .hist-total { display: flex; flex-direction: column; align-items: center; line-height: 1.25; text-align: center; }
+        .hist-total { display: flex; flex-direction: column; align-items: center; line-height: 1.25; text-align: center; flex: 0 0 auto; white-space: nowrap; }
         .hist-total small { font-size: 13px; color: var(--muted); font-weight: 700; position: relative; top: -4px; }
-        .hist-btns { position: relative; top: 7px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+        .hist-btns { position: relative; top: 7px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
         .hist-btns .btn { border-radius: 7px; }
 
         /* gray individual cards: each sale, each inventory product, each statistics tile (the big cards stay white) */
@@ -1078,6 +1246,13 @@
         .rc-total .rc-big { margin: 2px 0 6px; }
         .rc-note { padding: 8px 0 6px; border-top: 1px solid #e3e9ee; font-size: 13.5px; color: #e65100; font-weight: 700; }
         .modal-box.modal-tint #modal-buttons-box { margin-top: 12px; }
+        /* v79: warnings about selling below zero stock are red and hard to miss */
+        .modal-box.modal-danger { background: #fff1f1; border: 3px solid var(--red-alert); box-shadow: 0 0 0 4px rgba(213, 54, 55, 0.18), 0 10px 30px rgba(0, 0, 0, 0.3); }
+        .modal-box.modal-danger .modal-title { color: #c62828 !important; font-weight: 800; }
+        .modal-box.modal-danger #modal-body { color: #b71c1c !important; font-weight: 700; }
+        .modal-box.modal-danger #modal-confirm-btn { background: var(--red-alert) !important; color: #ffffff !important; }
+        html[data-theme="dark"] .modal-box.modal-danger { background: #3a1d1f; }
+        html[data-theme="dark"] .modal-box.modal-danger .modal-title, html[data-theme="dark"] .modal-box.modal-danger #modal-body { color: #ff8a80 !important; }
 
         /* quick-sale pill is swipe-only */
         .quick-sale-btn { touch-action: none; user-select: none; -webkit-user-select: none; will-change: transform, opacity; }
@@ -1337,7 +1512,10 @@
         .pf-g { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
         .pf-g > div { min-width: 0; }
         .pf-span2 { grid-column: span 2; }
-        .pf-card input:not([type="hidden"]) { width: 100%; box-sizing: border-box; min-width: 0; }
+        .pf-card input:not([type="hidden"]):not([type="checkbox"]) { width: 100%; box-sizing: border-box; min-width: 0; }
+        /* v79: checkbox rows are aligned the same everywhere: box on the right, text right beside it */
+        .pf-card .checkbox-container, .modal-box.modal-pf .checkbox-container { display: flex; align-items: center; justify-content: flex-start; gap: 10px; text-align: right; line-height: 1.5; margin: 6px 0 10px; }
+        .pf-card .checkbox-container input[type="checkbox"], .modal-box.modal-pf .checkbox-container input[type="checkbox"] { flex: 0 0 20px; width: 20px; height: 20px; min-width: 20px; padding: 0; margin: 0; }
         .pf-mgr { background: #fff4e5; border-color: #f5c98a; }
         .pf-mgr .pf-ct, .pf-mgr .form-label { color: #8a4b00; }
         html[data-theme="dark"] .pf-card { background: #1b2b38; border-color: #324a5f; }
@@ -1529,6 +1707,22 @@
         .act-t small { color: var(--muted); font-weight: 700; }
         .act-b { display: block; width: 100%; border: none; background: #e3f4f2; color: var(--teal-primary); font-family: inherit; font-size: 16px; font-weight: 800; border-radius: 14px; padding: 13px; margin-bottom: 8px; cursor: pointer; }
         .act-b.red { background: #fdecec; color: #d32f2f; }
+        .pfc-ov { position: fixed; inset: 0; z-index: 10170; background: rgba(0, 0, 0, 0.55); display: flex; align-items: center; justify-content: center; padding: 20px; direction: rtl; }
+        .pfc-box { width: 100%; max-width: 340px; background: #ffffff; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35); text-align: center; }
+        .pfc-head { background: var(--teal-primary); color: #ffffff; padding: 12px 14px 10px; }
+        .pfc-head small { display: block; font-size: 13px; opacity: 0.9; margin-bottom: 2px; }
+        .pfc-head b { font-size: 16px; }
+        .pfc-val { padding: 18px 12px 6px; font-size: 38px; font-weight: 800; color: var(--navy); line-height: 1.2; }
+        .pfc-val small { font-size: 16px; font-weight: 700; color: #6b7b88; }
+        .pfc-q { padding: 0 16px 14px; font-size: 13.5px; color: #6b7b88; }
+        .pfc-btns { display: flex; gap: 10px; padding: 10px 14px 14px; border-top: 1px dashed #d6dee4; }
+        .pfc-btns button { flex: 1; border: none; border-radius: 12px; padding: 13px 8px; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; color: #ffffff; }
+        .pfc-ok { background: var(--teal-primary); }
+        .pfc-fix { background: var(--orange-accent, #f08a00); }
+        html[data-theme="dark"] .pfc-box { background: #1b2b38; }
+        html[data-theme="dark"] .pfc-val { color: #e6eef5; }
+        /* v79: nothing in these sheets can be selected like text, so a long press never highlights the product name */
+        .act-ov, .act-ov * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
         .act-b.cancel { background: var(--red-alert, #d32f2f); color: #fff; }
         html[data-theme="dark"] .act-b { background: #1b3a3e; } html[data-theme="dark"] .act-b.red { background: #3a2224; color: #ff8a80; } html[data-theme="dark"] .act-b.cancel { background: var(--red-alert, #d32f2f); color: #fff; }
         .pa-gal { display: flex; gap: 8px; overflow-x: auto; margin: 10px 0 2px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
@@ -1600,9 +1794,9 @@
         .ml-switch input:checked + i { background: var(--teal-primary); }
         .ml-switch input:checked + i::after { right: 21px; }
         .more-sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-weight: 800; color: var(--navy); font-size: 16px; }
-        .more-back { display: flex; align-items: center; gap: 2px; border: none; background: #e3f4f2; color: var(--teal-primary); font-family: inherit; font-weight: 800; font-size: 14px; border-radius: 10px; padding: 6px 10px; cursor: pointer; }
+        .more-back { display: flex; align-items: center; gap: 2px; border: none; background: var(--red-alert); color: #ffffff; font-family: inherit; font-weight: 800; font-size: 14px; border-radius: 10px; padding: 6px 10px; cursor: pointer; }
         .more-back svg { width: 16px; height: 16px; }
-        html[data-theme="dark"] .more-back { background: #1b3a3e; }
+        html[data-theme="dark"] .more-back { background: var(--red-alert); color: #ffffff; }
     </style>
 </head>
 <body onclick="handleGlobalClick(event)">
@@ -1978,8 +2172,8 @@
                 <div class="stats-grid">
                     <div class="stat-tile stat-sm stat-tap" onclick="showStatsDiscFree('free')"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="9" width="17" height="11" rx="2"/><path d="M12 9v11M3.5 13h17"/><path d="M12 9c-1.5-4-5.5-4-5.5-1.6C6.5 9 9 9 12 9zM12 9c1.5-4 5.5-4 5.5-1.6C17.5 9 15 9 12 9z"/></svg></div><div class="stat-t">منتجات مجانية (قيمتها)</div><div class="stat-v"><span id="stat-today-free">0</span> <small>د.ل</small></div></div>
                     <div class="stat-tile stat-sm stat-tap" onclick="showStatsDiscFree('discount')"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18"/><circle cx="7.5" cy="7.5" r="2.3"/><circle cx="16.5" cy="16.5" r="2.3"/></svg></div><div class="stat-t">الخصومات (على المنتجات والفواتير)</div><div class="stat-v"><span id="stat-today-discounts">0</span> <small>د.ل</small></div></div>
-                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div><div class="stat-t">الربح قبل خصم المجاني والخصومات</div><div class="stat-v" style="color:#2e7d32;"><span id="stat-profit-before">0</span> <small>د.ل</small></div></div>
-                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/></svg></div><div class="stat-t">الربح بعد خصم المجاني والخصومات</div><div class="stat-v" style="color:#2e7d32;"><span id="stat-profit-after">0</span> <small>د.ل</small></div></div>
+                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div><div class="stat-t">الربح قبل خصم المجاني والخصومات والقروش الإضافية</div><div class="stat-v" style="color:#2e7d32;"><span id="stat-profit-before">0</span> <small>د.ل</small></div></div>
+                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/></svg></div><div class="stat-t">الربح بعد خصم المجاني والخصومات والقروش الإضافية</div><div class="stat-v" style="color:#2e7d32;"><span id="stat-profit-after">0</span> <small>د.ل</small></div></div>
                 </div>
                 <div id="stats-chart" class="stats-chart" style="display:none;">
                     <div class="stats-chart-title"><span id="stats-chart-title-text">المبيعات يوماً بيوم</span> <span id="stats-chart-pick"></span></div>
@@ -1991,8 +2185,8 @@
                     <b class="stats-debt-value"><span id="stat-debt-owed">0</span> د.ل</b>
                 </div>
                 <div class="stats-grid">
-                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.2"/><path d="M12 9.8v4.4"/></svg></div><div class="stat-t">قروش إضافية (غير محسوبة في المبيعات)</div><div class="stat-v"><span id="stat-today-extra-gurush">0</span> <small>د.ل</small></div></div>
-                    <div class="stat-tile stat-sm"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16"/><path d="M7 20h10"/><path d="M5 7h14"/><path d="M5 7l-3 7a3.5 3.5 0 0 0 6 0L5 7z"/><path d="M19 7l-3 7a3.5 3.5 0 0 0 6 0L19 7z"/></svg></div><div class="stat-t">جرامات إضافية</div><div class="stat-v"><span id="stat-today-extra-grams">0</span> <small>جرام</small></div></div>
+                    <div class="stat-tile stat-sm stat-tap" onclick="showStatsExtra('gurush')"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.2"/><path d="M12 9.8v4.4"/></svg></div><div class="stat-t">قروش إضافية (غير محسوبة في المبيعات)</div><div class="stat-v"><span id="stat-today-extra-gurush">0</span> <small>د.ل</small></div></div>
+                    <div class="stat-tile stat-sm stat-tap" onclick="showStatsExtra('grams')"><div class="stat-ic stat-ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16"/><path d="M7 20h10"/><path d="M5 7h14"/><path d="M5 7l-3 7a3.5 3.5 0 0 0 6 0L5 7z"/><path d="M19 7l-3 7a3.5 3.5 0 0 0 6 0L19 7z"/></svg></div><div class="stat-t">جرامات إضافية</div><div class="stat-v"><span id="stat-today-extra-grams">0</span> <small>جرام</small></div></div>
                     <div class="stat-tile stat-sm" id="stat-late-note-tile" style="display:none;"><div class="stat-ic stat-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h8l3 3V20.5H7z"/><path d="M10 12h5M10 15.5h5"/></svg></div><div class="stat-t" id="stat-late-note-title">ربح من ملاحظة سابقة</div><div class="stat-v"><span id="stat-late-note-profit">0</span> <small>د.ل</small></div></div>
                 </div>
             </div>
@@ -2656,11 +2850,46 @@
             setTimeout(retry, 220);
         }
 
+        /* v79: smooth slide-down when the panel appears */
+        function panelAnimateIn() {
+            const p = document.getElementById('selected-product-panel');
+            if (!p) return;
+            p.classList.remove('panel-anim');
+            void p.offsetWidth;
+            p.classList.add('panel-anim');
+            clearTimeout(panelAnimateIn._t);
+            panelAnimateIn._t = setTimeout(() => p.classList.remove('panel-anim'), 320);
+        }
+        /* v79: where the panel really sits, ignoring the slide-in movement (so the keyboard docking never measures a moving panel) */
+        function panelRectNow(panel) {
+            const r = panel.getBoundingClientRect();
+            let ty = 0;
+            try { ty = new DOMMatrix(getComputedStyle(panel).transform).m42 || 0; } catch (e) {}
+            return { top: r.top - ty, bottom: r.bottom - ty };
+        }
+        /* v79: when the keyboard comes up, the panel glides to just above it. Android sends several resize events while the
+           keyboard animates; before, each one started its own smooth scroll from a moving position, so the panel wobbled.
+           Now one small loop re-measures every frame and moves a fraction of the remaining distance, so there is one
+           continuous motion whatever the number of resize events. */
+        let panelDockRaf = 0, panelDockUntil = 0;
+        function panelDockFollow() {
+            panelDockUntil = performance.now() + 700;
+            if (panelDockRaf) return;
+            const step = () => {
+                panelDockRaf = 0;
+                const panel = document.getElementById('selected-product-panel');
+                if (!panel || panel.style.display === 'none' || !document.body.classList.contains('kb-open')) return;
+                const delta = panelRectNow(panel).bottom - (window.innerHeight - 12);
+                if (Math.abs(delta) > 1) window.scrollBy({ top: Math.abs(delta) < 6 ? delta : delta * 0.35, behavior: 'instant' });
+                if (performance.now() < panelDockUntil) panelDockRaf = requestAnimationFrame(step);
+            };
+            panelDockRaf = requestAnimationFrame(step);
+        }
         /* v68: the same 'bring it into view' the old delayed scroll did, but done at once (no slide) */
         function panelNearestNow() {
             const panel = document.getElementById('selected-product-panel');
             if (!panel || panel.style.display === 'none') return;
-            const r = panel.getBoundingClientRect();
+            const r = panelRectNow(panel);
             const vis = window.visualViewport ? window.visualViewport.height : window.innerHeight;
             if (r.bottom > vis - 12) window.scrollBy({ top: r.bottom - (vis - 12), behavior: 'instant' });
             else if (r.top < 0) window.scrollBy({ top: r.top, behavior: 'instant' });
@@ -3017,7 +3246,7 @@
             syncKiloButton(prod);
 
             setSellMode('retail');
-            document.getElementById('selected-product-panel').style.display = 'block';
+            { const pnl0 = document.getElementById('selected-product-panel'); const wasHidden0 = pnl0.style.display === 'none'; pnl0.style.display = 'block'; if (wasHidden0) panelAnimateIn(); }
             document.body.classList.add('panel-open');
             placeProductPanelAtDefault();
             /* Weight products: open the amount (dinar) box and the keyboard at once, inside the same tap. */
@@ -3902,7 +4131,7 @@
             selDebtorName = item.debtorName || '';
 
             document.getElementById('btn-add-to-cart').textContent = 'حفظ التعديل';
-            document.getElementById('selected-product-panel').style.display = 'block';
+            { const pnl1 = document.getElementById('selected-product-panel'); const wasHidden1 = pnl1.style.display === 'none'; pnl1.style.display = 'block'; if (wasHidden1) panelAnimateIn(); }
             document.body.classList.add('panel-open');
             calculateSelTotal();
             placeProductPanelAtDefault();
@@ -4162,6 +4391,7 @@
                 tEl.appendChild(x);
             }
             modalBoxEl.classList.toggle('modal-tint', !!(onConfirm && onConfirm.tint));
+            modalBoxEl.classList.toggle('modal-danger', !!(onConfirm && onConfirm.danger) || (typeof title === 'string' && /^تحذير/.test(title) && /بالسالب/.test(String(text || ''))));
 
             if (modalMode === 'reminder') {
                 buttonsBox.innerHTML = `
@@ -4191,7 +4421,7 @@
             }
 
             const cancelBtnEl = document.getElementById('modal-cancel-btn');
-            if (cancelBtnEl && /^(إلغاء|إغلاق)/.test(cancelBtnEl.textContent.trim())) {
+            if (cancelBtnEl && /^(إلغاء|إغلاق|رجوع|عودة|لا، رجوع)/.test(cancelBtnEl.textContent.trim())) {
                 cancelBtnEl.classList.remove('btn-teal');
                 cancelBtnEl.classList.add('btn-red');
             }
@@ -4621,7 +4851,7 @@
             modalLocked = false;
             modalNoOutside = false;
             modalCancelHandler = null;
-            const mb = document.querySelector('#custom-modal .modal-box'); if (mb) mb.classList.remove('modal-tint');
+            const mb = document.querySelector('#custom-modal .modal-box'); if (mb) { mb.classList.remove('modal-tint'); mb.classList.remove('modal-danger'); }
         }
 
         function closeModalOnOutsideClick(event) {
@@ -4722,7 +4952,7 @@
             document.body.appendChild(bar);
             const thumb = bar.firstChild;
             let hideT = null, dragging = false, raf = 0, grabY = 0, shownAt = 0;
-            let drag = null, pendingY = null, scrollRaf = 0;
+            let drag = null, targetY = null, scrollRaf = 0;
             const activeView = () => {
                 const a = document.getElementById('view-sales'), b = document.getElementById('view-inventory');
                 return (a && a.style.display !== 'none') || (b && b.style.display !== 'none');
@@ -4754,13 +4984,25 @@
                 showBar();
             };
             window.addEventListener('scroll', () => { if (!dragging && !raf && activeView()) raf = requestAnimationFrame(update); }, { passive: true });
+            /* v79: smooth in both speeds. The handle follows the finger at once, and the page glides toward the place the
+               handle points to: a small gap is closed gently (slow drag = smooth), a big gap is closed in bigger bites
+               (fast drag = fast, but still a glide). The glide also finishes after the finger lifts. */
             const step = () => {
                 scrollRaf = 0;
-                if (!dragging) return;
-                if (pendingY !== null) { window.scrollTo(0, pendingY); pendingY = null; }
+                if (!dragging && targetY === null) return;
+                let moving = false;
+                if (targetY !== null) {
+                    const cur = window.scrollY, d = targetY - cur;
+                    if (Math.abs(d) > 1) {
+                        const k = Math.min(0.6, 0.18 + Math.abs(d) / (window.innerHeight * 10));
+                        const mv = Math.abs(d * k) < 1 ? (d > 0 ? 1 : -1) : d * k;
+                        window.scrollTo(0, cur + mv);
+                        moving = true;
+                    } else { window.scrollTo(0, targetY); targetY = null; }
+                }
                 let more = false;
                 if (typeof window.fsEnsureRendered === 'function') { try { more = window.fsEnsureRendered(); } catch (er) {} }
-                if (more) scrollRaf = requestAnimationFrame(step);
+                if (more || moving) scrollRaf = requestAnimationFrame(step);
             };
             const moveTo = (clientY) => {
                 const m = drag;
@@ -4769,8 +5011,8 @@
                 const y = Math.min(range, Math.max(0, clientY - m.trackTop - grabY));
                 place(y);
                 /* anchored to where the page was when grabbed: the first movement never jumps, and both ends are still reached */
-                if (y >= m.y0) pendingY = m.s0 + (range - m.y0 > 0.5 ? (y - m.y0) / (range - m.y0) : 0) * (m.max - m.s0);
-                else pendingY = m.y0 > 0.5 ? m.s0 * (y / m.y0) : 0;
+                if (y >= m.y0) targetY = m.s0 + (range - m.y0 > 0.5 ? (y - m.y0) / (range - m.y0) : 0) * (m.max - m.s0);
+                else targetY = m.y0 > 0.5 ? m.s0 * (y / m.y0) : 0;
                 if (!scrollRaf) scrollRaf = requestAnimationFrame(step);
             };
             thumb.addEventListener('pointerdown', (e) => {
@@ -4785,6 +5027,7 @@
                 thumb.style.height = m.thumbH + 'px';
                 grabY = (e.clientY >= tr.top && e.clientY <= tr.bottom) ? (e.clientY - tr.top) : m.thumbH / 2;
                 dragging = true;
+                targetY = null;
                 clearTimeout(hideT);
                 bar.classList.add('drag');
                 document.documentElement.classList.add('fs-dragging');
@@ -4799,7 +5042,8 @@
             thumb.addEventListener('touchmove', (e) => { if (dragging) e.preventDefault(); }, { passive: false });
             const end = () => {
                 if (!dragging) return;
-                dragging = false; drag = null; pendingY = null;
+                dragging = false; drag = null;
+                if (targetY !== null && !scrollRaf) scrollRaf = requestAnimationFrame(step);   /* let the page finish its glide */
                 bar.classList.remove('drag');
                 document.documentElement.classList.remove('fs-dragging');
                 /* the handle glides (not jumps) to its exact place */
@@ -4926,6 +5170,8 @@
         let bioBusy = false;
 
         function isManagerBiometricEnabled() {
+            /* v78: inside the installed app the phone's own fingerprint window is used instead of the browser one */
+            try { if (window.posNative && window.posNative.on) return !!localStorage.getItem(BIO_CRED_KEY) && window.posNative.hasBio(); } catch (e) { return false; }
             try { return !!localStorage.getItem(BIO_CRED_KEY) && !!window.PublicKeyCredential && !!navigator.credentials; } catch (e) { return false; }
         }
         function bufToB64(buf) { return btoa(String.fromCharCode.apply(null, new Uint8Array(buf))); }
@@ -4935,6 +5181,7 @@
         /* The request is prepared ahead of the tap, so the tap itself only has to call the phone. */
         let bioOptions = null;
         function prepareBiometricOptions() {
+            if (window.posNative && window.posNative.on) { bioOptions = { native: true }; return; }
             try {
                 bioOptions = { publicKey: {
                     challenge: randomBytes(32),
@@ -4952,7 +5199,7 @@
             const opts = bioOptions;
             bioOptions = null;
             try {
-                const request = navigator.credentials.get(opts);
+                const request = (opts && opts.native) ? window.posNative.bioVerify() : navigator.credentials.get(opts);
                 try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {}
                 prepareBiometricOptions();
                 await request;
@@ -4975,6 +5222,23 @@
                     localStorage.removeItem(BIO_CRED_KEY);
                     updateBiometricUI();
                 });
+                return;
+            }
+            /* v78: installed app: ask the phone itself, confirm once with the finger, then remember that it is switched on */
+            if (window.posNative && window.posNative.on) {
+                if (!(await window.posNative.bioAvailable())) {
+                    showModal('البصمة غير متاحة', 'لا توجد بصمة محفوظة في إعدادات الهاتف، أو أن هذا الجهاز لا يدعم البصمة.', false, () => {});
+                    return;
+                }
+                try {
+                    await window.posNative.bioVerify('تفعيل البصمة');
+                    localStorage.setItem(BIO_CRED_KEY, 'bmF0aXZl');
+                    updateBiometricUI();
+                    showModal('تم التفعيل', 'تم تفعيل البصمة لكلمة سر المدير على هذا الجهاز.', false, () => {});
+                } catch (e) {
+                    if (e && (e.name === 'NotAllowedError' || e.name === 'AbortError')) return;
+                    showModal('تعذّر التفعيل', 'لم يتم تفعيل البصمة. تأكد من وجود بصمة محفوظة في إعدادات الهاتف ثم حاول مرة أخرى.', false, () => {});
+                }
                 return;
             }
             let available = false;
@@ -5044,8 +5308,50 @@
             promptManagerPassword(action);
         }
 
+        /* v79: no two accounts (cashiers or the manager) may use the same password */
+        function pinKey(p) { return String(p === undefined || p === null ? '' : p).trim(); }
+        function pinTakenBy(pin, exceptIdx, exceptManager) {
+            const k = pinKey(pin);
+            if (!k) return false;
+            if (!exceptManager && pinKey(managerPin) === k) return true;
+            return cashiers.some((c, i) => i !== exceptIdx && pinKey(c.pin) === k);
+        }
+        function pinIsShared(pin) {
+            const k = pinKey(pin);
+            if (!k) return false;
+            let n = pinKey(managerPin) === k ? 1 : 0;
+            cashiers.forEach(c => { if (pinKey(c.pin) === k) n++; });
+            return n > 1;
+        }
+        const PIN_TAKEN_MSG = 'كلمة السر هذه مستخدمة في حساب آخر. اختر كلمة سر لا يستخدمها أي حساب آخر.';
+        /* an existing account whose password is shared with another one must pick a new password right after logging in */
+        function promptSharedPinChange(who) {
+            const isMgr = who === 'manager';
+            const cur = isMgr ? managerPin : (cashiers[who] && cashiers[who].pin);
+            if (!isMgr && !cashiers[who]) return;
+            if (!pinIsShared(cur)) return;
+            const ask = (msg) => {
+                const cb = (v) => {
+                    const n = pinKey(v);
+                    if (!n) { ask('اكتب كلمة سر جديدة للمتابعة.'); return; }
+                    if (pinTakenBy(n, isMgr ? -1 : who, isMgr)) { ask(PIN_TAKEN_MSG); return; }
+                    if (isMgr) { managerPin = n; localStorage.setItem(KEYS.MANAGER_PIN, managerPin); scheduleCloudPush(); }
+                    else { cashiers[who].pin = n; safeSave(KEYS.CASHIERS, cashiers); queueSettingsSync(); }
+                    try { renderMoreCashiers(); } catch (e) {}
+                    showModal('تم', 'تم تغيير كلمة السر. استخدمها في التسجيل القادم.', false, () => {});
+                };
+                cb.nonDismissible = true;
+                showModal('غيّر كلمة السر', msg, 'password', cb);
+            };
+            ask('كلمة السر الخاصة بك مستخدمة أيضاً في حساب آخر. يجب أن تختار كلمة سر جديدة لا يستخدمها غيرك قبل المتابعة.');
+        }
+
         function changeManagerPassword() {
             showModal('تغيير كلمة سر المدير', 'أدخل كلمة السر الجديدة للمدير:', 'password', (newPin) => {
+                if (newPin && newPin.trim() !== '' && pinTakenBy(newPin, -1, true)) {
+                    showModal('خطأ', PIN_TAKEN_MSG, false, () => changeManagerPassword());
+                    return;
+                }
                 if (newPin && newPin.trim() !== '') {
                     managerPin = newPin.trim();
                     localStorage.setItem(KEYS.MANAGER_PIN, managerPin);
@@ -5060,6 +5366,7 @@
                 <div class="cashier-item">
                     <div>
                         <strong>الاسم: ${escapeHtml(c.name)}</strong>
+                        ${pinIsShared(c.pin) ? '<div style="font-size:12px; color:#d53637; font-weight:700;">⚠ كلمة السر مكررة مع حساب آخر</div>' : ''}
                         <div style="font-size:12px; color:#777;">كلمة السر: <span id="cashier-pin-${idx}" dir="ltr">••••</span> <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick="toggleCashierPin(${idx}, this)">إظهار</button></div>
                     </div>
                     <div class="ci-btns">
@@ -5092,6 +5399,7 @@
                 <div class="cashier-item">
                     <div>
                         <strong>${escapeHtml(c.name)}</strong>
+                        ${pinIsShared(c.pin) ? '<div style="font-size:12px; color:#d53637; font-weight:700;">⚠ كلمة السر مكررة مع حساب آخر</div>' : ''}
                         <div style="font-size:12px; color:#777;">كلمة السر: <span id="mc-pin-${idx}" dir="ltr" data-shown="0">••••</span> <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick="toggleMoreCashierPin(${idx}, this)">إظهار</button></div>
                     </div>
                     <div class="ci-btns">
@@ -5169,6 +5477,8 @@
             const callback = (data) => {
                 if (data && data.name && data.pin && (isManagerNameClash(data.name) || cashierNameTaken(data.name, -1))) {
                     showModal('خطأ', 'هذا الاسم مستخدم بالفعل لحساب آخر. اختر اسماً مختلفاً.', false, () => addCashierAccount());
+                } else if (data && data.name && data.pin && pinTakenBy(data.pin, -1, false)) {
+                    showModal('خطأ', PIN_TAKEN_MSG, false, () => addCashierAccount());
                 } else if (data && data.name && data.pin) {
                     cashiers.push({ id: Date.now(), name: data.name, pin: data.pin });
                     safeSave(KEYS.CASHIERS, cashiers);
@@ -5190,6 +5500,8 @@
             const callback = (data) => {
                 if (data && data.name && data.pin && (isManagerNameClash(data.name) || cashierNameTaken(data.name, index))) {
                     showModal('خطأ', 'هذا الاسم مستخدم بالفعل لحساب آخر. اختر اسماً مختلفاً.', false, () => editCashierAccount(index));
+                } else if (data && data.name && data.pin && pinTakenBy(data.pin, index, false)) {
+                    showModal('خطأ', PIN_TAKEN_MSG, false, () => editCashierAccount(index));
                 } else if (data && data.name && data.pin) {
                     cashiers[index].name = data.name;
                     cashiers[index].pin = data.pin;
@@ -5221,6 +5533,7 @@
             const mustRegister = activeCashier === 'غير محدد';
             const onLogin = (pin) => {
                 const found = cashiers.find(c => c.pin === pin);
+                const sharedAtLogin = pinIsShared(pin);
                 if (found) {
                     activeCashier = found.name;
                     isManagerRole = false;
@@ -5229,6 +5542,7 @@
                     localStorage.setItem(KEYS.ACTIVE_ROLE, 'cashier');
                     document.getElementById('active-cashier-display').innerText = cashierDisplay(activeCashier);
                     if (typeof renderPriceNotices === 'function') renderPriceNotices();
+                    if (sharedAtLogin) setTimeout(() => promptSharedPinChange(cashiers.indexOf(found)), 350);
                 } else if (pin === managerPin) {
                     activeCashier = 'المدير';
                     isManagerRole = true;
@@ -5237,6 +5551,7 @@
                     localStorage.setItem(KEYS.ACTIVE_ROLE, 'manager');
                     document.getElementById('active-cashier-display').innerText = cashierDisplay(activeCashier);
                     if (typeof renderPriceNotices === 'function') renderPriceNotices();
+                    if (sharedAtLogin) setTimeout(() => promptSharedPinChange('manager'), 350);
                 } else {
                     const retry = () => promptShiftLogin();
                     if (mustRegister) retry.nonDismissible = true;
@@ -5352,8 +5667,11 @@
                     discount: itemDisc + share,
                     itemDisc: itemDisc, share: share,
                     discountProfitImpact: cost > 0 ? itemDisc + share : 0,
+                    /* v79: the extra gurush / grams given on top of a weight sale are deducted from the profit (their value at the product's kilo price) */
+                    extraProfitImpact: (!free && cost > 0 && qty > 0 && Number(i.extraKg || 0) > 0) ? Number(i.extraKg) * price : 0,
                     qtyK: 1
                 };
+                rec.profit -= rec.extraProfitImpact;
                 const f = partialDebtFraction(i);
                 if (f >= 1) return [Object.assign({}, rec, { item: Object.assign({}, i, { isDebt: true }) })];
                 if (!(f > 0)) return [rec];
@@ -5361,7 +5679,7 @@
                 const part = (k, asDebt) => Object.assign({}, rec, {
                     item: asDebt ? Object.assign({}, i, { isDebt: true }) : i,
                     amount: rec.amount * k, profit: rec.profit * k,
-                    discount: rec.discount * k, itemDisc: rec.itemDisc * k, share: rec.share * k, discountProfitImpact: rec.discountProfitImpact * k, qtyK: k
+                    discount: rec.discount * k, itemDisc: rec.itemDisc * k, share: rec.share * k, discountProfitImpact: rec.discountProfitImpact * k, extraProfitImpact: rec.extraProfitImpact * k, qtyK: k
                 });
                 return [part(1 - f, false), part(f, true)];
             });
@@ -5372,7 +5690,13 @@
                 lateProfit: 0, lateProfitBefore: 0, lateBagProfit: 0, lateOtherProfit: 0,
                 rev: 0, profit: 0, customers: 0, paid: 0, transfer: 0, extraKg: 0, extraValue: 0, perDay: new Array(days).fill(0),
                 bagRev: 0, otherRev: 0, bagProfit: 0, otherProfit: 0, freeValue: 0, discountValue: 0, profitBefore: 0,
-                prod: new Map(), prodLate: new Map(), freeProd: new Map(), discProd: new Map(), cartDisc: 0
+                prod: new Map(), prodLate: new Map(), freeProd: new Map(), discProd: new Map(), cartDisc: 0,
+                acc: new Map()   /* v79: per account (who sold it): extra gurush / grams, free products, discounts */
+            };
+            const accRow = (name) => {
+                let a = out.acc.get(name);
+                if (!a) { a = { name, extraValue: 0, extraKg: 0, free: new Map(), disc: new Map(), cart: 0, freeTotal: 0, discTotal: 0 }; out.acc.set(name, a); }
+                return a;
             };
             /* v67: free products and discounts per product (what the free / discount cards open) */
             const valRow = (map, m) => {
@@ -5425,21 +5749,28 @@
                 addBagQty(prodRow(out.prod, m), i, Number(i.qty || 0) * (m.qtyK === undefined ? 1 : m.qtyK));
             };
             const dayIndex = ms => { const idx = Math.round((dayStartMs(ms) - fromMs) / 86400000); return Math.min(Math.max(idx, 0), days - 1); };
-            const addItem = (m, noBagQty) => {
+            const addItem = (m, noBagQty, owner) => {
                 out.rev += m.amount;
                 out.profit += m.profit;
                 if (m.isBag) { out.bagRev += m.amount; out.bagProfit += m.profit; }
                 else { out.otherRev += m.amount; out.otherProfit += m.profit; }
                 out.freeValue += m.freeValue;
                 out.discountValue += m.discount;
-                out.profitBefore += m.profit + m.freeProfitImpact + m.discountProfitImpact;
+                out.profitBefore += m.profit + m.freeProfitImpact + m.discountProfitImpact + (m.extraProfitImpact || 0);
                 addProd(m, noBagQty);
                 if (m.freeValue > 0) valRow(out.freeProd, m).value += m.freeValue;
                 if (m.itemDisc > 1e-9) valRow(out.discProd, m).value += m.itemDisc;
                 out.cartDisc += m.share || 0;
+                if (m.freeValue > 0 || m.itemDisc > 1e-9 || (m.share || 0) > 1e-9) {
+                    const a = accRow(owner || 'غير محدد');
+                    if (m.freeValue > 0) { valRow(a.free, m).value += m.freeValue; a.freeTotal += m.freeValue; }
+                    if (m.itemDisc > 1e-9) { valRow(a.disc, m).value += m.itemDisc; a.discTotal += m.itemDisc; }
+                    if ((m.share || 0) > 1e-9) { a.cart += m.share; a.discTotal += m.share; }
+                }
             };
             list.forEach(s => {
                 if (s.returnedAt) return;
+                const sellerName = statsCashierOf(s);
                 /* v73: per-cashier statistics: the sale belongs to who sold it, a debt payment to who marked it paid */
                 const sellerOk = !who || statsCashierOf(s) === who;
                 const payerOk = !who || debtPayerOf(s) === who;
@@ -5453,13 +5784,16 @@
                     out.perDay[dayIndex(t)] += bd.cashAmount;
                     /* a note converted on a later day: its sales amount stays on the note's day, its profit goes to the conversion day's own card */
                     money.forEach(m => {
-                        if (!m.item.isDebt || m.freeValue > 0) addItem(lateNote ? Object.assign({}, m, { profit: 0, freeProfitImpact: 0, discountProfitImpact: 0 }) : m);
+                        if (!m.item.isDebt || m.freeValue > 0) addItem(lateNote ? Object.assign({}, m, { profit: 0, freeProfitImpact: 0, discountProfitImpact: 0, extraProfitImpact: 0 }) : m, undefined, sellerName);
                         else if (m.isBag) addBagCountOnly(m);
                     });
                     (s.items || []).forEach(i => {
                         if (Number(i.extraKg || 0) > 0 && Number(i.qty || 0) > 0) {
                             out.extraKg += Number(i.extraKg);
                             out.extraValue += Number(i.extraKg) * Number(i.price || 0);
+                            const ea = accRow(sellerName);
+                            ea.extraKg += Number(i.extraKg);
+                            ea.extraValue += Number(i.extraKg) * Number(i.price || 0);
                         }
                     });
                 }
@@ -5469,7 +5803,7 @@
                         money.forEach(m => {
                             if (!m.item.isDebt || m.freeValue > 0) {
                                 out.lateProfit += m.profit;
-                                out.lateProfitBefore += m.profit + m.freeProfitImpact + m.discountProfitImpact;
+                                out.lateProfitBefore += m.profit + m.freeProfitImpact + m.discountProfitImpact + (m.extraProfitImpact || 0);
                                 if (m.isBag) out.lateBagProfit += m.profit; else out.lateOtherProfit += m.profit;
                                 const lr = prodRow(out.prodLate, m); lr.profit += m.profit; if (m.costed) lr.costed = true;
                             }
@@ -5481,7 +5815,7 @@
                     if (pt >= fromMs && pt < toMs) {
                         out.paid += bd.debtAmount;
                         out.perDay[dayIndex(pt)] += bd.debtAmount;
-                        money.forEach(m => { if (m.item.isDebt && !(m.freeValue > 0)) addItem(Object.assign({}, m, { fromDebt: true }), true); });
+                        money.forEach(m => { if (m.item.isDebt && !(m.freeValue > 0)) addItem(Object.assign({}, m, { fromDebt: true }), true, sellerName); });
                     }
                 }
             });
@@ -5518,25 +5852,81 @@
             });
         }
         const PC_WD = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
-        let pcState = { tab: 'hours', metric: 'sales', range: 30 }, pcTok = 0, pcData = null;
+        /* v79: the performance charts use the same period choices as the main statistics page
+           (today, a chosen day, a chosen week, last 7 days, last 30 days, a chosen month, everything) and 12-hour labels */
+        let pcState = { tab: 'hours', metric: 'sales', period: 'today', dayMs: 0, weekMs: 0, monthMs: 0 }, pcTok = 0, pcData = null;
+        function pcWeekStart(ms) { const d0 = dayStartMs(ms); return addDaysMs(d0, -((new Date(d0).getDay() + 1) % 7)); }
+        function pcMonthStart(ms) { const d = new Date(ms); return new Date(d.getFullYear(), d.getMonth(), 1).getTime(); }
+        function pc12(h) { return (h % 12 === 0 ? 12 : h % 12) + (h < 12 ? ' ص' : ' م'); }
+        function pcRange() {
+            const st = pcState, today0 = dayStartMs(Date.now()), tomorrow = addDaysMs(today0, 1);
+            if (st.period === 'day') { const f = st.dayMs || addDaysMs(today0, -1); return { from: f, to: addDaysMs(f, 1) }; }
+            if (st.period === 'week') { const f = st.weekMs || pcWeekStart(today0); return { from: f, to: addDaysMs(f, 7) }; }
+            if (st.period === '7') return { from: addDaysMs(today0, -6), to: tomorrow };
+            if (st.period === '30') return { from: addDaysMs(today0, -29), to: tomorrow };
+            if (st.period === 'month') { const f = st.monthMs || pcMonthStart(today0); const d = new Date(f); return { from: f, to: new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime() }; }
+            if (st.period === 'all') return { from: 0, to: tomorrow };
+            return { from: today0, to: tomorrow };
+        }
+        function pcPickerHtml() {
+            const st = pcState, today0 = dayStartMs(Date.now());
+            if (st.period === 'day') {
+                const ms = st.dayMs || addDaysMs(today0, -1);
+                return '<div class="stats-day-picker"><button type="button" class="qty-btn" data-nav="-1" aria-label="اليوم السابق">›</button>' +
+                    '<label class="stats-day-label"><span>' + escapeHtml(new Date(ms).toLocaleDateString('ar-LY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })) + '</span><input type="date" id="pc-day-input" value="' + msToDateInput(ms) + '" max="' + msToDateInput(today0) + '"></label>' +
+                    '<button type="button" class="qty-btn" data-nav="1" aria-label="اليوم التالي"' + (ms >= today0 ? ' disabled' : '') + '>‹</button></div>';
+            }
+            if (st.period === 'week') {
+                const ws = st.weekMs || pcWeekStart(today0), we = addDaysMs(ws, 6), a = new Date(ws), b = new Date(we);
+                const txt = 'أسبوع ' + a.getDate() + '/' + (a.getMonth() + 1) + ' – ' + b.getDate() + '/' + (b.getMonth() + 1) + '/' + b.getFullYear();
+                return '<div class="stats-day-picker"><button type="button" class="qty-btn" data-nav="-1" aria-label="الأسبوع السابق">›</button>' +
+                    '<label class="stats-day-label"><span>' + escapeHtml(txt) + '</span></label>' +
+                    '<button type="button" class="qty-btn" data-nav="1" aria-label="الأسبوع التالي"' + (ws >= pcWeekStart(today0) ? ' disabled' : '') + '>‹</button></div>';
+            }
+            if (st.period === 'month') {
+                const cur = new Date(), curM = new Date(cur.getFullYear(), cur.getMonth(), 1).getTime();
+                const ms = st.monthMs || curM, chosen = new Date(ms);
+                const back = Math.max(36, (cur.getFullYear() - chosen.getFullYear()) * 12 + cur.getMonth() - chosen.getMonth());
+                let opts = '';
+                for (let k = 0; k <= back; k++) { const d = new Date(cur.getFullYear(), cur.getMonth() - k, 1); opts += '<option value="' + d.getTime() + '"' + (d.getTime() === ms ? ' selected' : '') + '>' + d.toLocaleDateString('ar-LY', { year: 'numeric', month: 'long' }) + '</option>'; }
+                return '<div class="stats-day-picker"><button type="button" class="qty-btn" data-nav="-1" aria-label="الشهر السابق">›</button>' +
+                    '<label class="stats-day-label"><span>' + escapeHtml(chosen.toLocaleDateString('ar-LY', { year: 'numeric', month: 'long' })) + '</span><select id="pc-month-select" style="position:absolute; inset:0; width:100%; height:100%; opacity:0; border:none; margin:0; padding:0;">' + opts + '</select></label>' +
+                    '<button type="button" class="qty-btn" data-nav="1" aria-label="الشهر التالي"' + (ms >= curM ? ' disabled' : '') + '>‹</button></div>';
+            }
+            return '';
+        }
+        function pcNav(dir) {
+            const st = pcState, today0 = dayStartMs(Date.now());
+            if (st.period === 'day') { const n = addDaysMs(st.dayMs || addDaysMs(today0, -1), dir); if (n > today0) return; st.dayMs = n; }
+            else if (st.period === 'week') { const n = addDaysMs(st.weekMs || pcWeekStart(today0), dir * 7); if (n > pcWeekStart(today0)) return; st.weekMs = n; }
+            else if (st.period === 'month') { const cur = new Date(); const curM = new Date(cur.getFullYear(), cur.getMonth(), 1).getTime(); const b = new Date(st.monthMs || curM); const n = new Date(b.getFullYear(), b.getMonth() + dir, 1).getTime(); if (n > curM) return; st.monthMs = n; }
+            pcRender();
+        }
         function openPerfCharts() {
             if (document.getElementById('pc-ov')) return;
+            pcState = { tab: 'hours', metric: 'sales', period: 'today', dayMs: 0, weekMs: 0, monthMs: 0 };
             const ov = document.createElement('div');
             ov.id = 'pc-ov';
             ov.className = 'pc-ov';
-            const tabs = [['hours', 'الساعات'], ['days', 'الأيام'], ['weekday', 'أيام الأسبوع'], ['weeks', 'الأسابيع'], ['months', 'الأشهر']];
+            const periods = [['today', 'اليوم'], ['day', 'اختيار يوم'], ['week', 'اختيار أسبوع'], ['7', 'آخر 7 أيام'], ['30', 'آخر 30 يوم'], ['month', 'اختيار شهر'], ['all', 'كل المبيعات']];
             ov.innerHTML = '<div class="pc-box"><div class="pc-head"><b>أداء المبيعات والأرباح</b><button type="button" class="btn btn-red" id="pc-close">إغلاق</button></div>' +
-                '<div class="pc-tabs">' + tabs.map(t => '<button type="button" class="chip-btn" data-tab="' + t[0] + '">' + t[1] + '</button>').join('') + '</div>' +
+                '<div class="pc-ranges" id="pc-periods">' + periods.map(r => '<button type="button" class="chip-btn" data-p="' + r[0] + '">' + r[1] + '</button>').join('') + '</div>' +
+                '<div id="pc-picker"></div>' +
+                '<div class="pc-tabs" id="pc-tabs"></div>' +
                 '<div class="pc-metric"><button type="button" class="mode-btn" data-m="sales">المبيعات</button><button type="button" class="mode-btn" data-m="profit">الأرباح</button></div>' +
-                '<div class="pc-ranges" id="pc-ranges">' + [[7, 'آخر 7 أيام'], [30, 'آخر 30 يوم'], [90, 'آخر 90 يوم'], ['all', 'كل المبيعات']].map(r => '<button type="button" class="chip-btn" data-r="' + r[0] + '">' + r[1] + '</button>').join('') + '</div>' +
                 '<div class="pc-sub" id="pc-sub"></div><div class="pc-bw" id="pc-bw"></div><div class="pc-chart" id="pc-chart"></div><div class="pc-pick" id="pc-pick"></div></div>';
             document.body.appendChild(ov);
             ov.querySelector('#pc-close').addEventListener('click', () => ov.remove());
             ov.addEventListener('click', e => {
                 const t = e.target.closest('[data-tab]'); if (t) { pcState.tab = t.getAttribute('data-tab'); pcRender(); return; }
                 const m = e.target.closest('[data-m]'); if (m) { pcState.metric = m.getAttribute('data-m'); pcDraw(); return; }
-                const r = e.target.closest('[data-r]'); if (r) { const v = r.getAttribute('data-r'); pcState.range = v === 'all' ? 'all' : Number(v); pcRender(); return; }
+                const pr = e.target.closest('[data-p]'); if (pr) { pcState.period = pr.getAttribute('data-p'); pcState.tab = 'hours'; pcRender(); return; }
+                const nv = e.target.closest('[data-nav]'); if (nv && !nv.disabled) { pcNav(Number(nv.getAttribute('data-nav'))); return; }
                 const c = e.target.closest('.pc-col'); if (c) pcPick(Number(c.getAttribute('data-i')));
+            });
+            ov.addEventListener('change', e => {
+                if (e.target.id === 'pc-day-input' && e.target.value) { const q = e.target.value.split('-').map(Number); pcState.dayMs = Math.min(new Date(q[0], q[1] - 1, q[2]).getTime(), dayStartMs(Date.now())); pcRender(); }
+                else if (e.target.id === 'pc-month-select') { pcState.monthMs = Number(e.target.value) || 0; pcRender(); }
             });
             pcRender();
         }
@@ -5545,23 +5935,12 @@
             if (!ov) return;
             const tok = ++pcTok;
             const st = pcState;
-            ov.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('active', b.getAttribute('data-tab') === st.tab));
-            ov.querySelectorAll('[data-r]').forEach(b => b.classList.toggle('active', String(b.getAttribute('data-r')) === String(st.range)));
-            document.getElementById('pc-ranges').style.display = (st.tab === 'hours' || st.tab === 'weekday') ? 'flex' : 'none';
+            ov.querySelectorAll('[data-p]').forEach(b => b.classList.toggle('active', b.getAttribute('data-p') === st.period));
+            document.getElementById('pc-picker').innerHTML = pcPickerHtml();
             document.getElementById('pc-chart').innerHTML = '<div class="pc-empty">جاري الحساب…</div>';
-            const today0 = dayStartMs(Date.now()), end = addDaysMs(today0, 1);
-            let from, n, key, label, pickLabel;
-            if (st.tab === 'hours' || st.tab === 'weekday') {
-                from = st.range === 'all' ? 0 : addDaysMs(today0, -(st.range - 1));
-            } else if (st.tab === 'days') {
-                from = addDaysMs(today0, -29);
-            } else if (st.tab === 'weeks') {
-                const diff = (new Date(today0).getDay() + 1) % 7;
-                from = addDaysMs(addDaysMs(today0, -diff), -7 * 11);
-            } else {
-                const d = new Date(today0);
-                from = new Date(d.getFullYear(), d.getMonth() - 11, 1).getTime();
-            }
+            const today0 = dayStartMs(Date.now());
+            const rg = pcRange();
+            let from = rg.from; const end = rg.to;
             const list = await getSalesForStats(from, end);
             if (tok !== pcTok || !document.getElementById('pc-ov')) return;
             if (from === 0) {
@@ -5569,22 +5948,37 @@
                 list.forEach(x => { if (!x.returnedAt) { const t = saleTimeMs(x); if (t > 0 && t < first) first = t; } });
                 from = first === Infinity ? today0 : dayStartMs(first);
             }
+            const nDays = Math.max(1, Math.round((end - from) / 86400000));
+            /* which charts make sense for this period */
+            const tabs = [['hours', 'الساعات']];
+            if (nDays >= 2 && nDays <= 93) tabs.push(['days', 'الأيام']);
+            if (nDays >= 7) tabs.push(['weekday', 'أيام الأسبوع']);
+            if (nDays >= 14) tabs.push(['weeks', 'الأسابيع']);
+            if (st.period === 'all' && nDays > 40) tabs.push(['months', 'الأشهر']);
+            if (!tabs.some(x => x[0] === st.tab)) st.tab = 'hours';
+            const tabBox = document.getElementById('pc-tabs');
+            tabBox.style.display = tabs.length > 1 ? 'flex' : 'none';
+            tabBox.innerHTML = tabs.map(t => '<button type="button" class="chip-btn' + (t[0] === st.tab ? ' active' : '') + '" data-tab="' + t[0] + '">' + t[1] + '</button>').join('');
+            let n, key, label, pickLabel;
             if (st.tab === 'hours') {
-                n = 24; key = t => new Date(t).getHours(); label = i => String(i); pickLabel = i => 'الساعة ' + i + ':00 – ' + (i + 1) + ':00';
+                n = 24; key = t => new Date(t).getHours(); label = i => pc12(i); pickLabel = i => 'الساعة ' + pc12(i) + ' – ' + pc12((i + 1) % 24);
             } else if (st.tab === 'weekday') {
                 n = 7; key = t => (new Date(t).getDay() + 1) % 7; label = i => PC_WD[i].replace('ال', ''); pickLabel = i => 'يوم ' + PC_WD[i] + ' (متوسط اليوم)';
             } else if (st.tab === 'days') {
-                n = 30; key = t => Math.round((dayStartMs(t) - from) / 86400000);
+                n = nDays; key = t => Math.round((dayStartMs(t) - from) / 86400000);
                 label = i => String(new Date(addDaysMs(from, i)).getDate());
                 pickLabel = i => new Date(addDaysMs(from, i)).toLocaleDateString('ar-LY', { weekday: 'long', day: 'numeric', month: 'long' });
             } else if (st.tab === 'weeks') {
-                n = 12; key = t => Math.floor((dayStartMs(t) - from) / (7 * 86400000) + 1e-6);
-                const ds = i => new Date(addDaysMs(from, i * 7));
+                const wk0 = pcWeekStart(from);
+                n = Math.max(1, Math.ceil((end - wk0) / (7 * 86400000)));
+                key = t => Math.floor((dayStartMs(t) - wk0) / (7 * 86400000) + 1e-6);
+                const ds = i => new Date(addDaysMs(wk0, i * 7));
                 label = i => ds(i).getDate() + '/' + (ds(i).getMonth() + 1);
-                pickLabel = i => { const a = ds(i), b = new Date(addDaysMs(from, i * 7 + 6)); return 'أسبوع ' + a.getDate() + '/' + (a.getMonth() + 1) + ' – ' + b.getDate() + '/' + (b.getMonth() + 1); };
+                pickLabel = i => { const a = ds(i), b = new Date(addDaysMs(wk0, i * 7 + 6)); return 'أسبوع ' + a.getDate() + '/' + (a.getMonth() + 1) + ' – ' + b.getDate() + '/' + (b.getMonth() + 1); };
             } else {
-                const f = new Date(from);
-                n = 12; key = t => { const d = new Date(t); return (d.getFullYear() - f.getFullYear()) * 12 + d.getMonth() - f.getMonth(); };
+                const f = new Date(from), l = new Date(end - 1);
+                n = (l.getFullYear() - f.getFullYear()) * 12 + l.getMonth() - f.getMonth() + 1;
+                key = t => { const d = new Date(t); return (d.getFullYear() - f.getFullYear()) * 12 + d.getMonth() - f.getMonth(); };
                 const md = i => new Date(f.getFullYear(), f.getMonth() + i, 1);
                 label = i => String(md(i).getMonth() + 1);
                 pickLabel = i => md(i).toLocaleDateString('ar-LY', { month: 'long', year: 'numeric' });
@@ -5592,20 +5986,21 @@
             const sales0 = new Array(n).fill(0), profit0 = new Array(n).fill(0);
             perfAccumulate(list, from, end, (t, a, p) => { const k = key(t); if (k < 0 || k >= n) return; sales0[k] += a; profit0[k] += p; });
             let sub = '';
-            const rangeText = (from, end) => 'من ' + new Date(from).toLocaleDateString('ar-LY', { day: 'numeric', month: 'long', year: 'numeric' }) + ' إلى ' + new Date(end - 1).toLocaleDateString('ar-LY', { day: 'numeric', month: 'long', year: 'numeric' });
+            const fmt = d => new Date(d).toLocaleDateString('ar-LY', { day: 'numeric', month: 'long', year: 'numeric' });
+            const rangeText = nDays === 1 ? fmt(from) : 'من ' + fmt(from) + ' إلى ' + fmt(end - 1);
             let idx = Array.from({ length: n }, (_, i) => i);
             if (st.tab === 'weekday') {
                 const cnt = new Array(7).fill(0);
                 for (let d = from; d < end; d = addDaysMs(d, 1)) cnt[(new Date(d).getDay() + 1) % 7]++;
                 for (let i = 0; i < 7; i++) { if (cnt[i]) { sales0[i] /= cnt[i]; profit0[i] /= cnt[i]; } }
-                sub = 'متوسط اليوم الواحد من كل يوم في الأسبوع — ' + rangeText(from, end);
+                sub = 'متوسط اليوم الواحد من كل يوم في الأسبوع — ' + rangeText;
             } else if (st.tab === 'hours') {
                 const act = idx.filter(i => Math.abs(sales0[i]) > 1e-9 || Math.abs(profit0[i]) > 1e-9);
                 if (act.length) idx = idx.slice(Math.min.apply(null, act), Math.max.apply(null, act) + 1);
-                sub = 'مجموع كل ساعة — ' + rangeText(from, end);
-            } else if (st.tab === 'days') sub = 'آخر 30 يوماً';
-            else if (st.tab === 'weeks') sub = 'آخر 12 أسبوعاً (الأسبوع يبدأ يوم السبت)';
-            else sub = 'آخر 12 شهراً';
+                sub = 'مجموع كل ساعة — ' + rangeText;
+            } else if (st.tab === 'days') sub = 'يوماً بيوم — ' + rangeText;
+            else if (st.tab === 'weeks') sub = 'أسبوعاً بأسبوع (الأسبوع يبدأ يوم السبت) — ' + rangeText;
+            else sub = 'شهراً بشهر — ' + rangeText;
             pcData = { idx, sales: sales0, profit: profit0, label, pickLabel, sub };
             pcDraw();
         }
@@ -5768,36 +6163,59 @@
         }
 
         /* v67: tap the free-products or discounts card: every product involved, how much of it, and the dinar value */
-        function showStatsDiscFree(kind) {
-            const st = statsSplit;
-            if (!st || !st.freeProd) return;
-            const isFree = kind === 'free';
-            const rows = Array.from((isFree ? st.freeProd : st.discProd).values()).filter(r => r.value > 1e-9);
-            rows.sort((a, b) => b.value - a.value);
-            const qtyText = r => {
-                const t = [];
-                if (r.full) t.push(formatNum(r.full) + ' شكارة كاملة');
-                if (r.half) t.push(formatNum(r.half) + ' نصف شكارة');
-                if (r.kg) t.push(formatNum(Math.round(r.kg * 1000) / 1000) + ' كجم');
-                if (r.units) t.push(formatNum(r.units) + ' قطعة');
-                return t.join(' — ');
-            };
-            const cart = isFree ? 0 : st.cartDisc;
-            const total = rows.reduce((a, r) => a + r.value, 0) + (cart > 1e-9 ? cart : 0);
-            const list = rows.map((r, n) => {
-                const sub = (isFree ? 'أُعطي مجاناً: ' : 'كمية عليها خصم: ') + escapeHtml(qtyText(r));
-                return '<div class="sp-row"><span class="sp-n">' + (n + 1) + '</span><span class="sp-t"><span class="sp-nm">' + escapeHtml(r.name) + '</span><span class="sp-sub">' + sub + '</span></span><b>' + formatNum(r.value) + ' <small>د.ل</small></b></div>';
-            }).join('') + (cart > 1e-9 ? '<div class="sp-row"><span class="sp-n">+</span><span class="sp-t"><span class="sp-nm">خصم على الفاتورة كاملة</span><span class="sp-sub">غير مرتبط بمنتج محدد</span></span><b>' + formatNum(cart) + ' <small>د.ل</small></b></div>' : '')
-                || '<div style="text-align:center; color:var(--muted); padding:16px 0;">' + (isFree ? 'لا توجد منتجات مجانية في هذه الفترة' : 'لا توجد خصومات في هذه الفترة') + '</div>';
+        /* v79: free products and discounts, grouped by the account that gave them (biggest account first) */
+        function statsQtyText(r) {
+            const t = [];
+            if (r.full) t.push(formatNum(r.full) + ' شكارة كاملة');
+            if (r.half) t.push(formatNum(r.half) + ' نصف شكارة');
+            if (r.kg) t.push(formatNum(Math.round(r.kg * 1000) / 1000) + ' كجم');
+            if (r.units) t.push(formatNum(r.units) + ' قطعة');
+            return t.join(' — ');
+        }
+        function statsOpenList(title, bodyHtml, totalLabel, totalHtml) {
             const ov = document.createElement('div');
             ov.className = 'dp-overlay';
-            ov.innerHTML = '<div class="dp-box sp-box"><div class="dp-title">' + (isFree ? 'المنتجات المجانية' : 'الخصومات') + ' — التفاصيل</div>' +
-                '<div class="sp-period">' + escapeHtml(statsPeriodText()) + '</div>' +
-                '<div class="sp-list">' + list + '</div>' +
-                '<div class="split-row split-total"><span>' + (isFree ? 'مجموع قيمتها' : 'مجموع الخصومات') + '</span><b>' + formatNum(total) + ' <small>د.ل</small></b></div>' +
-                '<div class="dp-foot"><button type="button" style="background:var(--red-alert);color:#fff;">إغلاق</button></div></div>';
+            ov.innerHTML = '<div class=\"dp-box sp-box\"><div class=\"dp-title\">' + title + '</div>' +
+                '<div class=\"sp-period\">' + escapeHtml(statsPeriodText()) + '</div>' +
+                '<div class=\"sp-list\">' + bodyHtml + '</div>' +
+                (totalLabel ? '<div class=\"split-row split-total\"><span>' + totalLabel + '</span><b>' + totalHtml + '</b></div>' : '') +
+                '<div class=\"dp-foot\"><button type=\"button\" style=\"background:var(--red-alert);color:#fff;\">إغلاق</button></div></div>';
             ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('button')) ov.remove(); });
             document.body.appendChild(ov);
+        }
+        function showStatsDiscFree(kind) {
+            const st = statsSplit;
+            if (!st || !st.acc) return;
+            const isFree = kind === 'free';
+            const accs = Array.from(st.acc.values()).filter(a => (isFree ? a.freeTotal : a.discTotal) > 1e-9);
+            accs.sort((a, b) => (isFree ? b.freeTotal - a.freeTotal : b.discTotal - a.discTotal));
+            let total = 0;
+            const html = accs.map((a, k) => {
+                const rows = Array.from((isFree ? a.free : a.disc).values()).filter(r => r.value > 1e-9).sort((x, y) => y.value - x.value);
+                const sum = isFree ? a.freeTotal : a.discTotal;
+                total += sum;
+                const lines = rows.map((r, n) => {
+                    const sub = (isFree ? 'أُعطي مجاناً: ' : 'كمية عليها خصم: ') + escapeHtml(statsQtyText(r));
+                    return '<div class=\"sp-row\"><span class=\"sp-n\">' + (n + 1) + '</span><span class=\"sp-t\"><span class=\"sp-nm\">' + escapeHtml(r.name) + '</span><span class=\"sp-sub\">' + sub + '</span></span><b>' + formatNum(r.value) + ' <small>د.ل</small></b></div>';
+                }).join('') + (!isFree && a.cart > 1e-9 ? '<div class=\"sp-row\"><span class=\"sp-n\">+</span><span class=\"sp-t\"><span class=\"sp-nm\">خصم على الفاتورة كاملة</span><span class=\"sp-sub\">غير مرتبط بمنتج محدد</span></span><b>' + formatNum(a.cart) + ' <small>د.ل</small></b></div>' : '');
+                return '<div class=\"sp-acc\"><span>' + escapeHtml(cashierDisplay(a.name)) + (k === 0 && accs.length > 1 ? ' <i class=\"sp-top\">الأكثر</i>' : '') + '</span><b>' + formatNum(sum) + ' <small>د.ل</small></b></div>' + lines;
+            }).join('') || '<div style=\"text-align:center; color:var(--muted); padding:16px 0;\">' + (isFree ? 'لا توجد منتجات مجانية في هذه الفترة' : 'لا توجد خصومات في هذه الفترة') + '</div>';
+            statsOpenList((isFree ? 'المنتجات المجانية' : 'الخصومات') + ' — حسب الحساب', html, isFree ? 'مجموع قيمتها' : 'مجموع الخصومات', formatNum(total) + ' <small>د.ل</small>');
+        }
+        /* kind: 'gurush' (dinar value of the extra weight) or 'grams' */
+        function showStatsExtra(kind) {
+            const st = statsSplit;
+            if (!st || !st.acc) return;
+            const isG = kind === 'grams';
+            const accs = Array.from(st.acc.values()).filter(a => a.extraKg > 1e-9 || a.extraValue > 1e-9);
+            accs.sort((a, b) => isG ? (b.extraKg - a.extraKg) : (b.extraValue - a.extraValue));
+            const html = accs.map((a, n) => {
+                const main = isG ? formatNum(Math.round(a.extraKg * 1e6) / 1e3) + ' <small>جرام</small>' : formatNum(a.extraValue) + ' <small>د.ل</small>';
+                const sub = isG ? ('قيمتها ' + formatNum(a.extraValue) + ' د.ل') : (formatNum(Math.round(a.extraKg * 1e6) / 1e3) + ' جرام');
+                return '<div class=\"sp-row\"><span class=\"sp-n\">' + (n + 1) + '</span><span class=\"sp-t\"><span class=\"sp-nm\">' + escapeHtml(cashierDisplay(a.name)) + (n === 0 && accs.length > 1 ? ' <i class=\"sp-top\">الأكثر</i>' : '') + '</span><span class=\"sp-sub\">' + sub + '</span></span><b>' + main + '</b></div>';
+            }).join('') || '<div style=\"text-align:center; color:var(--muted); padding:16px 0;\">لا توجد إضافات في هذه الفترة</div>';
+            statsOpenList(isG ? 'الجرامات الإضافية — حسب الحساب' : 'القروش الإضافية — حسب الحساب', html, isG ? 'مجموع الجرامات' : 'مجموع القروش الإضافية',
+                isG ? formatNum(Math.round(st.extraKg * 1e6) / 1e3) + ' <small>جرام</small>' : formatNum(st.extraValue) + ' <small>د.ل</small>');
         }
 
         async function refreshStats() {
@@ -6525,12 +6943,12 @@
                         ${s.returnedAt ? `<div class="hist-dim" style="font-size:12px; color:#d32f2f; font-weight:bold; margin-top:4px;">↩ تم إرجاع هذه الفاتورة بالكامل ${new Date(s.returnedAt).toLocaleString('ar-LY')} بواسطة ${s.returnedBy || 'غير محدد'} — المنتجات أعلاه أُعيدت إلى المخزون.</div>` : ''}
                         ${debtBanner}
 
-                        <div style="display:flex; justify-content:space-between; align-items:center; gap:4px; flex-wrap:wrap; margin-top:6px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:nowrap; margin-top:6px;">
                             <div class="hist-btns hist-dim">
                                 <button class="btn btn-teal" style="padding:2px 8px; font-size:11px;" onclick='editSaleNote(${JSON.stringify(s.id)})'>✏️ ملاحظة</button>
                                 ${s.returnedAt ? `<span style="font-size:11px; color:#d32f2f;">تم الإرجاع</span><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='deleteSale(${JSON.stringify(s.id)})'>حذف البيع</button>` : `<button class="btn btn-green" style="padding:2px 8px; font-size:11px;" onclick='editSale(${JSON.stringify(s.id)})'>تعديل البيع</button><button class="btn btn-red" style="padding:2px 8px; font-size:11px;" onclick='returnSale(${JSON.stringify(s.id)})'>إرجاع البيع</button>`}
                             </div>
-                            <div class="hist-total"><small class="hist-dim">الإجمالي</small><strong style="color:var(--teal-primary); font-size:22px;">${formatNum(s.total)} د.ل</strong></div>
+                            <div class="hist-total"><small class="hist-dim">الإجمالي</small><strong style="color:var(--teal-primary); font-size:${(() => { const n = (formatNum(s.total) + ' د.ل').length; return n <= 10 ? 22 : n <= 13 ? 19 : n <= 16 ? 16 : 14; })()}px;">${formatNum(s.total)} د.ل</strong></div>
                         </div>
                     </div>
                 `;
@@ -6682,8 +7100,9 @@
 
             salesDayKeys = groups.map(g => g.key);
             salesDayGroups = groups;
-            container.innerHTML = groups.map((g, idx) => {
-                const open = searching ? true : (salesDayToggled.has(g.key) ? salesDayToggled.get(g.key) : g.isToday);
+            const dateSearch = searching && !!parseDateQuery(searchQuery);
+            const dayHtml = (g, idx) => {
+                const open = searching ? !dateSearch : (salesDayToggled.has(g.key) ? salesDayToggled.get(g.key) : g.isToday);
                 return `
                     <div class="day-group-header" onclick="toggleSalesDay(${idx})">
                         <span>${salesSelectMode && g.items.length ? `<label class="sel-day" onclick="event.stopPropagation()"><input type="checkbox" ${g.items.every(x => isSaleMonthSelected(x.s) || selSaleIds.has(String(x.s.id))) ? 'checked' : ''} onchange="toggleDaySel(${idx}, this.checked)"></label>` : ''}${g.key}</span>
@@ -6691,8 +7110,81 @@
                     </div>
                     <div id="sales-day-body-${idx}" data-lazy="${open ? '' : '1'}" style="display:${open ? 'block' : 'none'};">${open ? renderGroupRows(g, idx) : ''}</div>
                 `;
-            }).join('');
+            };
+            container.innerHTML = searching ? groups.map(dayHtml).join('') : salesBuildTree(groups, dayHtml);
             updateLoadOlderButton(searching);
+        }
+
+        /* v79: a date typed like 5/11 or 5/11/2026 finds exactly that day */
+        function parseDateQuery(q) {
+            const t = normalizeSearchText(q).replace(/[\/\-.]/g, '/').replace(/\s*\/\s*/g, '/');
+            const m = /^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/.exec(t);
+            if (!m) return null;
+            let y = m[3] ? Number(m[3]) : 0;
+            if (y && y < 100) y += 2000;
+            return { d: Number(m[1]), m: Number(m[2]), y };
+        }
+        /* v79: weeks that have passed fold their days into one card; months that have passed fold their weeks.
+           Weeks run Saturday to Friday and are cut at the end of a month, so every month's total stays exact.
+           The days of the current week stay as day cards. */
+        const SALES_MONTHS_AR = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+        function salesBuildTree(groups, dayHtml) {
+            const today0 = dayStartMs(Date.now()), curWs = pcWeekStart(today0);
+            const td = new Date(today0), curMk = td.getFullYear() * 12 + td.getMonth();
+            const items = [];
+            groups.forEach((g, idx) => {
+                const dayMs = dayStartMs(g.rows[0].ms);
+                if (dayMs >= curWs) { items.push({ t: 'd', idx }); return; }
+                const dt = new Date(dayMs), mk = dt.getFullYear() * 12 + dt.getMonth();
+                const ws = Math.max(pcWeekStart(dayMs), new Date(dt.getFullYear(), dt.getMonth(), 1).getTime());
+                const last = items[items.length - 1];
+                if (mk === curMk) {
+                    if (last && last.t === 'w' && last.ws === ws) last.days.push(idx);
+                    else items.push({ t: 'w', ws, we: addDaysMs(pcWeekStart(dayMs), 6), mk, days: [idx] });
+                } else {
+                    let mb = (last && last.t === 'm' && last.mk === mk) ? last : null;
+                    if (!mb) { mb = { t: 'm', mk, weeks: [] }; items.push(mb); }
+                    const lw = mb.weeks[mb.weeks.length - 1];
+                    if (lw && lw.ws === ws) lw.days.push(idx);
+                    else mb.weeks.push({ t: 'w', ws, we: addDaysMs(pcWeekStart(dayMs), 6), mk, days: [idx] });
+                }
+            });
+            const tot = (idxs) => {
+                let c = 0, sum = 0;
+                idxs.forEach(i => groups[i].items.forEach(x => { if (!x.s.returnedAt) { c++; sum += Number(x.s.total || 0); } }));
+                return { c, sum };
+            };
+            const meta = (tt) => '<span class="bk-meta">' + tt.c + ' فاتورة — ' + formatNum(tt.sum) + ' د.ل</span>';
+            const openOf = (key) => salesDayToggled.get(key) === true;
+            const hdr = (cls, key, label, tt, open) => '<div class="day-group-header bucket-hdr ' + cls + '" onclick=\'toggleSalesBucket(this, ' + JSON.stringify(key) + ')\'><span>' + label + ' ' + meta(tt) + '</span><span class="day-arrow">' + (open ? '▴' : '▾') + '</span></div>';
+            const weekHtml = (w) => {
+                const key = 'W|' + w.ws;
+                const open = openOf(key);
+                const a = new Date(w.ws);
+                const monthEnd = new Date(a.getFullYear(), a.getMonth() + 1, 0).getTime();
+                const b = new Date(Math.min(w.we, monthEnd));
+                const label = 'أسبوع ' + a.getDate() + '/' + (a.getMonth() + 1) + ' – ' + b.getDate() + '/' + (b.getMonth() + 1);
+                return hdr('wk-hdr', key, label, tot(w.days), open) + '<div class="bucket-body" style="display:' + (open ? 'block' : 'none') + ';">' + w.days.map(i => dayHtml(groups[i], i)).join('') + '</div>';
+            };
+            return items.map(it => {
+                if (it.t === 'd') return dayHtml(groups[it.idx], it.idx);
+                if (it.t === 'w') return weekHtml(it);
+                const key = 'M|' + it.mk;
+                const open = openOf(key);
+                const all = [];
+                it.weeks.forEach(w => w.days.forEach(i => all.push(i)));
+                const label = SALES_MONTHS_AR[it.mk % 12] + ' ' + Math.floor(it.mk / 12);
+                return hdr('mo-hdr', key, label, tot(all), open) + '<div class="bucket-body" style="display:' + (open ? 'block' : 'none') + ';">' + it.weeks.map(weekHtml).join('') + '</div>';
+            }).join('');
+        }
+        function toggleSalesBucket(hdrEl, key) {
+            const body = hdrEl.nextElementSibling;
+            if (!body) return;
+            const willOpen = body.style.display === 'none';
+            body.style.display = willOpen ? 'block' : 'none';
+            const ar = hdrEl.querySelector('.day-arrow');
+            if (ar) ar.textContent = willOpen ? '▴' : '▾';
+            salesDayToggled.set(key, willOpen);
         }
 
         /* Everything searchable about a sale, as one text. */
@@ -6700,7 +7192,7 @@
             const parts = [];
             const bd = getSaleBreakdown(sale);
             parts.push(sale.customerName, sale.cartNote, sale.debtorName, getSaleDebtorNames(sale), sale.cashier, cashierDisplay(sale.cashier), sale.note, sale.dayName,
-                new Date(sale.timestamp).toLocaleDateString('ar-LY'), formatNum(sale.total));
+                new Date(sale.timestamp).toLocaleDateString('ar-LY'), SALES_MONTHS_AR[new Date(saleTimeMs(sale)).getMonth()] + ' ' + new Date(saleTimeMs(sale)).getFullYear(), formatNum(sale.total));
             if (Number(sale.globalDiscount || 0) > 0) parts.push('خصم', 'خصم على الفاتورة', formatNum(sale.globalDiscount));
             (sale.items || []).forEach(i => {
                 parts.push(i.name, i.note, i.debtorName);
@@ -6722,6 +7214,11 @@
                 if (!(bd.debtAmount > 1e-7) || sale.returnedAt) return false;
                 if (salesDebtFilter === 'unpaid' && sale.debtPaidAt) return false;
                 if (salesDebtFilter === 'paid' && !sale.debtPaidAt) return false;
+            }
+            const dq = parseDateQuery(query);
+            if (dq) {
+                const t = new Date(saleTimeMs(sale));
+                return t.getDate() === dq.d && t.getMonth() + 1 === dq.m && (!dq.y || t.getFullYear() === dq.y);
             }
             return matchesSearch(saleSearchText(sale), query);
         }
@@ -7892,6 +8389,26 @@
             </div><div class="rc-zb"></div>`.replace(/\n\s*/g, '');
         }
 
+        /* v79: a sale that will take stock below zero needs two red confirmations, so the person selling cannot miss it */
+        function confirmNegativeSaleTwice(lines, proceed) {
+            const list = (lines || []).map(x => '• ' + escapeHtml(String(x))).join('\n');
+            const first = () => {
+                const go = () => setTimeout(second, 80);
+                go.danger = true; go.noOutsideDismiss = true;
+                go.confirmLabel = 'نعم، أفهم';
+                go.cancelLabel = 'رجوع للسلة';
+                showModal('تحذير: بيع بالسالب!', 'هذا البيع سيجعل المخزون بالسالب (أقل من الصفر) لهذه المنتجات:\n' + list + '\n\nالمخزون المسجل في التطبيق لا يكفي لهذا البيع.', false, go);
+            };
+            const second = () => {
+                const go = () => proceed();
+                go.danger = true; go.noOutsideDismiss = true;
+                go.confirmLabel = 'نعم، أتمم البيع بالسالب';
+                go.cancelLabel = 'لا، رجوع';
+                showModal('تأكيد أخير', 'هل أنت متأكد تماماً أنك تريد إتمام البيع بالسالب؟\nسيصبح رقم المخزون خاطئاً حتى تصحّحه.', false, go);
+            };
+            first();
+        }
+
         /* Opens the confirmation popup (with a small receipt). It stays until OK or Cancel is pressed. */
         function requestFinishSale() {
             if (bkCartEdit) { bkFinishCartEdit(true); return; }
@@ -7899,6 +8416,16 @@
                 if (editingSaleId) { completeSale(); return; }
                 showModal('السلة فارغة', 'لا توجد منتجات في السلة لإتمام البيع. أضف منتجاً أولاً.', false, () => {});
                 return;
+            }
+            if (!requestFinishSale._negOk && !editingSaleId) {
+                const negItems = cart.filter(i => i.isNegativeSale);
+                if (negItems.length) {
+                    confirmNegativeSaleTwice(negItems.map(i => (i.name || '') + ' × ' + formatNum(i.qty)), () => {
+                        requestFinishSale._negOk = true;
+                        try { requestFinishSale(); } finally { requestFinishSale._negOk = false; }
+                    });
+                    return;
+                }
             }
             let okRect = null;
             const go = () => {
@@ -8077,6 +8604,15 @@
             } catch (e) {
                 console.error('Backup encryption failed - saving a plain file instead', e);
                 text = JSON.stringify(data, null, (data.sales || []).length > 3000 ? 0 : 2);
+            }
+            /* v78 (installed Android app only): there is no browser to do the download, so the file is written straight
+               into the phone's Download folder. On the website this block is skipped and everything below runs as before. */
+            if (window.posNative && window.posNative.android) {
+                const where = await window.posNative.saveBackup(text, silent);
+                if (where === 'cancel') return;
+                localStorage.setItem('pos_last_backup_at', String(Date.now()));
+                localStorage.setItem('pos_last_reminder_at', String(Date.now()));
+                return;
             }
             const blob = new Blob([text], { type: 'application/json' });
             /* v73: on iPhone the backup opens the share sheet, where «Save to Files» lets you choose the folder */
@@ -8305,7 +8841,7 @@
             const has = kind === 'main' ? !!pfPic.data : kind === 'extra';
             const ov = document.createElement('div');
             ov.className = 'act-ov';
-            ov.style.zIndex = '10080';
+            ov.style.zIndex = '10160';  /* v79: above the full-screen product form (10150), it used to open hidden behind it */
             ov.innerHTML = '<div class="act-sh"><div class="act-t">' + (kind === 'main' ? 'الصورة الرئيسية' : (kind === 'add' ? 'إضافة صورة' : 'صورة إضافية')) + '</div>' +
                 '<button type="button" class="act-b" data-a="cam">' + (has ? 'استبدال: التقاط صورة' : 'التقاط صورة') + '</button>' +
                 '<button type="button" class="act-b" data-a="gal">' + (has ? 'استبدال: من المعرض' : 'من المعرض') + '</button>' +
@@ -8613,7 +9149,15 @@
         let cloudFailedOps = safeLoad(CLOUD_FAILED_KEY, []);
         if (!Array.isArray(cloudFailedOps)) cloudFailedOps = [];
         let cloudReady = false;
-        let cloudSyncBusy = false;
+        let cloudSyncBusy = false, cloudRunId = 0, cloudBusySince = 0, cloudFastUntil = 0;
+        /* v79: every cloud try has a time limit, so a try that hangs (the phone went offline in the middle of it)
+           ends by itself and the next try starts; it also never keeps the uploader 'busy' forever */
+        function cloudWithTimeout(promise, ms) {
+            return new Promise((resolve, reject) => {
+                const t = setTimeout(() => { const e = new Error('timeout'); e.code = 'unavailable'; reject(e); }, ms || 45000);
+                Promise.resolve(promise).then(v => { clearTimeout(t); resolve(v); }, e => { clearTimeout(t); reject(e); });
+            });
+        }
         let cloudListenersAttached = false;
         let cloudApplyingRemote = false;
         let cloudUnsubs = [];
@@ -9358,13 +9902,22 @@
             else if (op.type === 'productMutation' && p.productId !== undefined) ids.add(String(p.productId));
             return ids;
         }
-        async function processCloudOutbox(force) {
-            if (!cloudReady || cloudSyncBusy || !cloudOutbox.length) { renderCloudSyncStatus(); return; }
+        /* abandon: true = a user/connection event (the internet came back, 'retry now'): a try stuck for a few seconds is
+           given up and a fresh one starts immediately; 'hard' = give up any try that is running right now */
+        async function processCloudOutbox(force, abandon) {
+            if (!cloudReady || !cloudOutbox.length) { renderCloudSyncStatus(); return; }
+            if (cloudSyncBusy) {
+                const busyFor = Date.now() - cloudBusySince;
+                if (abandon === 'hard' || (abandon && busyFor > 4000) || busyFor > 25000) { cloudRunId++; cloudSyncBusy = false; }
+                else { renderCloudSyncStatus(); return; }
+            }
             if (!force && Date.now() < cloudNextTry) return;
-            cloudSyncBusy = true;
+            if (navigator.onLine === false) { renderCloudSyncStatus(); return; }
+            const myRun = ++cloudRunId;
+            cloudSyncBusy = true; cloudBusySince = Date.now();
             renderCloudSyncStatus();
             try {
-                while (cloudOutbox.length && cloudReady) {
+                while (cloudOutbox.length && cloudReady && myRun === cloudRunId) {
                     const head = cloudOutbox[0];
                     const group = [head];
                     if (head.type === 'sale' && Date.now() >= cloudNoGroupUntil) {
@@ -9373,8 +9926,8 @@
                         }
                     }
                     try {
-                        if (head.type === 'sale') await processSaleGroup(group);
-                        else await processCloudOperation(head);
+                        if (head.type === 'sale') await cloudWithTimeout(processSaleGroup(group), 45000);
+                        else await cloudWithTimeout(processCloudOperation(head), 90000);
                         const done = new Set(group.map(o => o.id));
                         const touched = new Set();
                         group.forEach(o => cloudOpProductIds(o).forEach(id => touched.add(id)));
@@ -9384,6 +9937,7 @@
                         cloudReapplyProducts(touched);
                         renderCloudSyncStatus();
                     } catch (err) {
+                        if (myRun !== cloudRunId) return;   /* an abandoned try that ended late: the newer try owns the queue now */
                         console.error('Cloud operation failed', err);
                         const transient = cloudIsTransient(err, head);
                         if (group.length > 1 && !transient) { cloudNoGroupUntil = Date.now() + 60000; continue; }
@@ -9391,7 +9945,7 @@
                             cloudStat.errCount++;
                             cloudStat.lastErr = cloudErrCode(err) || String((err && err.message) || err || '');
                             cloudNextTry = Date.now() + cloudRetryDelay;
-                            cloudRetryDelay = Math.min(cloudRetryDelay * 2, 30000);
+                            cloudRetryDelay = Math.min(cloudRetryDelay * 2, Date.now() < cloudFastUntil ? 3000 : 15000);
                             persistCloudOutbox();
                             break;
                         }
@@ -9406,12 +9960,12 @@
                     }
                 }
             } finally {
-                cloudSyncBusy = false;
+                if (myRun === cloudRunId) cloudSyncBusy = false;
                 renderCloudSyncStatus();
             }
         }
         function cloudRetryFailed() {
-            if (!cloudFailedOps.length) { cloudKick(true); return; }
+            if (!cloudFailedOps.length) { cloudKick(true, true); return; }
             const back = cloudFailedOps.map(f => { const o = f.op; if (o) delete o._tries; return o; }).filter(Boolean);
             cloudFailedOps = [];
             persistCloudFailed();
@@ -9419,15 +9973,23 @@
             cloudOutbox = back.concat(cloudOutbox.filter(o => !ids.has(o.id)));
             persistCloudOutbox();
             cloudNoGroupUntil = Date.now() + 60000;
-            cloudKick(true);
+            cloudKick(true, true);
         }
-        function cloudKick(force) {
+        function cloudKick(force, hard) {
             if (!cloudSyncCode) { renderCloudSyncStatus(); return; }
-            if (!cloudReady) { initCloudSync(force); return; }
+            if (!cloudReady) { initCloudSync(force, hard); return; }
             if (force) cloudNextTry = 0;
-            processCloudOutbox(force);
+            processCloudOutbox(force, hard ? 'hard' : force);
         }
-        window.addEventListener('online', function () { cloudRetryDelay = 2000; cloudInitDelay = 3000; cloudKick(true); renderCloudSyncStatus(); });
+        /* the internet came back (the phone's own signal, or noticed by the 3-second check below): start uploading at once,
+           then keep trying every few seconds for a minute, because right after the signal the connection is often not ready yet */
+        function cloudOnlineAgain() {
+            cloudRetryDelay = 2000; cloudInitDelay = 3000; cloudInitNextTry = 0; cloudNextTry = 0;
+            cloudFastUntil = Date.now() + 60000;
+            cloudKick(true);
+            renderCloudSyncStatus();
+        }
+        window.addEventListener('online', cloudOnlineAgain);
         window.addEventListener('offline', function () { renderCloudSyncStatus(); });
         document.addEventListener('visibilitychange', function () { if (!document.hidden) cloudKick(true); });
         /* v75: anything waiting to upload for more than 5 minutes while the phone is online is reported */
@@ -9444,7 +10006,11 @@
         function cloudNoticeDeletedSales(list) {
             reportSyncConflict('warn', 'حُذفت فواتير من جهاز آخر', 'حُذفت من هذا الجهاز أيضاً ' + list.length + ' فاتورة:\n' + list.slice(0, 8).join('\n') + (list.length > 8 ? '\n… و' + (list.length - 8) + ' أخرى' : '') + '\nإن كان هذا غير مقصود فاستعد نسخة احتياطية.');
         }
+        let cloudWasOnline = navigator.onLine !== false;
         setInterval(function () {
+            const onNow = navigator.onLine !== false;
+            if (onNow && !cloudWasOnline) { cloudWasOnline = true; if (cloudSyncCode) cloudOnlineAgain(); }
+            else if (!onNow) cloudWasOnline = false;
             if (cloudSyncCode && !document.hidden && (!cloudReady || cloudOutbox.length)) cloudKick(false);
             cloudCheckStuck();
             renderCloudDot();
@@ -10050,7 +10616,7 @@
             }
         }
 
-        let cloudInitBusy = false, cloudInitNextTry = 0, cloudInitDelay = 3000;
+        let cloudInitBusy = false, cloudInitNextTry = 0, cloudInitDelay = 3000, cloudInitRun = 0, cloudInitSince = 0;
         async function cloudEnsureAuth() {
             const auth = firebase.auth();
             if (auth.currentUser) return;
@@ -10063,17 +10629,24 @@
             });
             if (!auth.currentUser) await auth.signInAnonymously();
         }
-        async function initCloudSync(force) {
-            if (!cloudSyncCode || cloudReady || cloudInitBusy) { renderCloudSyncStatus(); return; }
+        async function initCloudSync(force, hard) {
+            if (!cloudSyncCode || cloudReady) { renderCloudSyncStatus(); return; }
+            if (cloudInitBusy) {
+                /* v79: a start that has been stuck (offline) is given up so a fresh one can begin */
+                if ((force && Date.now() - cloudInitSince > 6000) || hard || Date.now() - cloudInitSince > 60000) { cloudInitRun++; cloudInitBusy = false; }
+                else { renderCloudSyncStatus(); return; }
+            }
             if (!firebaseAvailable()) { cloudStat.initErr = 'no-firebase'; renderCloudSyncStatus(); return; }
             if (!force && Date.now() < cloudInitNextTry) return;
             if (navigator.onLine === false) { renderCloudSyncStatus(); return; }
             const code = cloudSyncCode;
-            cloudInitBusy = true;
+            const myInit = ++cloudInitRun;
+            cloudInitBusy = true; cloudInitSince = Date.now();
             renderCloudSyncStatus();
             try {
                 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-                await cloudEnsureAuth();
+                await cloudWithTimeout(cloudEnsureAuth(), 20000);
+                if (myInit !== cloudInitRun) return;
                 cloudDb = firebase.firestore();
                 cloudDocRef = cloudDb.collection('stores').doc(code);
                 cloudStateRef = cloudDocRef.collection('state').doc('main');
@@ -10086,7 +10659,7 @@
 
                 await migrateLegacyCloudIfNeeded();
                 await migrateCloudToV3IfNeeded();
-                if (code !== cloudSyncCode) return;
+                if (code !== cloudSyncCode || myInit !== cloudInitRun) return;
                 cloudLoadMarks();
                 cloudReady = true;
                 cloudInitDelay = 3000;
@@ -10095,13 +10668,14 @@
                 cloudInitialPull();
                 processCloudOutbox(true);
             } catch (err) {
+                if (myInit !== cloudInitRun) return;
                 console.error('Cloud sync init error', err);
                 cloudReady = false;
                 cloudStat.initErr = cloudErrCode(err) || String((err && err.message) || err || '');
                 cloudInitNextTry = Date.now() + cloudInitDelay;
-                cloudInitDelay = Math.min(cloudInitDelay * 2, 30000);
+                cloudInitDelay = Math.min(cloudInitDelay * 2, Date.now() < cloudFastUntil ? 3000 : 15000);
             } finally {
-                cloudInitBusy = false;
+                if (myInit === cloudInitRun) cloudInitBusy = false;
                 renderCloudSyncStatus();
             }
         }
@@ -10208,7 +10782,16 @@
                 el.type = 'button';
                 el.id = 'cloud-dot';
                 el.setAttribute('aria-label', 'حالة المزامنة السحابية');
-                el.addEventListener('click', openCloudStatusPanel);
+                /* v79: the panel opens when the finger lifts, and the circle is never redrawn while it is pressed
+                   (a redraw in the middle of the tap used to swallow the first tap); a normal click is the fallback */
+                let sx = 0, sy = 0, moved = false, lastOpen = 0;
+                const openOnce = () => { if (Date.now() - lastOpen < 700) return; lastOpen = Date.now(); openCloudStatusPanel(); };
+                el.addEventListener('pointerdown', ev => { el.dataset.pressed = '1'; sx = ev.clientX; sy = ev.clientY; moved = false; setTimeout(() => { el.dataset.pressed = ''; }, 1500); });
+                el.addEventListener('pointerleave', () => { el.dataset.pressed = ''; });
+                el.addEventListener('pointermove', ev => { if (Math.abs(ev.clientX - sx) > 14 || Math.abs(ev.clientY - sy) > 14) moved = true; });
+                el.addEventListener('pointerup', () => { el.dataset.pressed = ''; if (!moved) openOnce(); });
+                el.addEventListener('pointercancel', () => { el.dataset.pressed = ''; });
+                el.addEventListener('click', openOnce);
                 header.appendChild(el);
             }
             const st = cloudState();
@@ -10219,7 +10802,7 @@
             }
             const n = cloudOutbox.length + cloudFailedOps.length;
             const key = st + '|' + n;
-            if (el.dataset.k !== key) {
+            if (el.dataset.k !== key && el.dataset.pressed !== '1') {
                 el.dataset.k = key;
                 el.className = 'cloud-dot cd-' + st;
                 el.title = CLOUD_STATE_TITLES[st] || '';
@@ -10271,8 +10854,8 @@
             if (!cloudSyncCode) {
                 showModal('المزامنة السحابية', '<div id="cdp-body" class="cdp"></div>', false, () => {});
             } else {
-                cloudKick(true);
                 showModal('المزامنة السحابية', '<div id="cdp-body" class="cdp"></div>', false, () => {});
+                setTimeout(() => { try { cloudKick(true); } catch (e) { console.error(e); } }, 0);
             }
             const c = document.getElementById('modal-cancel-btn');
             if (c) c.remove();
@@ -10397,7 +10980,7 @@
                 (sum.cashOnlyHere.length || sum.cashOnlyFile.length ? '<div class="rs-note">حسابات هنا فقط: ' + (sum.cashOnlyHere.map(escapeHtml).join('، ') || '—') + ' · في الملف فقط: ' + (sum.cashOnlyFile.map(escapeHtml).join('، ') || '—') + '</div>' : '') +
                 (cloudOn ? '<div class="rs-note bad"><b>المزامنة السحابية مفعّلة:</b> «استبدال الكل» يستبدل بيانات السحابة لكل الأجهزة أيضاً، وكل جهاز يحفظ نسخة أمان من بياناته ثم يتطابق مع الملف. «دمج» يضيف الناقص فقط عبر المزامنة العادية ولا يحذف شيئاً من أي جهاز.<br><b>صور المنتجات لا تنتقل عبر السحابة أبداً:</b> لتظهر على الأجهزة الأخرى استعد ملف النسخة نفسه عليها.</div>' : '') +
                 '<div class="rs-help"><b>دمج:</b> يُبقي كل ما عندك ويضيف فقط ما ينقص (الفواتير بمعرّفها، المنتجات والحسابات والسجلات غير الموجودة)، ولا يغيّر أي رقم عندك. الفروق على ما هو موجود في الاثنين تظهر لك في تقرير ولا تُطبَّق.<br><b>استبدال الكل:</b> يجعل هذا الجهاز مطابقاً للملف تماماً.<br>قبل أي تغيير تُحفظ نسخة أمان من هذا الجهاز تلقائياً.</div>' +
-                '</div><div class="bp-btns rs-btns"><button type="button" class="btn btn-teal" id="rs-cancel">إلغاء</button><button type="button" class="btn btn-orange" id="rs-merge">دمج (إضافة الناقص)</button><button type="button" class="btn btn-red" id="rs-replace">استبدال الكل</button></div></div>';
+                '</div><div class="bp-btns rs-btns"><button type="button" class="btn btn-red" id="rs-cancel">إلغاء</button><button type="button" class="btn btn-orange" id="rs-merge">دمج (إضافة الناقص)</button><button type="button" class="btn btn-red" id="rs-replace">استبدال الكل</button></div></div>';
             document.body.appendChild(ov);
             document.getElementById('rs-cancel').onclick = closeRs;
             document.getElementById('rs-merge').onclick = () => doMergeRestore(imp, sum);
@@ -10673,7 +11256,7 @@
             closeCloudCheck();
             const ov = document.createElement('div');
             ov.id = 'cc-ov'; ov.className = 'bp-ov';
-            ov.innerHTML = '<div class="bp-box"><div class="bp-head">فحص المطابقة مع السحابة</div><div class="bp-list" id="cc-body"><p style="text-align:center;margin-top:30px;">جارٍ الفحص…</p></div><div class="bp-btns"><button type="button" class="btn btn-teal" onclick="closeCloudCheck()">إغلاق</button></div></div>';
+            ov.innerHTML = '<div class="bp-box"><div class="bp-head">فحص المطابقة مع السحابة</div><div class="bp-list" id="cc-body"><p style="text-align:center;margin-top:30px;">جارٍ الفحص…</p></div><div class="bp-btns"><button type="button" class="btn btn-red" onclick="closeCloudCheck()">إغلاق</button></div></div>';
             document.body.appendChild(ov);
             try { cloudCheckRes = await cloudCheckCompute(); cloudCheckPaint(); }
             catch (e) { console.error(e); const b = document.getElementById('cc-body'); if (b) b.innerHTML = '<p style="color:#c62828;">تعذّر الفحص: ' + escapeHtml(String((e && e.message) || e)) + '</p>'; }
@@ -10774,13 +11357,9 @@
                         requestAnimationFrame(positionSearchAboveKeyboard);
                     }
                     if (panel && panel.style.display !== 'none') {
-                        document.body.style.paddingBottom = h + 'px';
-                        requestAnimationFrame(() => {
-                            const margin = 12;
-                            const rect = panel.getBoundingClientRect();
-                            const delta = rect.bottom - (window.innerHeight - margin);
-                            window.scrollBy({ top: delta, behavior: 'smooth' });
-                        });
+                        const pad = h + 'px';
+                        if (document.body.style.paddingBottom !== pad) document.body.style.paddingBottom = pad;
+                        panelDockFollow();   /* v79: one continuous glide above the keyboard (no wobble) */
                     }
                 } else {
                     document.body.style.removeProperty('padding-bottom');
@@ -10792,6 +11371,64 @@
             }
 
             window.addEventListener('resize', onResize);
+        })();
+    </script>
+
+    <script>
+        /* v79: when a cost or a selling price is typed in the product form and you leave its box, a small receipt asks
+           you to confirm the number, so a wrong cost or price cannot slip in. Numbers the form fills in by itself
+           (like the half-bag price) are not asked about, only what you type. */
+        (function () {
+            const WATCH = { 'p-cost': 1, 'p-bag-cost': 1, 'p-price': 1, 'p-wholesale-unit-price': 1, 'p-u-kg-price': 1, 'p-kg-price': 1, 'p-full-bag-price': 1, 'p-half-bag-price': 1 };
+            const atFocus = new Map();
+            let open = false;
+            function inForm(el) { return !!(el && el.id && WATCH[el.id] && el.closest && el.closest('#modal-input-container') && document.querySelector('#custom-modal .modal-box.modal-pf')); }
+            function labelOf(el) {
+                const wrap = el.closest('.pf-u') || el;
+                let n = wrap.previousElementSibling;
+                while (n && !(n.classList && n.classList.contains('form-label'))) n = n.previousElementSibling;
+                let t = n ? n.textContent.trim() : '';
+                return t || 'القيمة';
+            }
+            document.addEventListener('focusin', function (e) {
+                const el = e.target;
+                if (inForm(el)) atFocus.set(el.id, el.value);
+            }, true);
+            document.addEventListener('focusout', function (e) {
+                const el = e.target;
+                if (!inForm(el) || open) return;
+                const before = atFocus.get(el.id);
+                const now = el.value;
+                if (before === now) return;
+                const v = parseFloat(now);
+                atFocus.set(el.id, now);
+                if (!(v > 0)) return;
+                const next = e.relatedTarget;
+                if (next && next.id === 'modal-cancel-btn') return;   /* leaving through Cancel: nothing to confirm */
+                show(el, v, next);
+            }, true);
+            function show(el, v, next) {
+                open = true;
+                const nameEl = document.getElementById('p-name');
+                const pname = nameEl ? nameEl.value.trim() : '';
+                const ov = document.createElement('div');
+                ov.className = 'pfc-ov';
+                ov.innerHTML = '<div class="pfc-box"><div class="pfc-head"><small>تأكيد القيمة المُدخلة' + (pname ? ' — ' + escapeHtml(pname) : '') + '</small><b>' + escapeHtml(labelOf(el)) + '</b></div>' +
+                    '<div class="pfc-val">' + formatNum(v) + ' <small>د.ل</small></div>' +
+                    '<div class="pfc-q">هل هذا الرقم صحيح؟</div>' +
+                    '<div class="pfc-btns"><button type="button" class="pfc-ok">تأكيد</button><button type="button" class="pfc-fix">تعديل</button></div></div>';
+                const done = (fix) => {
+                    ov.remove();
+                    open = false;
+                    try {
+                        if (fix) { el.focus(); el.select(); }
+                        else if (next && next.isConnected && /^(INPUT|TEXTAREA)$/.test(next.tagName)) next.focus({ preventScroll: true });
+                    } catch (err) {}
+                };
+                ov.querySelector('.pfc-ok').addEventListener('click', () => done(false));
+                ov.querySelector('.pfc-fix').addEventListener('click', () => done(true));
+                document.body.appendChild(ov);
+            }
         })();
     </script>
     <script>
@@ -10830,6 +11467,7 @@
                 var t = e.target && e.target.closest ? e.target.closest('button, .btn, .mode-btn, .qty-btn, .nav-item, .item-row[onclick], .pg-cell[onclick], .day-group-header, a[onclick]') : null;
                 if (!t || t.disabled) return;
                 tapCand = { el: t, x: e.clientX, y: e.clientY, id: e.pointerId };
+                if (t.id === 'cloud-dot') return;
                 try {
                     if (getComputedStyle(t).position === 'static') t.style.position = 'relative';
                     t.classList.add('fx-host');
@@ -12923,7 +13561,9 @@
             if (warn.length) msg += '<div class="rc-warn" style="margin-top:8px;"><b>تنبيه قبل التأكيد:</b><br>' + warn.map(x => escapeHtml(x)).join('<br>') + '</div>';
             const bagNeeds = bagsNeededFor(v.carts.reduce((acc, cv) => cv.wholeNote ? acc : acc.concat(cv.items || []), []));
             if (bagNeeds.length) msg += '<div class="rc-warn" style="margin-top:8px;"><b>هذه المبيعات تحتاج فتح شكائر / أكياس جديدة:</b><br>' + bagNeedsText(bagNeeds) + '<br>هل تريد فتحها وإنشاء المبيعات؟</div>';
-            const go = () => { bkNeedBagIds = new Set(); bkExecute(); };
+            const goReal = () => { bkNeedBagIds = new Set(); bkExecute(); };
+            const go = v.stockMsgs.length ? () => confirmNegativeSaleTwice(v.stockMsgs, goReal) : goReal;
+            if (v.stockMsgs.length) go.danger = true;
             go.confirmLabel = bagNeeds.length ? 'افتحها وأنشئ المبيعات' : 'تأكيد وإنشاء';
             if (bagNeeds.length) { go.cancelLabel = 'لا، رجوع للمراجعة'; go.onCancel = () => { bkNeedBagIds = new Set(bagNeeds.map(x => x.id)); bkReviewed = false; bkRender(); }; }
             go.noOutsideDismiss = true;
