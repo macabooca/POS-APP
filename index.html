@@ -806,10 +806,8 @@
             padding: 14px;
         }
         .selection-box { margin-top: 10px; }
-        /* v79: the product panel slides down smoothly when it appears (only transform + opacity, which phones draw without shaking) */
-        @keyframes panelSlideIn { from { opacity: 0; transform: translateY(-18px); } to { opacity: 1; transform: translateY(0); } }
-        #selected-product-panel.panel-anim { animation: panelSlideIn .22s cubic-bezier(.22, .8, .3, 1) backwards; will-change: transform, opacity; }
-        @media (prefers-reduced-motion: reduce) { #selected-product-panel.panel-anim { animation: none; } }
+        /* v81: the product panel appears instantly, fully in place, with no slide, fade or any other movement */
+        #selected-product-panel, #selected-product-panel.panel-anim { animation: none !important; transform: none; }
         #sel-product-name { color: var(--teal-primary) !important; }
         .mode-btn {
             border: 1px solid #cfe3e6;
@@ -2850,15 +2848,12 @@
             setTimeout(retry, 220);
         }
 
-        /* v79: smooth slide-down when the panel appears */
+        /* v81: the panel now appears instantly (no slide-down); this only makes sure no old animation class is left on it */
         function panelAnimateIn() {
             const p = document.getElementById('selected-product-panel');
             if (!p) return;
-            p.classList.remove('panel-anim');
-            void p.offsetWidth;
-            p.classList.add('panel-anim');
             clearTimeout(panelAnimateIn._t);
-            panelAnimateIn._t = setTimeout(() => p.classList.remove('panel-anim'), 320);
+            p.classList.remove('panel-anim');
         }
         /* v79: where the panel really sits, ignoring the slide-in movement (so the keyboard docking never measures a moving panel) */
         function panelRectNow(panel) {
@@ -7830,13 +7825,17 @@
             if (!sale || sale.returnedAt || sale.debtPaidAt) return;
             const bd = getSaleBreakdown(sale);
             if (bd.debtAmount <= 1e-7) return;
+            let okRect = null; /* v82: where OK was tapped, so the small circle starts from there (same as finishing a sale) */
             showModal('تأكيد السداد', `هل استلمت مبلغ الدين (${formatNum(bd.debtAmount)} د.ل) وتريد تسجيله كمسدد؟\nسيُضاف المبلغ إلى مبيعات وأرباح اليوم.`, false, () => {
                 sale.debtPaidAt = new Date().toISOString();
                 sale.debtPaidBy = activeCashier;
                 persistSales([sale]);
                 queueCloudOperation({ id: 'sale-debt-paid:' + sale.id, type: 'saleDebtPaid', payload: { id: String(sale.id), debtPaidAt: sale.debtPaidAt, debtPaidBy: sale.debtPaidBy }, createdAt: Date.now() });
                 renderSales();
+                if (window.flyToPaidDebts) window.flyToPaidDebts(okRect);
             });
+            const okb = document.getElementById('modal-confirm-btn');
+            if (okb) okb.addEventListener('pointerdown', () => { const r = okb.getBoundingClientRect(); okRect = { left: r.left, top: r.top, width: r.width, height: r.height }; });
         }
 
         function renderInventory() {
@@ -11740,6 +11739,67 @@
                     };
                 });
             };
+
+            /* v82: after OK on "تسديد الدين": the same small circle flies to the "ديون مسددة" filter button at the top of sales history.
+               That button row is normally hidden; showing the real row would push the whole list down for a moment, so a floating
+               copy of the row appears exactly where the real one would be (or at the top of the screen if the page is scrolled down),
+               the circle lands on its "ديون مسددة" button, the button pulses like the Sales tab does, and the copy fades away.
+               Nothing on the page moves and the real filter row is never touched. */
+            window.flyToPaidDebts = function (from) {
+                requestAnimationFrame(function () {
+                    var row = document.getElementById('sales-filter-row');
+                    var box = document.getElementById('sales-search');
+                    if (!row || !box) return;
+                    var target = null, ghost = null;
+                    var realChip = document.getElementById('sales-filter-paid');
+                    if (row.style.display !== 'none' && realChip) {
+                        var rr = realChip.getBoundingClientRect();
+                        if (rr.width && rr.top >= 4 && rr.bottom <= window.innerHeight) target = realChip;
+                    }
+                    if (!target) {
+                        var br = box.getBoundingClientRect();
+                        if (!br.width) return;
+                        ghost = row.cloneNode(true);
+                        ghost.removeAttribute('id');
+                        Array.prototype.forEach.call(ghost.querySelectorAll('[id]'), function (el) {
+                            if (el.id === 'sales-filter-paid') el.setAttribute('data-ghost-paid', '1');
+                            el.removeAttribute('id'); el.removeAttribute('onclick');
+                        });
+                        var gTop = Math.max(br.bottom + 8, 44); /* kept clear of the phone's status bar when the page is scrolled down */
+                        ghost.style.cssText = 'display:flex; gap:6px; position:fixed; z-index:10045; pointer-events:none; margin:0; left:' + br.left + 'px; width:' + br.width + 'px; top:' + gTop + 'px; opacity:0;';
+                        ghost.setAttribute('aria-hidden', 'true');
+                        document.body.appendChild(ghost);
+                        target = ghost.querySelector('[data-ghost-paid]');
+                        ghost.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 140, easing: 'ease-out', fill: 'forwards' });
+                    }
+                    if (!target) { if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost); return; }
+                    var tr = target.getBoundingClientRect();
+                    var sx = from ? from.left + from.width / 2 : window.innerWidth / 2;
+                    var sy = from ? from.top + from.height / 2 : window.innerHeight / 2;
+                    var tx = tr.left + tr.width / 2, ty = tr.top + tr.height / 2;
+                    var dot = document.createElement('div');
+                    dot.className = 'fly-dot';
+                    dot.style.left = sx + 'px'; dot.style.top = sy + 'px';
+                    dot.style.width = '34px'; dot.style.height = '34px';
+                    document.body.appendChild(dot);
+                    var dx = tx - sx, dy = ty - sy;
+                    var a = dot.animate([
+                        { transform: 'translate(-50%,-50%) translate(0px,0px) scale(1)', opacity: 0.95, offset: 0 },
+                        { transform: 'translate(-50%,-50%) translate(' + (dx * 0.3) + 'px,' + (dy * 0.3 - 30) + 'px) scale(.8)', opacity: 0.85, offset: 0.4 },
+                        { transform: 'translate(-50%,-50%) translate(' + dx + 'px,' + dy + 'px) scale(.3)', opacity: 0.35, offset: 1 }
+                    ], { duration: 520, easing: 'cubic-bezier(.5,.02,.3,1)', fill: 'forwards' });
+                    a.onfinish = function () {
+                        dot.animate([{ opacity: 0.35 }, { opacity: 0 }], { duration: 160, fill: 'forwards' }).onfinish = function () { if (dot.parentNode) dot.parentNode.removeChild(dot); };
+                        if (target.animate) target.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.14)' }, { transform: 'scale(1)' }], { duration: 260, easing: 'ease-out' });
+                        if (ghost) {
+                            setTimeout(function () {
+                                var f = ghost.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: 'ease-in', fill: 'forwards' });
+                                f.onfinish = function () { if (ghost.parentNode) ghost.parentNode.removeChild(ghost); };
+                            }, 380);
+                        }
+                    };
+                });
+            };
         })();
 
         /* v52: a tap always counts on the product list, the bottom tabs and popup buttons, even if the page shifts
@@ -12699,6 +12759,7 @@
             const hs = (hintList || []).map(h => bkSq(h.v));
             const cands = [];
             products.forEach(p => {
+                if (p.inactive) return; /* v83: inactive products are never matched from typed text (bulk review, quick-note "read the text") */
                 const hay = bkSq(p.name);
                 const words = hay.split(' ').filter(Boolean).map(bkStrip);
                 let sc = 0;
@@ -12848,7 +12909,7 @@
                 }
                 const k = slots.length;
                 const sov = ov.slots && ov.slots[k];
-                if (sov && sov.prodId) { const pr0 = products.find(x => String(x.id) === String(sov.prodId)); if (pr0) best = { prod: pr0, sure: true, others: [], hit: [] }; }
+                if (sov && sov.prodId) { const pr0 = products.find(x => String(x.id) === String(sov.prodId) && !x.inactive); if (pr0) best = { prod: pr0, sure: true, others: [], hit: [] }; }
                 slots.push({ k, label: g.toks.join(' '), count: g.count !== null ? g.count : 1, m: best, item: null });
             });
             return slots;
@@ -12929,8 +12990,8 @@
             const ov = ln.ov;
             /* empty sacks ("أشوالين فاضيات"): never a free full bag of feed */
             if (core.some(w => BK_EMPTY.test(w))) {
-                const eps = products.filter(pr => bkSq(pr.name).split(' ').some(w => BK_EMPTY.test(w)));
-                const pr0 = ov.prodId ? products.find(x => String(x.id) === String(ov.prodId)) : eps[0];
+                const eps = products.filter(pr => !pr.inactive && bkSq(pr.name).split(' ').some(w => BK_EMPTY.test(w))); /* v83: active only */
+                const pr0 = ov.prodId ? products.find(x => String(x.id) === String(ov.prodId) && !x.inactive) : eps[0];
                 lv.pickable = true;
                 if (!pr0) { bkMsg(lv, 'bad', 'لا يوجد في المخزون منتج للأشوال الفاضية'); return finish(); }
                 lv.match = { prod: pr0, sure: true, others: [] };
@@ -12994,7 +13055,7 @@
             }
             const hints = bkBuildHints(core);
             let m = null;
-            if (ov.prodId) { const pr0 = products.find(x => String(x.id) === String(ov.prodId)); m = pr0 ? { prod: pr0, sure: true, others: [], hit: [] } : null; }
+            if (ov.prodId) { const pr0 = products.find(x => String(x.id) === String(ov.prodId) && !x.inactive); m = pr0 ? { prod: pr0, sure: true, others: [], hit: [] } : null; } /* v83: a product picked earlier but deactivated since is not used */
             else m = bkFindProduct(r.name, hints);
             lv.pickable = true;
             if (!m) { bkMsg(lv, 'bad', 'لم أجد منتجاً مطابقاً لـ «' + r.name.join(' ') + '»'); return finish(); }
@@ -13495,7 +13556,7 @@
             const q = ov.querySelector('#bk-pick-q');
             const draw = function () {
                 const term = q.value;
-                let arr = term.trim() ? products.filter(p => matchesSearch(p.name, term)) : getMostSoldProducts();
+                let arr = term.trim() ? products.filter(p => !p.inactive && matchesSearch(p.name, term)) : getMostSoldProducts(); /* v83: inactive products hidden here too */
                 arr = arr.slice(0, 40);
                 listEl.innerHTML = arr.map(p => '<div class="bk-pick-item" data-id="' + escapeHtml(String(p.id)) + '">' + escapeHtml(p.name) + '</div>').join('') || '<div class="bk-pick-item">لا توجد نتائج</div>';
             };
